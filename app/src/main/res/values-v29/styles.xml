@@ -7,5 +7,14 @@
     </style>
 
     <style name="SettingsTheme" parent="AppTheme">
+        <item name="android:statusBarColor">@color/console_background</item>
+        <item name="android:navigationBarColor">@color/console_background</item>
+        <item name="android:colorBackground">@color/console_background</item>
+        <item name="android:windowBackground">@color/console_background</item>
+        <item name="android:textColorPrimary">@color/console_text_primary</item>
+        <item name="android:textColorSecondary">@color/console_text_secondary</item>
+        <item name="android:colorControlActivated">@color/console_accent</item>
+        <item name="colorControlActivated">@color/console_accent</item>
+        <item name="android:selectableItemBackground">@drawable/console_preference_row_background</item>
     </style>
 </resources>

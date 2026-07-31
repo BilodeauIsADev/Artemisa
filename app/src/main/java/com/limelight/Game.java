@@ -50,7 +50,6 @@ import com.limelight.utils.PanZoomHandler;
 import com.limelight.utils.PerformanceDataTracker;
 import com.limelight.utils.ServerHelper;
 import com.limelight.utils.ShortcutHelper;
-import com.limelight.utils.SpinnerDialog;
 import com.limelight.utils.UiHelper;
 
 import android.annotation.SuppressLint;
@@ -142,6 +141,9 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         ExternalControllerView.InputCallbacks,
         PerfOverlayListener, UsbDriverService.UsbDriverStateListener, View.OnKeyListener {
     public static Game instance;
+    public static final int PERFORMANCE_OVERLAY_OFF = 0;
+    public static final int PERFORMANCE_OVERLAY_SIMPLE = 1;
+    public static final int PERFORMANCE_OVERLAY_ADVANCED = 2;
 
     private int lastButtonState = 0;
 
@@ -184,7 +186,6 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     private int currentOrientation;
 
     public NvConnection conn;
-    private SpinnerDialog spinner;
     private boolean displayedFailureDialog = false;
     private boolean connecting = false;
     public boolean connected = false;
@@ -229,6 +230,10 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     private TextView performanceOverlayLite;
 
     private TextView performanceOverlayBig;
+    private View connectionOverlayView;
+    private TextView connectionAppNameView;
+    private TextView connectionComputerNameView;
+    private TextView connectionStatusView;
 
     private MediaCodecDecoderRenderer decoderRenderer;
     private boolean reportedCrash;
@@ -378,11 +383,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         setContentView(R.layout.activity_game);
 
         clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-
-        // Start the spinner
-        spinner = SpinnerDialog.displayDialog(this, getResources().getString(R.string.conn_establishing_title),
-                getResources().getString(R.string.conn_establishing_msg), true);
-
+        initializeConnectionOverlay();
 
         Display currentDisplay = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -563,6 +564,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
         appName = Game.this.getIntent().getStringExtra(EXTRA_APP_NAME);
         pcName = Game.this.getIntent().getStringExtra(EXTRA_PC_NAME);
+        updateConnectionTarget();
 
         host = Game.this.getIntent().getStringExtra(EXTRA_HOST);
         port = Game.this.getIntent().getIntExtra(EXTRA_PORT, NvHTTP.DEFAULT_HTTP_PORT);
@@ -632,20 +634,9 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
         // Check if the user has enabled performance stats overlay
         if (prefConfig.enablePerfOverlay) {
-            performanceOverlayView.setVisibility(View.VISIBLE);
-            if (prefConfig.enablePerfOverlayLite) {
-                performanceOverlayLite.setVisibility(View.VISIBLE);
-                if(prefConfig.enablePerfOverlayLiteDialog){
-                    performanceOverlayLite.setOnClickListener(v -> showGameMenu(null));
-                }
-            } else {
-                performanceOverlayBig.setVisibility(View.VISIBLE);
-            }
-            if (prefConfig.enablePerfOverlayBottom) {
-                //performanceOverlayView.getLayoutParams().layout_gravity = Gravity.BOTTOM;
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) performanceOverlayView.getLayoutParams();
-                params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-                performanceOverlayView.setLayoutParams(params);
+            applyPerformanceOverlayMode();
+            if(prefConfig.enablePerfOverlayLiteDialog){
+                performanceOverlayLite.setOnClickListener(v -> showGameMenu(null));
             }
         }
 
@@ -696,11 +687,11 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 prefConfig.framePacing = PreferenceConfiguration.FRAME_PACING_BALANCED;
                 LimeLog.info("PreferLowerDelays: preferLowerDelays=true, timeout=500us, pacing=BALANCED");
             } else {
-                // Balanced default
+                // LFR is disabled. Keep the frame pacing mode selected by the user.
                 decoderRenderer.setPreferLowerDelays(false);
                 decoderRenderer.setPreferLowerDelaysTimeoutUs(2000); // 2 ms
-                prefConfig.framePacing = PreferenceConfiguration.FRAME_PACING_BALANCED;
-                LimeLog.info("Balanced: preferLowerDelays=false, timeout=2000us, pacing=BALANCED");
+                LimeLog.info("LFR disabled: preferLowerDelays=false, timeout=2000us, pacing=" +
+                        prefConfig.framePacing);
             }
         } catch (Throwable ignored) {}
 
@@ -850,10 +841,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         }
 
         if (!decoderRenderer.isAvcSupported()) {
-            if (spinner != null) {
-                spinner.dismiss();
-                spinner = null;
-            }
+            hideConnectionOverlay();
 
             // If we can't find an AVC decoder, we can't proceed
             Dialog.displayDialog(this, getResources().getString(R.string.conn_error_title),
@@ -1181,6 +1169,47 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             } else {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT);
             }
+        }
+    }
+
+    private void initializeConnectionOverlay() {
+        connectionOverlayView = findViewById(R.id.connectionOverlay);
+        connectionAppNameView = findViewById(R.id.connectionAppName);
+        connectionComputerNameView = findViewById(R.id.connectionComputerName);
+        connectionStatusView = findViewById(R.id.connectionStatus);
+        updateConnectionStatus(getString(R.string.console_preparing_stream));
+    }
+
+    private void updateConnectionTarget() {
+        if (connectionAppNameView == null || connectionComputerNameView == null) {
+            return;
+        }
+
+        connectionAppNameView.setText(
+                appName == null || appName.trim().isEmpty() ? getString(R.string.artemisa_brand) : appName);
+        connectionComputerNameView.setText(
+                pcName == null || pcName.trim().isEmpty() ? "" : pcName);
+    }
+
+    private void updateConnectionStatus(String status) {
+        if (connectionStatusView == null) {
+            return;
+        }
+
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            connectionStatusView.setText(status);
+        } else {
+            runOnUiThread(() -> {
+                if (connectionStatusView != null) {
+                    connectionStatusView.setText(status);
+                }
+            });
+        }
+    }
+
+    private void hideConnectionOverlay() {
+        if (connectionOverlayView != null) {
+            connectionOverlayView.setVisibility(View.GONE);
         }
     }
 
@@ -1761,7 +1790,6 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     protected void onStop() {
         super.onStop();
 
-        SpinnerDialog.closeDialogs(this);
         Dialog.closeDialogs();
 
         if (virtualController != null) {
@@ -3425,9 +3453,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (spinner != null) {
-                    spinner.setMessage(getResources().getString(R.string.conn_starting) + " " + stage);
-                }
+                updateConnectionStatus(getResources().getString(R.string.conn_starting) + " " + stage);
             }
         });
     }
@@ -3475,17 +3501,14 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         final int portTestResult = MoonBridge.testClientConnectivity(ServerHelper.CONNECTION_TEST_SERVER, 443, portFlags);
 
         if (errorCode == 0 && portFlags != 0 && (portTestResult == MoonBridge.ML_TEST_RESULT_INCONCLUSIVE || portTestResult == 0)) {
-            spinner.setMessage(getResources().getString(R.string.unlocking_or_starting));
+            updateConnectionStatus(getResources().getString(R.string.unlocking_or_starting));
             return true;
         }
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (spinner != null) {
-                    spinner.dismiss();
-                    spinner = null;
-                }
+                hideConnectionOverlay();
 
                 if (!displayedFailureDialog) {
                     displayedFailureDialog = true;
@@ -3663,20 +3686,14 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (spinner != null) {
-                    spinner.dismiss();
-                    spinner = null;
-                }
+                hideConnectionOverlay();
 
                 connected = true;
                 connecting = false;
                 updatePipAutoEnter();
 
-                // Hide the mouse cursor now after a short delay.
-                // Doing it before dismissing the spinner seems to be undone
-                // when the spinner gets displayed. On Android Q, even now
-                // is too early to capture. We will delay a second to allow
-                // the spinner to dismiss before capturing.
+                // Hide the mouse cursor after the connection UI leaves the screen.
+                // Android Q still needs a short delay before pointer capture.
                 timerHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -3932,9 +3949,12 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(prefConfig.enablePerfOverlayLite){
-                    performanceOverlayLite.setText(text);
-                }else{
+                if (prefConfig.enablePerfOverlayLite) {
+                    performanceOverlayLite.setText(text
+                            .replace("\r", "")
+                            .replace("\n", "  |  ")
+                            .replace("\t", "  |  "));
+                } else {
                     performanceOverlayBig.setText(text);
                 }
             }
@@ -4193,17 +4213,49 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     }
 
     public void toggleHUD() {
-        prefConfig.enablePerfOverlay = !prefConfig.enablePerfOverlay;
-        if (prefConfig.enablePerfOverlay) {
-            performanceOverlayView.setVisibility(View.VISIBLE);
-            if(prefConfig.enablePerfOverlayLite){
-                performanceOverlayLite.setVisibility(View.VISIBLE);
-            }else{
-                performanceOverlayBig.setVisibility(View.VISIBLE);
-            }
-        } else {
+        setPerformanceOverlayMode(prefConfig.enablePerfOverlay ?
+                PERFORMANCE_OVERLAY_OFF : PERFORMANCE_OVERLAY_SIMPLE);
+    }
+
+    public void setPerformanceOverlayMode(int mode) {
+        prefConfig.enablePerfOverlay = mode != PERFORMANCE_OVERLAY_OFF;
+        prefConfig.enablePerfOverlayLite = mode != PERFORMANCE_OVERLAY_ADVANCED;
+        applyPerformanceOverlayMode();
+    }
+
+    private void applyPerformanceOverlayMode() {
+        if (!prefConfig.enablePerfOverlay) {
             performanceOverlayView.setVisibility(View.GONE);
+            performanceOverlayLite.setVisibility(View.GONE);
+            performanceOverlayBig.setVisibility(View.GONE);
+            return;
         }
+
+        performanceOverlayView.setVisibility(View.VISIBLE);
+        performanceOverlayLite.setVisibility(
+                prefConfig.enablePerfOverlayLite ? View.VISIBLE : View.GONE);
+        performanceOverlayBig.setVisibility(
+                prefConfig.enablePerfOverlayLite ? View.GONE : View.VISIBLE);
+    }
+
+    public int getPerformanceOverlayMode() {
+        if (!prefConfig.enablePerfOverlay) {
+            return PERFORMANCE_OVERLAY_OFF;
+        }
+        return prefConfig.enablePerfOverlayLite ?
+                PERFORMANCE_OVERLAY_SIMPLE : PERFORMANCE_OVERLAY_ADVANCED;
+    }
+
+    public boolean isPerformanceOverlayEnabled() {
+        return prefConfig.enablePerfOverlay;
+    }
+
+    public boolean isControllerMouseEmulationAvailable() {
+        return prefConfig.mouseEmulation;
+    }
+
+    public String getStreamingComputerName() {
+        return pcName != null ? pcName : getString(R.string.artemisa_brand);
     }
 
     //切换触控灵敏度开关
@@ -4241,12 +4293,20 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         dialog.show();
     }
 
+    public void endStream() {
+        quitOnStop = true;
+        finish();
+    }
+
     @Override
     public void showGameMenu(GameInputDevice device) {
         if(isOnExternalDisplay()) {
             ExternalDisplayControlActivity.toggleGameMenu();
         } else {
             if (gameMenuCallbacks != null) {
+                if (device == null && controllerHandler != null) {
+                    device = controllerHandler.getPrimaryGameInputDevice();
+                }
                 gameMenuCallbacks.showMenu(device);
             }
         }

@@ -57,8 +57,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     // Decode latency tracking: map PTS(us) -> enqueue time (ns)
     private final LongSparseArray<Long> enqueueNsByPtsUs = new LongSparseArray<>();
 
-    // When preferLowerDelays=true we use this configurable timeout (µs) for output dequeue.
-// When preferLowerDelays=false we force 0µs (non-blocking, latest-frame rendering).
+    // Configurable output dequeue timeout for the selected latency profile.
     private volatile int preferLowerDelaysTimeoutUs = 2000;
     public void setPreferLowerDelaysTimeoutUs(int us) { this.preferLowerDelaysTimeoutUs = Math.max(0, us); }
 
@@ -1154,6 +1153,8 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     private void startRendererThread()
     {
+        LimeLog.info("Latest-frame rendering (LFR): " +
+                (preferLowerDelays ? "enabled" : "disabled"));
         rendererThread = new Thread() {
             @Override
             public void run() {
@@ -1210,7 +1211,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                 long lastOutputNs = System.nanoTime();
                 while (!stopping) {
                     /* LATEST_ONLY_LOW_LATENCY */
-                    if (!preferLowerDelays) {
+                    if (preferLowerDelays) {
                         try {
                             android.media.MediaCodec.BufferInfo __tmpInfo = new android.media.MediaCodec.BufferInfo();
                             int __idx = videoDecoder.dequeueOutputBuffer(__tmpInfo, 0);
@@ -1814,7 +1815,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                     sb.append("\t");
                     sb.append(context.getString(R.string.perf_overlay_lite_packet_loss) + ": ");
                     sb.append(context.getString(R.string.perf_overlay_lite_netdrops,(float)lastTwo.framesLost / lastTwo.totalFrames * 100));
-                    sb.append("\t FPS：");
+                    sb.append("\t FPS: ");
                     sb.append(context.getString(R.string.perf_overlay_lite_fps, fps.totalFps));
                     if(Stereo3DRenderer.isActive) {
                         sb.append(" ");

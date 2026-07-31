@@ -16,4 +16,8 @@ public interface GameInputDevice {
      * @return list of device specific game menu options, e.g. configure a controller's mouse mode
      */
     List<GameMenu.MenuOption> getGameMenuOptions();
+
+    boolean isMouseEmulationActive();
+
+    void toggleMouseEmulation();
 }

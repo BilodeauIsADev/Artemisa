@@ -51,12 +51,27 @@ public class PcGridAdapter extends GenericGridAdapter<PcView.ComputerObject> {
 
     @Override
     public void populateView(View parentView, ImageView imgView, RelativeLayout gridMask, ProgressBar prgView, TextView txtView, ImageView overlayView, PcView.ComputerObject obj) {
+        TextView statusView = parentView.findViewById(R.id.grid_status);
+        View statusDot = parentView.findViewById(R.id.grid_status_dot);
+
         imgView.setImageResource(R.drawable.ic_computer);
         if (obj.details.state == ComputerDetails.State.ONLINE) {
             imgView.setAlpha(1.0f);
+            statusView.setText(R.string.console_stream_ready);
+            statusView.setTextColor(context.getResources().getColor(R.color.console_accent));
+            statusDot.setAlpha(1.0f);
+        }
+        else if (obj.details.state == ComputerDetails.State.UNKNOWN) {
+            imgView.setAlpha(0.4f);
+            statusView.setText(R.string.console_connecting);
+            statusView.setTextColor(context.getResources().getColor(R.color.console_text_secondary));
+            statusDot.setAlpha(0.45f);
         }
         else {
             imgView.setAlpha(0.4f);
+            statusView.setText(R.string.console_offline);
+            statusView.setTextColor(context.getResources().getColor(R.color.console_text_secondary));
+            statusDot.setAlpha(0.25f);
         }
 
         if (obj.details.state == ComputerDetails.State.UNKNOWN) {

@@ -126,4 +126,23 @@ public class OverlayPreferencesTest {
         assertEquals(0.25f, cfg2.panOffsetX, 0.0001f);
         assertEquals(0.25f, cfg2.panOffsetY, 0.0001f);
     }
+
+    @Test
+    public void overlayPref_LoadsAppearanceOptions() {
+        ProfilesManager pm = ProfilesManager.getInstance();
+        pm.load(ctx);
+
+        String json = "{\"checkbox_horizontal_game_grid\":true," +
+                "\"seekbar_quick_menu_opacity\":40}";
+        Type t = new TypeToken<Map<String, Object>>(){}.getType();
+        Map<String, Object> opts = new Gson().fromJson(json, t);
+
+        SettingsProfile profile = new SettingsProfile(UUID.randomUUID(), "AppearanceTest", 0, 0, opts);
+        pm.add(profile);
+        pm.setActive(profile.getUuid());
+
+        PreferenceConfiguration cfg = PreferenceConfiguration.readPreferences(ctx);
+        assertTrue(cfg.horizontalGameGrid);
+        assertEquals(40, cfg.quickMenuOpacity);
+    }
 }

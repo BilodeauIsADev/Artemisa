@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/console_header_height"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/console_screen_horizontal_padding"
+        android:paddingEnd="@dimen/console_screen_horizontal_padding">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-condensed"
+            android:letterSpacing="0.24"
+            android:text="@string/artemisa_brand"
+            android:textColor="@color/console_text_primary"
+            android:textSize="27sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="76dp"
+            android:fontFamily="sans-serif-condensed"
+            android:gravity="center"
+            android:letterSpacing="0.06"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:text="@string/console_home"
+            android:textColor="@color/console_accent"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/settingsButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/console_button_background"
+            android:contentDescription="@string/console_settings"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_settings" />
+
+        <ImageButton
+            android:id="@+id/helpButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/console_button_background"
+            android:contentDescription="@string/help"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_help" />
+
+        <ImageButton
+            android:id="@+id/manuallyAddPc"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/console_button_background"
+            android:contentDescription="@string/console_add_computer"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_add" />
+
+        <ImageButton
+            android:id="@+id/profilesButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/console_button_background"
+            android:contentDescription="@string/profile_manager_choose_profile"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_profiles"
+            app:tint="@color/console_text_primary" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-condensed"
+        android:letterSpacing="0.08"
+        android:paddingStart="@dimen/console_screen_horizontal_padding"
+        android:paddingTop="18dp"
+        android:paddingEnd="@dimen/console_screen_horizontal_padding"
+        android:paddingBottom="6dp"
+        android:text="@string/console_your_computers"
+        android:textColor="@color/console_text_primary"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+    <FrameLayout
+        android:id="@+id/pcFragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <RelativeLayout
+            android:id="@+id/no_pc_found_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="28dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ProgressBar
+                    android:id="@+id/pcs_loading"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:indeterminate="true"
+                    android:indeterminateTint="@color/console_accent" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:fontFamily="sans-serif"
+                    android:gravity="center"
+                    android:text="@string/searching_pc"
+                    android:textColor="@color/console_text_secondary"
+                    android:textSize="18sp" />
+            </LinearLayout>
+        </RelativeLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/console_footer_height"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/console_screen_horizontal_padding"
+        android:paddingEnd="@dimen/console_screen_horizontal_padding">
+
+        <TextView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="@drawable/console_controller_badge_green"
+            android:gravity="center"
+            android:text="@string/console_button_a"
+            android:textColor="@color/console_background"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="9dp"
+            android:letterSpacing="0.08"
+            android:text="@string/console_select"
+            android:textColor="@color/console_text_primary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="36dp"
+            android:text="@string/console_button_menu"
+            android:textColor="@color/console_text_secondary"
+            android:textSize="24sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="9dp"
+            android:letterSpacing="0.08"
+            android:text="@string/console_options"
+            android:textColor="@color/console_text_primary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</merge>

@@ -1,8 +1,143 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/stream_settings"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".preferences.StreamSettings">
+    android:background="@color/console_background"
+    android:orientation="vertical">
 
-</RelativeLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="104dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/console_screen_horizontal_padding"
+        android:paddingEnd="@dimen/console_screen_horizontal_padding">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-condensed"
+            android:letterSpacing="0.08"
+            android:text="@string/artemisa_brand"
+            android:textColor="@color/console_text_primary"
+            android:textSize="31sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:background="@color/console_border" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:letterSpacing="0.06"
+                android:text="@string/console_settings_title"
+                android:textColor="@color/console_text_primary"
+                android:textSize="27sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/settingsSectionDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/console_settings_stream_description"
+                android:textColor="@color/console_text_secondary"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="62dp"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/console_screen_horizontal_padding"
+        android:paddingEnd="@dimen/console_screen_horizontal_padding">
+
+        <TextView
+            android:id="@+id/settingsTabStream"
+            style="@style/ArtemisaSettingsTab"
+            android:text="@string/console_settings_tab_stream" />
+
+        <TextView
+            android:id="@+id/settingsTabControls"
+            style="@style/ArtemisaSettingsTab"
+            android:text="@string/console_settings_tab_controls" />
+
+        <TextView
+            android:id="@+id/settingsTabInterface"
+            style="@style/ArtemisaSettingsTab"
+            android:text="@string/console_settings_tab_interface" />
+
+        <TextView
+            android:id="@+id/settingsTabAppearance"
+            style="@style/ArtemisaSettingsTab"
+            android:text="@string/console_settings_tab_appearance" />
+
+        <TextView
+            android:id="@+id/settingsTabSystem"
+            style="@style/ArtemisaSettingsTab"
+            android:text="@string/console_settings_tab_system" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/stream_settings"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="@dimen/console_screen_horizontal_padding"
+        android:paddingEnd="@dimen/console_screen_horizontal_padding" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="58dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/console_screen_horizontal_padding"
+        android:paddingEnd="@dimen/console_screen_horizontal_padding">
+
+        <TextView
+            style="@style/ArtemisaControllerHintBadge"
+            android:text="@string/console_button_lb" />
+
+        <TextView
+            style="@style/ArtemisaControllerHintLabel"
+            android:text="@string/console_previous_tab" />
+
+        <TextView
+            style="@style/ArtemisaControllerHintBadge"
+            android:layout_marginStart="24dp"
+            android:text="@string/console_button_rb" />
+
+        <TextView
+            style="@style/ArtemisaControllerHintLabel"
+            android:text="@string/console_next_tab" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <TextView
+            style="@style/ArtemisaControllerHintBadge"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="@drawable/console_controller_badge_red"
+            android:text="@string/console_button_b" />
+
+        <TextView
+            style="@style/ArtemisaControllerHintLabel"
+            android:text="@string/console_back" />
+    </LinearLayout>
+
+</LinearLayout>

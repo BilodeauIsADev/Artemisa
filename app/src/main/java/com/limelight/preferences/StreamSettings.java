@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.media.MediaCodecInfo;
 import android.net.Uri;
 import android.os.Build;
@@ -27,6 +28,7 @@ import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.InputFilter;
 import android.text.InputType;
@@ -37,10 +39,12 @@ import android.util.Range;
 import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.LayoutInflater;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -66,10 +70,20 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class StreamSettings extends AppCompatActivity {
+    private static final int TAB_STREAM = 0;
+    private static final int TAB_CONTROLS = 1;
+    private static final int TAB_INTERFACE = 2;
+    private static final int TAB_APPEARANCE = 3;
+    private static final int TAB_SYSTEM = 4;
+    private static final int TAB_COUNT = 5;
+
+    private int currentTab = TAB_STREAM;
     private PreferenceConfiguration previousPrefs;
     private int previousDisplayPixelCount;
 
     private SettingsFragment prefsFragment;
+    private TextView[] tabViews;
+    private TextView sectionDescription;
 
     // HACK for Android 9
     static DisplayCutout displayCutoutP;
@@ -82,7 +96,7 @@ public class StreamSettings extends AppCompatActivity {
         prefsFragment = new SettingsFragment(PreferenceConfiguration.readPreferences(
                 this,
                 PreferenceManager.getDefaultSharedPreferences(this)
-        ));
+        ), currentTab);
         getSupportFragmentManager().beginTransaction().replace(
                 R.id.stream_settings, prefsFragment
         ).commitAllowingStateLoss();
@@ -98,8 +112,84 @@ public class StreamSettings extends AppCompatActivity {
         UiHelper.setLocale(this);
 
         setContentView(R.layout.activity_stream_settings);
+        setupCategoryTabs();
 
 //        UiHelper.notifyNewRootView(this);
+    }
+
+    private void setupCategoryTabs() {
+        tabViews = new TextView[]{
+                findViewById(R.id.settingsTabStream),
+                findViewById(R.id.settingsTabControls),
+                findViewById(R.id.settingsTabInterface),
+                findViewById(R.id.settingsTabAppearance),
+                findViewById(R.id.settingsTabSystem)
+        };
+        sectionDescription = findViewById(R.id.settingsSectionDescription);
+
+        for (int i = 0; i < tabViews.length; i++) {
+            final int tab = i;
+            tabViews[i].setOnClickListener(view -> selectCategoryTab(tab));
+        }
+        updateCategoryTabs();
+        tabViews[currentTab].post(() -> tabViews[currentTab].requestFocus());
+    }
+
+    private void selectCategoryTab(int tab) {
+        currentTab = (tab + TAB_COUNT) % TAB_COUNT;
+        updateCategoryTabs();
+        if (tabViews != null) {
+            tabViews[currentTab].requestFocus();
+        }
+        if (prefsFragment != null) {
+            prefsFragment.setCategoryTab(currentTab);
+        }
+    }
+
+    private void updateCategoryTabs() {
+        if (tabViews == null) {
+            return;
+        }
+        for (int i = 0; i < tabViews.length; i++) {
+            tabViews[i].setSelected(i == currentTab);
+        }
+
+        int description;
+        switch (currentTab) {
+            case TAB_CONTROLS:
+                description = R.string.console_settings_controls_description;
+                break;
+            case TAB_INTERFACE:
+                description = R.string.console_settings_interface_description;
+                break;
+            case TAB_APPEARANCE:
+                description = R.string.console_settings_appearance_description;
+                break;
+            case TAB_SYSTEM:
+                description = R.string.console_settings_system_description;
+                break;
+            default:
+                description = R.string.console_settings_stream_description;
+                break;
+        }
+        sectionDescription.setText(description);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_L1) {
+            selectCategoryTab(currentTab - 1);
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_R1) {
+            selectCategoryTab(currentTab + 1);
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_B) {
+            onBackPressed();
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
     }
 
     @Override
@@ -162,13 +252,47 @@ public class StreamSettings extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
+        private static final int TAB_ALL = -1;
+        private static final String[][] CATEGORY_KEYS = {
+                {
+                        "category_video_settings",
+                        "category_audio_settings",
+                        "category_host_settings",
+                        "category_perf_monitor_settings"
+                },
+                {
+                        "category_gamepad_settings",
+                        "category_input_settings",
+                        "category_onscreen_controls",
+                        "category_special_key_layout",
+                        "category_virtual_trackpad_settings"
+                },
+                {
+                        "category_general_settings",
+                        "category_ui_settings"
+                },
+                {
+                        "category_appearance_settings"
+                },
+                {
+                        "category_advanced_settings",
+                        "category_settings_misc"
+                }
+        };
+
         private int nativeResolutionStartIndex = Integer.MAX_VALUE;
         private boolean nativeFramerateShown = false;
+        private int categoryTab = TAB_ALL;
 
         private PreferenceConfiguration prevPrefConfig;
 
         public SettingsFragment(PreferenceConfiguration prefCfg) {
             prevPrefConfig = prefCfg;
+        }
+
+        public SettingsFragment(PreferenceConfiguration prefCfg, int categoryTab) {
+            this(prefCfg);
+            this.categoryTab = categoryTab;
         }
 
         protected SharedPreferences getPrefs() {
@@ -323,6 +447,25 @@ public class StreamSettings extends AppCompatActivity {
             return view;
         }
 
+        @NonNull
+        @Override
+        public RecyclerView onCreateRecyclerView(@NonNull LayoutInflater inflater,
+                                                 @NonNull ViewGroup parent,
+                                                 Bundle savedInstanceState) {
+            RecyclerView recyclerView = super.onCreateRecyclerView(inflater, parent, savedInstanceState);
+            int rowSpacing = getResources().getDimensionPixelSize(R.dimen.console_preference_row_spacing);
+            recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+                @Override
+                public void getItemOffsets(@NonNull Rect outRect,
+                                           @NonNull View view,
+                                           @NonNull RecyclerView parent,
+                                           @NonNull RecyclerView.State state) {
+                    outRect.bottom = rowSpacing;
+                }
+            });
+            return recyclerView;
+        }
+
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState, boolean unused) {
             return super.onCreateView(inflater, container, savedInstanceState);
         }
@@ -330,6 +473,28 @@ public class StreamSettings extends AppCompatActivity {
         @Override
         public void onCreatePreferences(Bundle bundle, String s) {
             initializePreferences();
+            applyCategoryFilter();
+        }
+
+        public void setCategoryTab(int categoryTab) {
+            this.categoryTab = categoryTab;
+            applyCategoryFilter();
+        }
+
+        private void applyCategoryFilter() {
+            if (getPreferenceScreen() == null || categoryTab == TAB_ALL) {
+                return;
+            }
+
+            for (int tab = 0; tab < CATEGORY_KEYS.length; tab++) {
+                boolean visible = tab == categoryTab;
+                for (String key : CATEGORY_KEYS[tab]) {
+                    Preference category = findPreference(key);
+                    if (category != null) {
+                        category.setVisible(visible);
+                    }
+                }
+            }
         }
 
         public void initializePreferences() {

@@ -58,6 +58,8 @@ public class PreferenceConfiguration {
     private static final String OSC_OPACITY_PREF_STRING = "seekbar_osc_opacity";
     private static final String LANGUAGE_PREF_STRING = "list_languages";
     private static final String SMALL_ICONS_PREF_STRING = "checkbox_small_icon_mode";
+    private static final String HORIZONTAL_GAME_GRID_PREF_STRING = "checkbox_horizontal_game_grid";
+    private static final String QUICK_MENU_OPACITY_PREF_STRING = "seekbar_quick_menu_opacity";
     private static final String MULTI_CONTROLLER_PREF_STRING = "checkbox_multi_controller";
     static final String AUDIO_CONFIG_PREF_STRING = "list_audio_config";
     private static final String USB_DRIVER_PREF_SRING = "checkbox_usb_driver";
@@ -152,6 +154,8 @@ public class PreferenceConfiguration {
     private static final boolean DEFAULT_HOST_AUDIO = false;
     private static final int DEFAULT_DEADZONE = 5;
     private static final int DEFAULT_OPACITY = 90;
+    private static final int DEFAULT_QUICK_MENU_OPACITY = 95;
+    private static final boolean DEFAULT_HORIZONTAL_GAME_GRID = false;
     public static final String DEFAULT_LANGUAGE = "default";
     private static final boolean DEFAULT_MULTI_CONTROLLER = true;
     private static final boolean DEFAULT_USB_DRIVER = true;
@@ -248,7 +252,8 @@ public class PreferenceConfiguration {
     public ScaleMode videoScaleMode;
     public String language;
     public int renderMode;
-    public boolean smallIconMode, multiController, usbDriver, flipFaceButtons;
+    public boolean smallIconMode, horizontalGameGrid, multiController, usbDriver, flipFaceButtons;
+    public int quickMenuOpacity;
     public boolean onscreenController;
     public boolean hideOSCWhenHasGamepad;
     public boolean enableBatteryReport;
@@ -872,6 +877,8 @@ private static int getFramePacingValue(Context context) {
         config.deadzonePercentage = prefs.getInt(DEADZONE_PREF_STRING, DEFAULT_DEADZONE);
 
         config.oscOpacity = prefs.getInt(OSC_OPACITY_PREF_STRING, DEFAULT_OPACITY);
+        config.quickMenuOpacity = Math.max(20, Math.min(100,
+                prefs.getInt(QUICK_MENU_OPACITY_PREF_STRING, DEFAULT_QUICK_MENU_OPACITY)));
 
         config.language = prefs.getString(LANGUAGE_PREF_STRING, DEFAULT_LANGUAGE);
 
@@ -883,6 +890,8 @@ private static int getFramePacingValue(Context context) {
         config.enableSops = prefs.getBoolean(SOPS_PREF_STRING, DEFAULT_SOPS);
         config.playHostAudio = prefs.getBoolean(HOST_AUDIO_PREF_STRING, DEFAULT_HOST_AUDIO);
         config.smallIconMode = prefs.getBoolean(SMALL_ICONS_PREF_STRING, getDefaultSmallMode(context));
+        config.horizontalGameGrid = prefs.getBoolean(HORIZONTAL_GAME_GRID_PREF_STRING,
+                DEFAULT_HORIZONTAL_GAME_GRID);
         config.multiController = prefs.getBoolean(MULTI_CONTROLLER_PREF_STRING, DEFAULT_MULTI_CONTROLLER);
         config.usbDriver = prefs.getBoolean(USB_DRIVER_PREF_SRING, DEFAULT_USB_DRIVER);
         config.fullScreen = prefs.getBoolean(FULL_SCREEN_PREF_STRING, DEFAULT_FULL_SCREEN);

@@ -1,84 +1,135 @@
-# Artemis Android
+<div align="center">
+  <img src="artwork/branding/artemisa-tv-card-master.png" alt="Artemisa - Game Streaming" width="100%">
 
-Previously named Moonlight Noir
+  <h3>Controller-first game streaming, built for the couch.</h3>
 
-An open source client for [Apollo](https://github.com/ClassicOldSong/Apollo)/[Sunshine](https://github.com/LizardByte/Sunshine).
+  <p>
+    A TV-focused Android client for streaming games from
+    <a href="https://github.com/ClassicOldSong/Apollo">Apollo</a> or
+    <a href="https://github.com/LizardByte/Sunshine">Sunshine</a>.
+  </p>
 
-Artemis Android will allow you to stream your collection of games from your Windows PC to your Android device,
-whether in your own home or over the internet.
+  <p>
+    <a href="https://github.com/BilodeauIsADev/Artemisa/releases"><strong>Downloads</strong></a>
+    |
+    <a href="#building"><strong>Build from source</strong></a>
+    |
+    <a href="#controller-guide"><strong>Controller guide</strong></a>
+  </p>
 
-Artemis is currently the best fork of Moonlight with loads of optimizations for office usage.
+  <p>
+    <img alt="Android" src="https://img.shields.io/badge/Android-TV-78D800?logo=android&logoColor=111111">
+    <img alt="NVIDIA Shield" src="https://img.shields.io/badge/NVIDIA-Shield-76B900?logo=nvidia&logoColor=white">
+    <img alt="License: GPL v3" src="https://img.shields.io/badge/License-GPLv3-78D800">
+  </p>
+</div>
 
-A more seamless experience with virtual display will be Artemis paired with [Apollo](https://github.com/ClassicOldSong/Apollo).
+## Made for a controller
 
-# Features
+Artemisa reshapes the familiar Moonlight streaming experience into a console-style interface for Android TV and NVIDIA Shield. The home screen, game library, settings, and in-stream quick menu are designed around predictable D-pad focus and comfortable viewing from across the room.
 
-If you switch back to the main stream version, you'll be missing the following awesome features which are very unlikely to be added there:
+<a href="docs/screenshots/library.png">
+  <img src="docs/screenshots/library.png" alt="Artemisa horizontal game shelf" width="100%">
+</a>
 
-1. Custom virtual buttons with import and export support.
-2. [Custom resolutions](https://github.com/moonlight-stream/moonlight-android/pull/1349).
-3. Custom bitrates.
-4. [Multiple mouse mode switching](https://github.com/moonlight-stream/moonlight-android/pull/1304) (normal mouse, [multi-touch](https://github.com/moonlight-stream/moonlight-android/pull/1364), touchpad, disabled, local cursor mode).
-5. Optimized virtual gamepad skins and free joystick.
-6. External monitor mode.
-7. Joycon D-pad support.
-8. Simplified performance information display.
-9. [Game back menu](https://github.com/moonlight-stream/moonlight-android/pull/1171).
-10. Custom shortcut commands.
-11. Easy soft keyboard switching.
-12. Portrait mode.
-13. Display on top mode, useful for foldable phones.
-14. [Virtual touchpad space and sensitivity adjustment](https://github.com/moonlight-stream/moonlight-android/issues/1348#issuecomment-2236344729) for playing right-click view games, such as Warcraft.
-15. Force use device's own vibration motor (in case your gamepad's vibration is not effective).
-16. Gamepad debugging page to view gamepad vibration and gyroscope information, as well as Android kernel version information.
-17. Trackpad tap/scrolling support
-18. Natural track pad mode with touch screen
-19. Non-QWERTY keyboard layout support
-20. Quick Meta key with physical BACK button
-21. Frame rate lock fix for some devices
-22. Video scale mode: Fit/Fill/Stretch
-23. View pan/zoom support
-24. Rotate screen in-game
-25. Add option to quit app directly
-26. Samsung DeX scrolling support
-27. Proper click/scroll/right-click for trackpad on generic Android tablet when using local cursor
-28. Virtual Display integration with [Apollo](https://github.com/ClassicOldSong/Apollo)
-29. Server Command integration with [Apollo](https://github.com/ClassicOldSong/Apollo)
-30. Clipboard sync (requires Apollo)
-31. SBS 3D for external Displays (Using AI MiDaS v2 Lite)
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <a href="docs/screenshots/home.png"><img src="docs/screenshots/home.png" alt="Artemisa computer home screen"></a>
+      <br><sub><strong>Console-style home</strong></sub>
+    </td>
+    <td width="50%" align="center">
+      <a href="docs/screenshots/appearance.png"><img src="docs/screenshots/appearance.png" alt="Artemisa appearance settings"></a>
+      <br><sub><strong>TV-friendly settings</strong></sub>
+    </td>
+  </tr>
+</table>
 
-# Disclaimer
+<a href="docs/screenshots/quick-menu.png">
+  <img src="docs/screenshots/quick-menu.png" alt="Artemisa in-stream quick menu" width="100%">
+</a>
 
-This is the `go away` version of Moonlight Android.
+## Highlights
 
-I got kicked from Moonlight and Sunshine's Discord server literally for helping people out.
+- Console-style home and game library with clear, animated controller focus.
+- Optional horizontal shelf for browsing portrait game covers left to right.
+- Persistent in-stream quick menu with smooth submenu transitions and reliable back navigation.
+- Quick access to performance overlays, mouse modes, advanced controls, keyboard shortcuts, disconnect, and End Stream.
+- Appearance controls for the library layout, box-art density, and quick-menu opacity.
+- Configurable frame pacing and optional low-latency frame rendering - settings remain under your control.
+- Apollo virtual-display and server-command integration, custom resolutions and bitrates, HDR, surround audio, controller support, and the broader Artemis feature set.
 
-This is what I got for finding a bug, opened an issue, getting no response, troubleshoot myself, fixed the issue myself, shared it by PR to the main repo hoping my efforts can help someone else during the maintainance gap.
+## Controller guide
 
-Yes, I'm going away. Fixes and improvements on this fork are not necessarily be merged to the main repo either. I have also started [a fork of Sunshine called Apollo](https://github.com/ClassicOldSong/Apollo) and will add useful features that will never get merged by the main repo shortly. [Apollo](https://github.com/ClassicOldSong/Apollo) and [Moonlight Noir](https://github.com/ClassicOldSong/moonlight-android) will no longer be compatible with OG Sunshine and OG Moonlight eventually, but they'll work even better with much more carefully designed features.
+| Input | Action |
+| --- | --- |
+| D-pad | Move focus and browse games or settings |
+| A | Select, play, or confirm |
+| B | Go back without closing the current parent menu |
+| Menu | Open options for the selected computer or game |
+| Select + Start | Open the quick menu while streaming |
 
-The main repo had stayed silent for 5 months, with nobody actually responding to issues, and people are getting totally no help besides the limited FAQ in their Discord server. I tried to answer issues and questions, solve problems within my ablilty but I got kicked out just for helping others.
+## Getting started
 
-**PRs for feature improvements are welcomed here unlike the main repo, your ideas are more likely to be appreciated and your efforts are actually being respected. We welcome people who can and willing to share their efforts, helping yourselves and other people in need.**
+1. Install and configure [Apollo](https://github.com/ClassicOldSong/Apollo) or [Sunshine](https://github.com/LizardByte/Sunshine) on the host PC.
+2. Install Artemisa on the Android device.
+3. Add the host, pair with the PIN shown on the TV, and choose a game.
 
-**Update**: They have contacted me and apologized for this incident, but the fact it **happened** still motivated me to start my own fork.
-
-## Downloads
-* [Download APK directly](https://github.com/ClassicOldSong/moonlight-android/releases)
-* [Use Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.limelight.noir%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FClassicOldSong%2Fmoonlight-android%22%2C%22author%22%3A%22ClassicOldSong%22%2C%22name%22%3A%22Artemis%22%2C%22additionalSettings%22%3A%22%7B%5C%22apkFilterRegEx%5C%22%3A%5C%22nonRoot%5C%22%2C%5C%22matchGroutToUse%5C%22%3A%5C%22%241%5C%22%2C%5C%22versionExtractionRegEx%5C%22%3A%5C%22v(.%2B)%5C%22%7D%22%7D) (recommended)
+Apollo is recommended when you want automatic virtual-display handling and its extended host integrations.
 
 ## Building
-* Install Android Studio and the Android NDK
-* Run ‘git submodule update --init --recursive’ from within moonlight-android/
-* In moonlight-android/, create a file called ‘local.properties’. Add an ‘ndk.dir=’ property to the local.properties file and set it equal to your NDK directory.
-* Build the APK using Android Studio or gradle
 
-## Authors
+### Requirements
 
-* [Cameron Gutman](https://github.com/cgutman)  
-* [Diego Waxemberg](https://github.com/dwaxemberg)  
-* [Aaron Neyer](https://github.com/Aaronneyer)  
-* [Andrew Hennessy](https://github.com/yetanothername)
+- Android Studio with Android SDK 36
+- Android NDK `27.0.12077973`
+- A compatible JDK and the Android SDK path configured in `local.properties`
 
-Moonlight is the work of students at [Case Western](http://case.edu) and was
-started as a project at [MHacks](http://mhacks.org).
+Clone the repository and initialize its submodules:
+
+```bash
+git clone --recurse-submodules https://github.com/BilodeauIsADev/Artemisa.git
+cd Artemisa
+```
+
+Build the non-root game debug APK on Windows:
+
+```powershell
+.\gradlew.bat :app:assembleNonRoot_gameDebug
+```
+
+Or on macOS/Linux:
+
+```bash
+./gradlew :app:assembleNonRoot_gameDebug
+```
+
+The ABI-specific APKs are written to:
+
+```text
+app/build/outputs/apk/nonRoot_game/debug/
+```
+
+For an NVIDIA Shield, install the `arm64-v8a` APK:
+
+```bash
+adb install -r app/build/outputs/apk/nonRoot_game/debug/app-nonRoot_game-arm64-v8a-debug.apk
+```
+
+## Project lineage
+
+Artemisa builds on [Artemis Android / Moonlight Noir](https://github.com/ClassicOldSong/moonlight-android), which is derived from [Moonlight Android](https://github.com/moonlight-stream/moonlight-android) and the [Moonlight Embedded Core](https://github.com/moonlight-stream/moonlight-common-c). Thanks to the upstream maintainers and contributors whose work makes this project possible.
+
+## Brand assets
+
+<div align="center">
+  <img src="artwork/branding/artemisa-icon-master.png" alt="Artemisa icon" width="180">
+  &nbsp;&nbsp;&nbsp;
+  <img src="artwork/branding/artemisa-tv-card-background-master.png" alt="Artemisa TV card background" width="480">
+</div>
+
+Source-quality brand masters live in [`artwork/branding`](artwork/branding).
+
+## License
+
+Artemisa is free software released under the [GNU General Public License v3.0](LICENSE.txt).

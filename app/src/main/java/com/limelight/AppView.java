@@ -5,7 +5,6 @@ import java.io.StringReader;
 import java.util.HashSet;
 import java.util.List;
 
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.limelight.computers.ComputerManagerListener;
 import com.limelight.computers.ComputerManagerService;
 import com.limelight.grid.AppGridAdapter;
@@ -14,9 +13,11 @@ import com.limelight.nvstream.http.NvApp;
 import com.limelight.nvstream.http.NvHTTP;
 import com.limelight.nvstream.http.PairingManager;
 import com.limelight.preferences.PreferenceConfiguration;
+import com.limelight.preferences.StreamSettings;
 import com.limelight.profiles.ProfilesManager;
 import com.limelight.ui.AdapterFragment;
 import com.limelight.ui.AdapterFragmentCallbacks;
+import com.limelight.ui.HorizontalGameListView;
 import com.limelight.utils.CacheHelper;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.ServerHelper;
@@ -38,13 +39,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.ContextMenu;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -69,6 +70,8 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
     private boolean inForeground;
     private boolean showHiddenApps;
     private HashSet<Integer> hiddenAppIds = new HashSet<>();
+    private int pendingContextMenuPosition = -1;
+    private View pendingContextMenuTarget;
 
     private PreferenceConfiguration prefConfig;
 
@@ -172,22 +175,27 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        this.prefConfig = PreferenceConfiguration.readPreferences(this);
+        updateGridLayout(PreferenceConfiguration.readPreferences(this), true);
+    }
 
-        // If appGridAdapter is initialized, let it know about the configuration change.
-        // If not, it will pick it up when it initializes.
-        if (appGridAdapter != null) {
-            // Update the app grid adapter to create grid items with the correct layout
-            appGridAdapter.updateLayoutWithPreferences(this, this.prefConfig);
+    private void updateGridLayout(PreferenceConfiguration updatedPrefs, boolean force) {
+        boolean layoutChanged = prefConfig == null ||
+                prefConfig.smallIconMode != updatedPrefs.smallIconMode ||
+                prefConfig.horizontalGameGrid != updatedPrefs.horizontalGameGrid;
+        prefConfig = updatedPrefs;
 
-            try {
-                // Reinflate the app grid itself to pick up the layout change
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.appFragmentContainer, new AdapterFragment())
-                        .commitAllowingStateLoss();
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
-            }
+        // If the adapter isn't initialized yet, it will use the latest preferences when created.
+        if (appGridAdapter == null || (!force && !layoutChanged)) {
+            return;
+        }
+
+        appGridAdapter.updateLayoutWithPreferences(this, prefConfig);
+        try {
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.appFragmentContainer, new AdapterFragment())
+                    .commitAllowingStateLoss();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
         }
     }
 
@@ -332,10 +340,31 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         label.setText(computerName);
 
         this.prefConfig = PreferenceConfiguration.readPreferences(this);
+        TextView streamProfile = findViewById(R.id.streamProfileText);
+        streamProfile.setText(getString(
+                R.string.console_stream_profile_summary,
+                prefConfig.width,
+                prefConfig.height,
+                Math.round(prefConfig.fps),
+                Math.round(prefConfig.bitrate / 1000f)));
 
         // Bind to the computer manager service
         bindService(new Intent(this, ComputerManagerService.class), serviceConnection,
                 Service.BIND_AUTO_CREATE);
+    }
+
+    private void openSettings() {
+        startActivity(new Intent(this, StreamSettings.class));
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_MENU ||
+                keyCode == KeyEvent.KEYCODE_BUTTON_START) {
+            openSettings();
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
     }
 
     private void updateHiddenApps(boolean hideImmediately) {
@@ -392,25 +421,24 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
     protected void onResume() {
         super.onResume();
 
+        updateGridLayout(PreferenceConfiguration.readPreferences(this), false);
+
         // Display a decoder crash notification if we've returned after a crash
         UiHelper.showDecoderCrashDialog(this);
 
         inForeground = true;
         startComputerUpdates();
 
-        ExtendedFloatingActionButton profilesButton = findViewById(R.id.profilesButton);
+        ImageButton profilesButton = findViewById(R.id.profilesButton);
         // User report Samsung and Xiaomi devices have this problem
         // Why just these two brands have the most problems?
         if (profilesButton == null) {
             return;
         }
         String activeProfileName = ProfilesManager.getInstance().getActiveName();
-        if (activeProfileName.isEmpty()) {
-            profilesButton.shrink();
-        } else {
-            profilesButton.setText(activeProfileName);
-            profilesButton.extend();
-        }
+        profilesButton.setContentDescription(activeProfileName.isEmpty()
+                ? getString(R.string.profile_manager_choose_profile)
+                : getString(R.string.profile_manager_active_profile, activeProfileName));
     }
 
     @Override
@@ -444,8 +472,13 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
 
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-        AppObject selectedApp = (AppObject) appGridAdapter.getItem(info.position);
+        int position = getContextMenuPosition(menuInfo);
+        View targetView = getContextMenuTarget(menuInfo);
+        if (position < 0 || position >= appGridAdapter.getCount()) {
+            return;
+        }
+
+        AppObject selectedApp = (AppObject) appGridAdapter.getItem(position);
 
         menu.setHeaderTitle(selectedApp.app.getAppName());
 
@@ -483,7 +516,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Only add an option to create shortcut if box art is loaded
             // and when we're in grid-mode (not list-mode).
-            ImageView appImageView = info.targetView.findViewById(R.id.grid_image);
+            ImageView appImageView = targetView != null ? targetView.findViewById(R.id.grid_image) : null;
             if (appImageView != null) {
                 // We have a grid ImageView, so we must be in grid-mode
                 BitmapDrawable drawable = (BitmapDrawable)appImageView.getDrawable();
@@ -499,12 +532,24 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
 
     @Override
     public void onContextMenuClosed(Menu menu) {
+        super.onContextMenuClosed(menu);
+        if (pendingContextMenuTarget != null) {
+            unregisterForContextMenu(pendingContextMenuTarget);
+        }
+        pendingContextMenuPosition = -1;
+        pendingContextMenuTarget = null;
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-        final AppObject app = (AppObject) appGridAdapter.getItem(info.position);
+        ContextMenuInfo menuInfo = item.getMenuInfo();
+        int position = getContextMenuPosition(menuInfo);
+        View targetView = getContextMenuTarget(menuInfo);
+        if (position < 0 || position >= appGridAdapter.getCount()) {
+            return super.onContextItemSelected(item);
+        }
+
+        final AppObject app = (AppObject) appGridAdapter.getItem(position);
         int itemId = item.getItemId();
         switch (itemId) {
             case START_WITH_QUIT:
@@ -591,7 +636,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
             }
 
             case CREATE_SHORTCUT_ID: {
-                ImageView appImageView = info.targetView.findViewById(R.id.grid_image);
+                ImageView appImageView = targetView.findViewById(R.id.grid_image);
                 Bitmap appBits = ((BitmapDrawable) appImageView.getDrawable()).getBitmap();
                 if (!shortcutHelper.createPinnedGameShortcut(computer, app.app, appBits)) {
                     Toast.makeText(AppView.this, getResources().getString(R.string.unable_to_pin_shortcut), Toast.LENGTH_LONG).show();
@@ -620,6 +665,27 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
                 return super.onContextItemSelected(item);
             }
         }
+    }
+
+    private int getContextMenuPosition(ContextMenuInfo menuInfo) {
+        if (menuInfo instanceof AdapterContextMenuInfo) {
+            return ((AdapterContextMenuInfo) menuInfo).position;
+        }
+        return pendingContextMenuPosition;
+    }
+
+    private View getContextMenuTarget(ContextMenuInfo menuInfo) {
+        if (menuInfo instanceof AdapterContextMenuInfo) {
+            return ((AdapterContextMenuInfo) menuInfo).targetView;
+        }
+        return pendingContextMenuTarget;
+    }
+
+    private void showAppContextMenu(View targetView, int position) {
+        pendingContextMenuPosition = position;
+        pendingContextMenuTarget = targetView;
+        registerForContextMenu(targetView);
+        openContextMenu(targetView);
     }
 
     private void updateUiWithServerinfo(final ComputerDetails details) {
@@ -736,43 +802,64 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
 
     @Override
     public int getAdapterFragmentLayoutId() {
-        return PreferenceConfiguration.readPreferences(AppView.this).smallIconMode ?
-                    R.layout.app_grid_view_small : R.layout.app_grid_view;
+        PreferenceConfiguration currentPrefs = PreferenceConfiguration.readPreferences(AppView.this);
+        if (currentPrefs.horizontalGameGrid) {
+            return R.layout.app_grid_view_horizontal;
+        }
+        return currentPrefs.smallIconMode ? R.layout.app_grid_view_small : R.layout.app_grid_view;
+    }
+
+    @Override
+    public void receiveAdapterView(View adapterView) {
+        if (adapterView instanceof HorizontalGameListView) {
+            HorizontalGameListView horizontalListView = (HorizontalGameListView) adapterView;
+            horizontalListView.setAdapter(appGridAdapter);
+            horizontalListView.setOnItemClickListener(
+                    (view, position, id) -> handleAppSelection(view, position));
+            horizontalListView.setOnItemLongClickListener((view, position, id) -> {
+                showAppContextMenu(view, position);
+                return true;
+            });
+            UiHelper.applyStatusBarPadding(horizontalListView);
+        }
+        else {
+            receiveAbsListView((AbsListView) adapterView);
+        }
     }
 
     @Override
     public void receiveAbsListView(AbsListView listView) {
         listView.setAdapter(appGridAdapter);
-        listView.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1, int pos,
-                                    long id) {
-                AppObject app = (AppObject) appGridAdapter.getItem(pos);
-
-                // Only open the context menu if something is running, otherwise start it
-                if (lastRunningAppId != 0) {
-                    if (prefConfig.resumeWithoutConfirm && lastRunningAppId == app.app.getAppId()) {
-                        ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, prefConfig.useVirtualDisplay);
-                    } else {
-                        openContextMenu(arg1);
-                    }
-                } else {
-                    if (prefConfig.useVirtualDisplay && !(computer.vDisplaySupported && computer.vDisplayDriverReady)) {
-                        UiHelper.displayVdisplayConfirmationDialog(
-                                AppView.this,
-                                computer,
-                                () -> ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, true),
-                                null
-                        );
-                    } else {
-                        ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, prefConfig.useVirtualDisplay);
-                    }
-                }
-            }
-        });
+        listView.setOnItemClickListener((parent, view, position, id) ->
+                handleAppSelection(view, position));
         UiHelper.applyStatusBarPadding(listView);
         registerForContextMenu(listView);
         listView.requestFocus();
+    }
+
+    private void handleAppSelection(View targetView, int position) {
+        AppObject app = (AppObject) appGridAdapter.getItem(position);
+
+        // Only open the context menu if something is running, otherwise start it.
+        if (lastRunningAppId != 0) {
+            if (prefConfig.resumeWithoutConfirm && lastRunningAppId == app.app.getAppId()) {
+                ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, prefConfig.useVirtualDisplay);
+            }
+            else {
+                showAppContextMenu(targetView, position);
+            }
+        }
+        else if (prefConfig.useVirtualDisplay &&
+                !(computer.vDisplaySupported && computer.vDisplayDriverReady)) {
+            UiHelper.displayVdisplayConfirmationDialog(
+                    AppView.this,
+                    computer,
+                    () -> ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, true),
+                    null);
+        }
+        else {
+            ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, prefConfig.useVirtualDisplay);
+        }
     }
 
     public static class AppObject {

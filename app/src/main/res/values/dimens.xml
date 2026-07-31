@@ -5,5 +5,11 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="tv_channel_logo_width">80dp</dimen>
     <dimen name="tv_channel_logo_height">80dp</dimen>
+    <dimen name="console_screen_horizontal_padding">42dp</dimen>
+    <dimen name="console_header_height">76dp</dimen>
+    <dimen name="console_footer_height">52dp</dimen>
+    <dimen name="console_card_radius">8dp</dimen>
+    <dimen name="console_focus_stroke">3dp</dimen>
+    <dimen name="console_preference_row_spacing">8dp</dimen>
 
 </resources>

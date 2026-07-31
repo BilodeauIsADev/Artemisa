@@ -726,7 +726,77 @@
     <string name="title_low_latency_frame_balance">LFR (Experimental)</string>
     <string name="summary_low_latency_frame_balance">Minimizes delay by dropping queued frames.</string>
     <string name="category_perf_monitor_settings">Performance Monitor</string>
+    <string name="category_perf_charts">Performance charts</string>
+    <string name="desc_chart_latency">Network latency chart</string>
+    <string name="desc_chart_decode">Frame decoding time chart</string>
+    <string name="desc_chart_fps">Frame rate chart</string>
+    <string name="title_enable_perf_charts">Enable performance charts</string>
+    <string name="summary_enable_perf_charts">Show performance charts in the game panel</string>
+    <string name="title_perf_chart_latency">Chart: network latency</string>
+    <string name="summary_perf_chart_latency">Chart average network latency in milliseconds</string>
+    <string name="title_perf_chart_decode">Chart: decoding time</string>
+    <string name="summary_perf_chart_decode">Chart frame decoding time in milliseconds</string>
+    <string name="title_perf_chart_fps">Chart: frame rate</string>
+    <string name="summary_perf_chart_fps">Chart incoming and rendered frames per second</string>
 
     <string name="title_checkbox_full_screen">Enable Full Screen</string>
     <string name="summary_checkbox_full_screen">Hide system bars with immersive mode</string>
+
+    <!-- Artemisa controller-first console UI -->
+    <string name="artemisa_brand">ARTEMISA</string>
+    <string name="console_home">HOME</string>
+    <string name="console_your_computers">YOUR COMPUTERS</string>
+    <string name="console_all_games">ALL GAMES</string>
+    <string name="console_stream_ready">STREAM READY</string>
+    <string name="console_connecting">CONNECTING</string>
+    <string name="console_offline">OFFLINE</string>
+    <string name="console_stream_profile_summary">STREAM READY · %1$d×%2$d · %3$d FPS · %4$d Mbps</string>
+    <string name="console_select">SELECT</string>
+    <string name="console_play">PLAY</string>
+    <string name="console_back">BACK</string>
+    <string name="console_options">OPTIONS</string>
+    <string name="console_button_a" translatable="false">A</string>
+    <string name="console_button_b" translatable="false">B</string>
+    <string name="console_button_menu" translatable="false">☰</string>
+    <string name="console_settings">Settings</string>
+    <string name="console_add_computer">Add computer</string>
+    <string name="console_quick_menu">QUICK MENU</string>
+    <string name="console_streaming_on">%1$s · STREAMING</string>
+    <string name="console_resume">Resume</string>
+    <string name="console_performance_overlay">Performance overlay</string>
+    <string name="console_performance_off">Off</string>
+    <string name="console_performance_simple">Simple</string>
+    <string name="console_performance_advanced">Advanced</string>
+    <string name="console_performance_mode">PERFORMANCE OVERLAY</string>
+    <string name="console_advanced_settings">Advanced settings</string>
+    <string name="console_mouse_mode">Mouse mode</string>
+    <string name="console_connecting_to">CONNECTING TO</string>
+    <string name="console_preparing_stream">Preparing your stream</string>
+    <string name="console_keyboard_shortcuts">Send keyboard shortcut</string>
+    <string name="console_end_stream">End stream</string>
+    <string name="console_end_stream_message">The host application will close. Make sure your progress is saved.</string>
+    <string name="console_keep_playing">Keep playing</string>
+    <string name="console_on">ON</string>
+    <string name="console_off">OFF</string>
+    <string name="console_close">CLOSE</string>
+    <string name="console_settings_title">SETTINGS</string>
+    <string name="console_settings_tab_stream">STREAM</string>
+    <string name="console_settings_tab_controls">CONTROLS</string>
+    <string name="console_settings_tab_interface">INTERFACE</string>
+    <string name="console_settings_tab_appearance">APPEARANCE</string>
+    <string name="console_settings_tab_system">SYSTEM</string>
+    <string name="console_settings_stream_description">Video, audio, host, and performance</string>
+    <string name="console_settings_controls_description">Gamepad, mouse, touch, and on-screen controls</string>
+    <string name="console_settings_interface_description">Navigation and app behavior</string>
+    <string name="console_settings_appearance_description">Game library layout and in-stream menu</string>
+    <string name="console_settings_system_description">Codec, compatibility, language, and utilities</string>
+    <string name="category_appearance_settings">Appearance Settings</string>
+    <string name="title_checkbox_horizontal_game_grid">Use horizontal game shelf</string>
+    <string name="summary_checkbox_horizontal_game_grid">Browse portrait game covers in a single row that scrolls left and right</string>
+    <string name="title_quick_menu_opacity">Quick menu opacity</string>
+    <string name="summary_quick_menu_opacity">Set how solid the in-stream quick menu panel appears</string>
+    <string name="console_button_lb" translatable="false">LB</string>
+    <string name="console_button_rb" translatable="false">RB</string>
+    <string name="console_previous_tab">PREVIOUS TAB</string>
+    <string name="console_next_tab">NEXT TAB</string>
 </resources>

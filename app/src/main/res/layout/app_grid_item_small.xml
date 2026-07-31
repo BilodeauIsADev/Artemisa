@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="110dp"
-    android:layout_height="143dp">
+    android:layout_width="126dp"
+    android:layout_height="166dp"
+    app:cardBackgroundColor="@color/console_surface"
+    app:cardCornerRadius="@dimen/console_card_radius"
+    app:cardElevation="0dp"
+    app:cardPreventCornerOverlap="false"
+    app:cardUseCompatPadding="false">
 
-    <androidx.cardview.widget.CardView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="5dp"
-        app:cardCornerRadius="6dp"
-        app:cardElevation="4dp"
-        app:cardMaxElevation="4dp">
+        android:padding="1dp">
 
         <ImageView
             android:id="@+id/grid_image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:contentDescription="@null"
             android:cropToPadding="false"
             android:scaleType="centerCrop" />
 
@@ -26,22 +29,29 @@
 
             <ImageView
                 android:id="@+id/grid_overlay"
-                android:layout_width="33dp"
-                android:layout_height="33dp"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="33dp" />
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_centerInParent="true"
+                android:contentDescription="@null" />
 
             <TextView
                 android:id="@+id/grid_text"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@id/grid_overlay"
-                android:layout_margin="5dp"
-                android:gravity="center|center_vertical"
-                android:background="#00FFFFFF"
+                android:layout_height="50dp"
+                android:layout_alignParentBottom="true"
+                android:background="@drawable/console_caption_background"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif-condensed"
+                android:gravity="center|bottom"
+                android:maxLines="2"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingBottom="7dp"
                 android:textAlignment="center"
-                android:textSize="14sp" />
+                android:textColor="@color/console_text_primary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
         </RelativeLayout>
+    </FrameLayout>
 
-    </androidx.cardview.widget.CardView>
-</RelativeLayout>
+</androidx.cardview.widget.CardView>

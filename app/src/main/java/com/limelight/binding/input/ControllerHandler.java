@@ -45,6 +45,7 @@ import com.limelight.nvstream.input.MouseButtonPacket;
 import com.limelight.nvstream.jni.MoonBridge;
 import com.limelight.preferences.PreferenceConfiguration;
 import com.limelight.ui.GameGestures;
+import com.limelight.utils.ArtemisaToast;
 import com.limelight.utils.Vector2d;
 
 import org.cgutman.shieldcontrollerextensions.SceChargingState;
@@ -227,6 +228,16 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
 
     public boolean hasController() {
         return hasGameController;
+    }
+
+    public GameInputDevice getPrimaryGameInputDevice() {
+        if (inputDeviceContexts.size() > 0) {
+            return inputDeviceContexts.valueAt(0);
+        }
+        if (usbDeviceContexts.size() > 0) {
+            return usbDeviceContexts.valueAt(0);
+        }
+        return defaultContext;
     }
 
     @Override
@@ -2473,6 +2484,23 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             keyCode = handleFlipFaceButtons(keyCode);
         }
 
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_START ||
+                keyCode == KeyEvent.KEYCODE_MENU) {
+            context.startButtonPressed = false;
+        } else if (keyCode == KeyEvent.KEYCODE_BUTTON_SELECT ||
+                (keyCode == KeyEvent.KEYCODE_BACK && !prefConfig.backAsGuide)) {
+            context.selectButtonPressed = false;
+        }
+
+        if (context.quickMenuChordActive) {
+            context.inputMap &= ~(ControllerPacket.PLAY_FLAG | ControllerPacket.BACK_FLAG);
+            if (!context.startButtonPressed && !context.selectButtonPressed) {
+                context.quickMenuChordActive = false;
+            }
+            sendControllerInputPacket(context);
+            return true;
+        }
+
         // If the button hasn't been down long enough, sleep for a bit before sending the up event
         // This allows "instant" button presses (like OUYA's virtual menu button) to work. This
         // path should not be triggered during normal usage.
@@ -2727,6 +2755,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             break;
         case KeyEvent.KEYCODE_BUTTON_START:
         case KeyEvent.KEYCODE_MENU:
+            context.startButtonPressed = true;
             if (event.getRepeatCount() == 0) {
                 context.startDownTime = event.getEventTime();
                 if (context.startDownTime - context.startUpTime <= ControllerHandler.QUICK_MENU_FIRST_STAGE_MS) {
@@ -2744,6 +2773,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
                 break;
             }
         case KeyEvent.KEYCODE_BUTTON_SELECT:
+            context.selectButtonPressed = true;
             context.hasSelect = true;
             context.inputMap |= ControllerPacket.BACK_FLAG;
             break;
@@ -2877,6 +2907,18 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             return false;
         }
 
+        // Select + Start is Artemisa's controller-first quick-menu chord.
+        // Clear both buttons before opening the dialog so the host never keeps
+        // either button latched while the menu owns controller focus.
+        if (context.startButtonPressed && context.selectButtonPressed) {
+            context.quickMenuChordActive = true;
+            context.backMenuPending = false;
+            context.inputMap &= ~(ControllerPacket.PLAY_FLAG | ControllerPacket.BACK_FLAG);
+            sendControllerInputPacket(context);
+            gestures.showGameMenu(context);
+            return true;
+        }
+
         // Start+Back+LB+RB is the quit combo
         if (context.inputMap == (ControllerPacket.BACK_FLAG | ControllerPacket.PLAY_FLAG |
                                  ControllerPacket.LB_FLAG | ControllerPacket.RB_FLAG)) {
@@ -2992,6 +3034,32 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         context.leftTrigger = (byte)(leftTrigger * 0xFF);
         context.rightTrigger = (byte)(rightTrigger * 0xFF);
 
+        int quickMenuButtons = ControllerPacket.PLAY_FLAG | ControllerPacket.BACK_FLAG;
+        if ((buttonFlags & quickMenuButtons) == quickMenuButtons &&
+                !context.quickMenuChordActive) {
+            context.quickMenuChordActive = true;
+            context.inputMap = buttonFlags & ~quickMenuButtons;
+            sendControllerInputPacket(context);
+            mainThreadHandler.post(() -> gestures.showGameMenu(context));
+            return;
+        }
+
+        if (context.quickMenuChordActive) {
+            boolean chordButtonsReleased = (buttonFlags & quickMenuButtons) == 0;
+            buttonFlags &= ~quickMenuButtons;
+            if (chordButtonsReleased) {
+                context.quickMenuChordActive = false;
+            }
+        }
+
+        // A dialog window owns focus while the quick menu is visible. Never
+        // forward USB-driver controller state to the host behind that dialog.
+        if (!activityContext.hasWindowFocus()) {
+            context.inputMap = 0;
+            sendControllerInputPacket(context);
+            return;
+        }
+
         context.inputMap = buttonFlags;
 
         sendControllerInputPacket(context);
@@ -3052,6 +3120,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         public short leftStickY = 0x0000;
 
         public boolean mouseEmulationActive;
+        public boolean quickMenuChordActive;
         public boolean mouseEmulationXDown = false;
         public int mouseEmulationPixelMultiplier = 1;
 
@@ -3099,11 +3168,16 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         public void toggleMouseEmulation() {
             mainThreadHandler.removeCallbacks(mouseEmulationRunnable);
             mouseEmulationActive = !mouseEmulationActive;
-            Toast.makeText(activityContext, "Mouse emulation is: " + (mouseEmulationActive ? "ON" : "OFF"), Toast.LENGTH_SHORT).show();
+            ArtemisaToast.makeText(activityContext, "Mouse emulation " + (mouseEmulationActive ? "ON" : "OFF"), Toast.LENGTH_SHORT).show();
 
             if (mouseEmulationActive) {
                 mainThreadHandler.postDelayed(mouseEmulationRunnable, mouseEmulationReportPeriod);
             }
+        }
+
+        @Override
+        public boolean isMouseEmulationActive() {
+            return mouseEmulationActive;
         }
 
         public void destroy() {
@@ -3187,6 +3261,8 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         public long startDownTime = 0;
         public long startUpTime = 0;
         public boolean backMenuPending = false;
+        public boolean startButtonPressed;
+        public boolean selectButtonPressed;
 
         public final Runnable batteryStateUpdateRunnable = new Runnable() {
             @Override
@@ -3329,7 +3405,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             byte reportedType;
             if (type != MoonBridge.LI_CTYPE_PS && sensorManager != null) {
                 // Override the detected controller type if we're emulating motion sensors on an Xbox controller
-                Toast.makeText(activityContext, activityContext.getResources().getText(R.string.toast_controller_type_changed), Toast.LENGTH_LONG).show();
+                ArtemisaToast.makeText(activityContext, activityContext.getResources().getText(R.string.toast_controller_type_changed), Toast.LENGTH_LONG).show();
                 reportedType = MoonBridge.LI_CTYPE_UNKNOWN;
 
                 // Remember that we should enable the clickpad emulation combo (Select+LB) for this device
@@ -3461,7 +3537,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
 
             if (type != MoonBridge.LI_CTYPE_PS && (capabilities & (MoonBridge.LI_CCAP_GYRO | MoonBridge.LI_CCAP_ACCEL)) != 0) {
                 activityContext.runOnUiThread(() -> {
-                    Toast.makeText(activityContext, activityContext.getResources().getText(R.string.toast_controller_type_changed), Toast.LENGTH_LONG).show();
+                    ArtemisaToast.makeText(activityContext, activityContext.getResources().getText(R.string.toast_controller_type_changed), Toast.LENGTH_LONG).show();
                 });
             }
 

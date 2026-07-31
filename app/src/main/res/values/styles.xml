@@ -19,10 +19,28 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:statusBarColor">#1A1A1A</item>
-        <item name="android:navigationBarColor">#1A1A1A</item>
-        <item name="android:colorBackground">#1A1A1A</item>
-        <item name="android:windowBackground">#1A1A1A</item>
+        <item name="android:statusBarColor">@color/console_background</item>
+        <item name="android:navigationBarColor">@color/console_background</item>
+        <item name="android:colorBackground">@color/console_background</item>
+        <item name="android:windowBackground">@color/console_background</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:colorAccent">@color/console_accent</item>
+        <item name="colorAccent">@color/console_accent</item>
+        <item name="android:alertDialogTheme">@style/ArtemisaDialogTheme</item>
+        <item name="alertDialogTheme">@style/ArtemisaDialogTheme</item>
+        <item name="materialAlertDialogTheme">@style/ArtemisaDialogTheme</item>
+    </style>
+
+    <style name="ArtemisaDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="android:windowBackground">@drawable/console_panel_background</item>
+        <item name="android:colorAccent">@color/console_accent</item>
+        <item name="colorAccent">@color/console_accent</item>
+        <item name="colorPrimary">@color/console_accent</item>
+        <item name="colorSurface">@color/console_surface</item>
+        <item name="colorOnSurface">@color/console_text_primary</item>
+        <item name="android:textColorPrimary">@color/console_text_primary</item>
+        <item name="android:textColorSecondary">@color/console_text_secondary</item>
+        <item name="android:fontFamily">sans-serif</item>
     </style>
 
     <style name="StreamBaseTheme" parent="AppBaseTheme">
@@ -47,13 +65,60 @@
         <item name="colorAccent">@android:color/white</item>
         <item name="colorControlActivated">@android:color/white</item>
         <item name="colorButtonNormal">@android:color/white</item>
+        <item name="android:alertDialogTheme">@style/ArtemisaDialogTheme</item>
+        <item name="alertDialogTheme">@style/ArtemisaDialogTheme</item>
+        <item name="materialAlertDialogTheme">@style/ArtemisaDialogTheme</item>
     </style>
 
-    <style name="SettingsTheme" parent="Theme.AppCompat.NoActionBar">
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:colorBackground">@android:color/transparent</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
+    <style name="SettingsTheme" parent="AppTheme">
+        <item name="android:statusBarColor">@color/console_background</item>
+        <item name="android:navigationBarColor">@color/console_background</item>
+        <item name="android:colorBackground">@color/console_background</item>
+        <item name="android:windowBackground">@color/console_background</item>
+        <item name="android:textColorPrimary">@color/console_text_primary</item>
+        <item name="android:textColorSecondary">@color/console_text_secondary</item>
+        <item name="android:colorControlActivated">@color/console_accent</item>
+        <item name="colorControlActivated">@color/console_accent</item>
+        <item name="android:selectableItemBackground">@drawable/console_preference_row_background</item>
+    </style>
+
+    <style name="ArtemisaSettingsTab">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginEnd">10dp</item>
+        <item name="android:background">@drawable/console_settings_tab_background</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">false</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:gravity">center</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textColor">@color/console_text_primary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ArtemisaControllerHintBadge">
+        <item name="android:layout_width">34dp</item>
+        <item name="android:layout_height">28dp</item>
+        <item name="android:background">@drawable/console_button_background</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:gravity">center</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textColor">@color/console_text_primary</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ArtemisaControllerHintLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:letterSpacing">0.06</item>
+        <item name="android:textColor">@color/console_text_secondary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="ExternalDisplayControllerTheme" parent="AppTheme">
