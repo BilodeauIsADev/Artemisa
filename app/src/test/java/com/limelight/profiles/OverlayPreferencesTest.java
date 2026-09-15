@@ -145,4 +145,33 @@ public class OverlayPreferencesTest {
         assertTrue(cfg.horizontalGameGrid);
         assertEquals(40, cfg.quickMenuOpacity);
     }
+
+    @Test
+    public void responsiveHq_PreservesSelectedStreamingSettings() {
+        ProfilesManager pm = ProfilesManager.getInstance();
+        pm.load(ctx);
+
+        String json = "{\"frame_pacing\":\"responsive-hq\"," +
+                "\"list_resolution\":\"2560x1440\"," +
+                "\"list_fps\":\"120\"," +
+                "\"seekbar_bitrate_kbps\":95000," +
+                "\"video_format\":\"forceh265\"}";
+        Type t = new TypeToken<Map<String, Object>>(){}.getType();
+        Map<String, Object> opts = new Gson().fromJson(json, t);
+
+        SettingsProfile profile = new SettingsProfile(UUID.randomUUID(), "Responsive HQ", 0, 0, opts);
+        pm.add(profile);
+        pm.setActive(profile.getUuid());
+
+        PreferenceConfiguration cfg = PreferenceConfiguration.readPreferences(ctx);
+        assertEquals(PreferenceConfiguration.FRAME_PACING_MIN_LATENCY, cfg.framePacing);
+        assertTrue(cfg.responsiveHq);
+        assertTrue(cfg.preferLowerDelays);
+        assertEquals(0, cfg.framePacingWarpFactor);
+        assertEquals(2560, cfg.width);
+        assertEquals(1440, cfg.height);
+        assertEquals(120f, cfg.fps, 0.0001f);
+        assertEquals(95000, cfg.bitrate);
+        assertEquals(PreferenceConfiguration.FormatOption.FORCE_HEVC, cfg.videoFormat);
+    }
 }

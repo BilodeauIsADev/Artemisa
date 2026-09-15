@@ -364,6 +364,7 @@ public class PreferenceConfiguration {
     public boolean rememberMouseMode;
     public boolean unlockFps;
     public boolean preferLowerDelays;
+    public boolean responsiveHq;
 
     public boolean vibrateOsc;
     public boolean vibrateFallbackToDevice;
@@ -652,7 +653,7 @@ private static int getFramePacingValue(Context context) {
         }
 
         String str = prefs.getString(FRAME_PACING_PREF_STRING, DEFAULT_FRAME_PACING);
-        if (str.equals("latency")) {
+        if (str.equals("latency") || str.equals("responsive-hq")) {
             return FRAME_PACING_MIN_LATENCY;
         }
         else if (str.equals("balanced")) {
@@ -862,13 +863,14 @@ private static int getFramePacingValue(Context context) {
 
         config.videoFormat = getVideoFormatValue(context);
         config.framePacing = getFramePacingValue(context);
-        config.preferLowerDelays = getPreferLowerDelays(context);
 
+        String framePacingMode = prefs.getString(FRAME_PACING_PREF_STRING, DEFAULT_FRAME_PACING);
+        config.responsiveHq = framePacingMode.equals("responsive-hq");
+        config.preferLowerDelays = config.responsiveHq || getPreferLowerDelays(context);
 
-        String warpFactorStr = prefs.getString(FRAME_PACING_PREF_STRING, "");
-        if (warpFactorStr.equals("warp")) {
+        if (framePacingMode.equals("warp")) {
             config.framePacingWarpFactor = 2;
-        } else if (warpFactorStr.equals("warp2")) {
+        } else if (framePacingMode.equals("warp2")) {
             config.framePacingWarpFactor = 4;
         }
 

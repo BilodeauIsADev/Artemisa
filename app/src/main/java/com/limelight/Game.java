@@ -681,11 +681,13 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 // --- latency profile selection ---
         try {
             if (prefConfig != null && prefConfig.preferLowerDelays) {
-                // Intermediate: more responsive than Balanced but not 0 µs
+                // Keep the selected pacing mode while enabling latest-frame rendering.
+                // Responsive HQ uses the shortest safe poll interval and minimum-latency pacing.
                 decoderRenderer.setPreferLowerDelays(true);
-                decoderRenderer.setPreferLowerDelaysTimeoutUs(500);  // 0.5 ms
-                prefConfig.framePacing = PreferenceConfiguration.FRAME_PACING_BALANCED;
-                LimeLog.info("PreferLowerDelays: preferLowerDelays=true, timeout=500us, pacing=BALANCED");
+                int outputPollTimeoutUs = prefConfig.responsiveHq ? 250 : 500;
+                decoderRenderer.setPreferLowerDelaysTimeoutUs(outputPollTimeoutUs);
+                LimeLog.info("PreferLowerDelays: preferLowerDelays=true, timeout=" +
+                        outputPollTimeoutUs + "us, pacing=" + prefConfig.framePacing);
             } else {
                 // LFR is disabled. Keep the frame pacing mode selected by the user.
                 decoderRenderer.setPreferLowerDelays(false);
