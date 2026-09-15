@@ -368,7 +368,7 @@
 
 
     <!-- In Game menu -->
-    <string name="game_menu_toggle_keyboard">Show soft keyboard</string>
+    <string name="game_menu_toggle_keyboard">Show keyboard</string>
     <string name="game_menu_toggle_hud">Toggle Performance Overlay</string>
     <string name="game_menu_toggle_floating_button">Toggle Floating Button</string>
     <string name="game_menu_select_mouse_mode">Select Mouse mode</string>
@@ -773,7 +773,39 @@
     <string name="console_mouse_mode">Mouse mode</string>
     <string name="console_connecting_to">CONNECTING TO</string>
     <string name="console_preparing_stream">Preparing your stream</string>
-    <string name="console_keyboard_shortcuts">Send keyboard shortcut</string>
+    <string name="console_show_keyboard">Show keyboard</string>
+    <string name="console_keyboard_title">KEYBOARD</string>
+    <string name="console_keyboard_page_letters">LETTERS</string>
+    <string name="console_keyboard_page_symbols">SYMBOLS</string>
+    <string name="console_keyboard_page_controls">CONTROLS</string>
+    <string name="console_keyboard_hint_type">TYPE</string>
+    <string name="console_keyboard_hint_space">SPACE</string>
+    <string name="console_keyboard_hint_backspace">BKSP</string>
+    <string name="console_keyboard_hint_page">PAGE</string>
+    <string name="console_button_x" translatable="false">X</string>
+    <string name="console_button_y" translatable="false">Y</string>
+    <string name="console_keyboard_key_shift">Shift</string>
+    <string name="console_keyboard_key_caps">Caps</string>
+    <string name="console_keyboard_key_ctrl">Ctrl</string>
+    <string name="console_keyboard_key_alt">Alt</string>
+    <string name="console_keyboard_key_win">Win</string>
+    <string name="console_keyboard_key_tab">Tab</string>
+    <string name="console_keyboard_key_esc">Esc</string>
+    <string name="console_keyboard_key_space">Space</string>
+    <string name="console_keyboard_key_enter">Enter</string>
+    <string name="console_keyboard_key_backspace">Bksp</string>
+    <string name="console_keyboard_key_done">Done</string>
+    <string name="console_keyboard_key_letters">ABC</string>
+    <string name="console_keyboard_key_symbols">\?123</string>
+    <string name="console_keyboard_key_controls">F-keys</string>
+    <string name="console_keyboard_key_ins">Ins</string>
+    <string name="console_keyboard_key_del">Del</string>
+    <string name="console_keyboard_key_home">Home</string>
+    <string name="console_keyboard_key_end">End</string>
+    <string name="console_keyboard_key_pgup">PgUp</string>
+    <string name="console_keyboard_key_pgdn">PgDn</string>
+    <string name="console_keyboard_key_prtsc">PrtSc</string>
+    <string name="console_keyboard_key_pause">Pause</string>
     <string name="console_end_stream">End stream</string>
     <string name="console_end_stream_message">The host application will close. Make sure your progress is saved.</string>
     <string name="console_keep_playing">Keep playing</string>

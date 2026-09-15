@@ -95,6 +95,16 @@ android {
 
     buildTypes {
         debug {
+            // Use the production native receive path for on-device streaming tests.
+            // NDK_DEBUG=1 enables LC_DEBUG's synthetic packet loss/FEC validation
+            // on every video frame, which can overwhelm the SHIELD at high bitrates.
+            // Java debugging and native debug symbols remain available.
+            externalNativeBuild {
+                ndkBuild {
+                    arguments "NDK_DEBUG=0"
+                }
+            }
+
             applicationIdSuffix ".noirdebug"
             resValue "string", "app_label", "Artemisa"
             resValue "string", "app_label_root", "Artemisa"

@@ -60,9 +60,19 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="62dp"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="@dimen/console_screen_horizontal_padding"
         android:paddingEnd="@dimen/console_screen_horizontal_padding">
+
+        <TextView
+            style="@style/ArtemisaControllerHintBadge"
+            android:layout_marginEnd="12dp"
+            android:clickable="false"
+            android:contentDescription="@string/console_previous_tab"
+            android:focusable="false"
+            android:importantForAccessibility="yes"
+            android:text="@string/console_button_lb" />
 
         <TextView
             android:id="@+id/settingsTabStream"
@@ -87,7 +97,17 @@
         <TextView
             android:id="@+id/settingsTabSystem"
             style="@style/ArtemisaSettingsTab"
+            android:layout_marginEnd="0dp"
             android:text="@string/console_settings_tab_system" />
+
+        <TextView
+            style="@style/ArtemisaControllerHintBadge"
+            android:layout_marginStart="12dp"
+            android:clickable="false"
+            android:contentDescription="@string/console_next_tab"
+            android:focusable="false"
+            android:importantForAccessibility="yes"
+            android:text="@string/console_button_rb" />
     </LinearLayout>
 
     <FrameLayout
@@ -105,23 +125,6 @@
         android:orientation="horizontal"
         android:paddingStart="@dimen/console_screen_horizontal_padding"
         android:paddingEnd="@dimen/console_screen_horizontal_padding">
-
-        <TextView
-            style="@style/ArtemisaControllerHintBadge"
-            android:text="@string/console_button_lb" />
-
-        <TextView
-            style="@style/ArtemisaControllerHintLabel"
-            android:text="@string/console_previous_tab" />
-
-        <TextView
-            style="@style/ArtemisaControllerHintBadge"
-            android:layout_marginStart="24dp"
-            android:text="@string/console_button_rb" />
-
-        <TextView
-            style="@style/ArtemisaControllerHintLabel"
-            android:text="@string/console_next_tab" />
 
         <View
             android:layout_width="0dp"

@@ -54,7 +54,7 @@ Artemisa reshapes the familiar Moonlight streaming experience into a console-sty
 - Console-style home and game library with clear, animated controller focus.
 - Optional horizontal shelf for browsing portrait game covers left to right.
 - Persistent in-stream quick menu with smooth submenu transitions and reliable back navigation.
-- Quick access to performance overlays, mouse modes, advanced controls, keyboard shortcuts, disconnect, and End Stream.
+- Quick access to performance overlays, mouse modes, advanced controls, an on-screen keyboard, disconnect, and End Stream.
 - Appearance controls for the library layout, box-art density, and quick-menu opacity.
 - Configurable frame pacing and optional low-latency frame rendering - settings remain under your control.
 - Apollo virtual-display and server-command integration, custom resolutions and bitrates, HDR, surround audio, controller support, and the broader Artemis feature set.
@@ -68,6 +68,7 @@ Artemisa reshapes the familiar Moonlight streaming experience into a console-sty
 | B | Go back without closing the current parent menu |
 | Menu | Open options for the selected computer or game |
 | Select + Start | Open the quick menu while streaming |
+| In-stream keyboard | D-pad or stick to move, A to type, X space, Y backspace, LB/RB to change page, B to close |
 
 ## Getting started
 
@@ -103,6 +104,10 @@ Or on macOS/Linux:
 ```bash
 ./gradlew :app:assembleNonRoot_gameDebug
 ```
+
+Debug APKs keep Java debugging enabled and use optimized native streaming code.
+Native `NDK_DEBUG=1` also enables synthetic packet loss and FEC validation on every
+video frame, so it should only be used when debugging the native protocol code.
 
 The ABI-specific APKs are written to:
 

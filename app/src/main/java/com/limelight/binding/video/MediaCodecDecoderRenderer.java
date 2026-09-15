@@ -1228,9 +1228,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
                             if (__last >= 0) {
                                 long __nowNs = System.nanoTime();
-                                if (android.os.Build.VERSION.SDK_INT >= 21) {
-                                    releaseWithPolicy(__last, System.nanoTime());} else {
-                                    releaseWithPolicy(__last, System.nanoTime());}
+                                releaseWithPolicy(__last, __nowNs);
 
                                 // Update decode->present EWMA and decode stats if we have a valid PTS
                                 if (__lastPtsUs >= 0) {
@@ -1239,7 +1237,11 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                                     try { updateDecodeLatencyStats(__lastPtsUs); } catch (Throwable ignored) {}
                                 }
 
-                                continue; // handled this iteration
+                                // Check for the next decoded frame immediately. Waiting for a
+                                // display period here adds that wait to output latency; the
+                                // timed dequeue below already blocks when no frame is ready.
+                                lastPresentNs = __nowNs;
+                                continue;
                             }
                         } catch (Throwable ignored) {}
                     }

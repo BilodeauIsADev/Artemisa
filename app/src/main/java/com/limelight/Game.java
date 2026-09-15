@@ -42,6 +42,7 @@ import com.limelight.preferences.PreferenceConfiguration;
 import com.limelight.profiles.ProfilesManager;
 import com.limelight.ui.ExternalControllerView;
 import com.limelight.ui.GameGestures;
+import com.limelight.ui.GamepadOnscreenKeyboard;
 import com.limelight.ui.StreamContainer;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.ExternalDisplayControlActivity;
@@ -101,10 +102,9 @@ import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ImageButton;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationManagerCompat;
@@ -177,6 +177,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     private KeyBoardController keyBoardController;
 
     private KeyBoardLayoutController keyBoardLayoutController;
+    private GamepadOnscreenKeyboard gamepadKeyboard;
 
     private PreferenceConfiguration prefConfig;
     private SharedPreferences tombstonePrefs;
@@ -1736,6 +1737,11 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         instance = null;
         timerHandler.removeCallbacksAndMessages(null);
 
+        if (gamepadKeyboard != null) {
+            gamepadKeyboard.dismiss();
+            gamepadKeyboard = null;
+        }
+
         if (prefConfig.enableFullExDisplay) handleDisplayRemoved();
 
         if (controllerHandler != null) {
@@ -2238,6 +2244,9 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     }
 
     public void sendKeys(short[] keys) {
+        if (conn == null || keys == null || keys.length == 0) {
+            return;
+        }
         final byte[] modifier = {(byte) 0};
 
         for (short key : keys) {
@@ -2249,6 +2258,9 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         }
 
         new Handler().postDelayed((() -> {
+            if (conn == null) {
+                return;
+            }
             for (int pos = keys.length - 1; pos >= 0; pos--) {
                 short key = keys[pos];
 
@@ -2428,14 +2440,43 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         }
     }
 
+    public short toVkCode(int androidKeyCode) {
+        if (keyboardTranslator == null) {
+            return 0;
+        }
+        return keyboardTranslator.translate(androidKeyCode, 0, -1);
+    }
+
+    public void showGamepadKeyboard() {
+        if (isOnExternalDisplay()) {
+            ExternalDisplayControlActivity.toggleKeyboard();
+            return;
+        }
+        if (gamepadKeyboard == null) {
+            gamepadKeyboard = new GamepadOnscreenKeyboard(this);
+        }
+        gamepadKeyboard.show();
+    }
+
+    public void dismissGamepadKeyboard() {
+        if (gamepadKeyboard != null) {
+            gamepadKeyboard.dismiss();
+        }
+    }
+
+    public boolean isGamepadKeyboardShowing() {
+        return gamepadKeyboard != null && gamepadKeyboard.isShowing();
+    }
+
     @Override
     public void toggleKeyboard() {
         if (isOnExternalDisplay()) {
             ExternalDisplayControlActivity.toggleKeyboard();
+        } else if (isGamepadKeyboardShowing()) {
+            dismissGamepadKeyboard();
         } else {
             LimeLog.info("Toggling keyboard overlay");
-            InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            inputManager.toggleSoftInput(0, 0);
+            showGamepadKeyboard();
         }
     }
 
@@ -4302,6 +4343,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
     @Override
     public void showGameMenu(GameInputDevice device) {
+        dismissGamepadKeyboard();
         if(isOnExternalDisplay()) {
             ExternalDisplayControlActivity.toggleGameMenu();
         } else {

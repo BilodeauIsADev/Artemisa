@@ -451,8 +451,8 @@ public class GameMenu implements Game.GameMenuCallbacks {
                 () -> showSpecialKeysMenu(() -> showAdvancedMenu(device))));
 
         options.add(new MenuOption(getString(R.string.game_menu_switch_touch_sensitivity_model), true, game::switchTouchSensitivity));
-        options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard), true,
-                game::toggleKeyboard));
+        options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard), false,
+                game::showGamepadKeyboard));
         options.add(new MenuOption(
                 getString(game.isZoomModeEnabled() ?
                         R.string.game_menu_disable_zoom_mode :
@@ -572,11 +572,13 @@ public class GameMenu implements Game.GameMenuCallbacks {
                 null,
                 () -> showAdvancedMenu(device)));
 
-        options.add(MenuOption.consoleNavigation(
-                getString(R.string.console_keyboard_shortcuts),
+        options.add(MenuOption.console(
+                getString(R.string.console_show_keyboard),
                 R.drawable.ic_android_keyboard,
                 null,
-                () -> showSpecialKeysMenu(() -> showMenu(device))));
+                false,
+                false,
+                game::showGamepadKeyboard));
 
         options.add(MenuOption.console(
                 getString(R.string.game_menu_disconnect),
