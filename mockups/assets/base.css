@@ -1,0 +1,21 @@
+@import url(fonts.css);
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: #050607; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+/* Gallery chrome (not part of the mocked TV surface) */
+.gallery-head { font: 500 15px/1.5 system-ui, sans-serif; color: #aab1b8; padding: 32px 32px 0; max-width: 1920px; margin: 0 auto; }
+.gallery-head h1 { font-size: 22px; color: #eef1f3; margin: 0 0 4px; font-weight: 600; }
+.gallery-head p { margin: 0; }
+.frame { display: block; width: 1920px; margin: 48px auto 0; }
+.frame > figcaption { font: 600 22px/1.4 system-ui, sans-serif; color: #cfd5da; margin: 0 0 12px; }
+.frame:last-of-type { margin-bottom: 64px; }
+
+.screen { position: relative; width: 1920px; height: 1080px; overflow: hidden; isolation: isolate; }
+
+.solo .gallery-head, .solo .frame > figcaption { display: none; }
+.solo .frame { margin: 0; }
+
+.ic { width: 1em; height: 1em; flex: none; }
+.bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }

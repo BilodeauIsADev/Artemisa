@@ -21,6 +21,9 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.res.ResourcesCompat;
+
 import com.limelight.Game;
 import com.limelight.R;
 import com.limelight.binding.input.KeyboardTranslator;
@@ -51,6 +54,7 @@ public class GamepadOnscreenKeyboard {
     private Dialog dialog;
     private LinearLayout rowsContainer;
     private TextView pageLabel;
+    private TextView[] pageSegments;
 
     private int page = PAGE_LETTERS;
     private boolean shiftHeld;
@@ -136,13 +140,19 @@ public class GamepadOnscreenKeyboard {
         Context themedContext = new ContextThemeWrapper(game, themeResId);
         View contentView = LayoutInflater.from(themedContext)
                 .inflate(R.layout.dialog_gamepad_keyboard, new FrameLayout(themedContext), false);
-        if (contentView.getBackground() != null) {
+        View sheet = contentView.findViewById(R.id.gamepadKeyboardSheet);
+        if (sheet.getBackground() != null) {
             int opacity = PreferenceConfiguration.readPreferences(game).quickMenuOpacity;
-            contentView.getBackground().mutate().setAlpha(Math.round(opacity * 2.55f));
+            sheet.getBackground().mutate().setAlpha(Math.round(opacity * 2.55f));
         }
 
         rowsContainer = contentView.findViewById(R.id.gamepadKeyboardRows);
         pageLabel = contentView.findViewById(R.id.gamepadKeyboardPage);
+        pageSegments = new TextView[] {
+                contentView.findViewById(R.id.gamepadKeyboardSegLetters),
+                contentView.findViewById(R.id.gamepadKeyboardSegSymbols),
+                contentView.findViewById(R.id.gamepadKeyboardSegControls)
+        };
         keyRowHeightPx = computeKeyRowHeight();
 
         dialog = new Dialog(themedContext);
@@ -173,7 +183,6 @@ public class GamepadOnscreenKeyboard {
         params.width = WindowManager.LayoutParams.MATCH_PARENT;
         params.height = WindowManager.LayoutParams.WRAP_CONTENT;
         params.dimAmount = 0.34f;
-        params.horizontalMargin = 0.04f;
         window.setAttributes(params);
         window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         window.getDecorView().setOnGenericMotionListener((v, event) -> {
@@ -281,6 +290,7 @@ public class GamepadOnscreenKeyboard {
             return;
         }
         pageLabel.setText(pageTitle());
+        updatePageSegments();
         rowsContainer.removeAllViews();
 
         KeyDef[][] layout = currentLayout();
@@ -350,6 +360,19 @@ public class GamepadOnscreenKeyboard {
         for (int i = 0; i < bottom.size(); i++) {
             KeyView dest = top.get(Math.min(i, top.size() - 1));
             bottom.get(i).view.setNextFocusDownId(dest.view.getId());
+        }
+    }
+
+    // The segmented control shows which page LB/RB has selected.
+    private void updatePageSegments() {
+        if (pageSegments == null) {
+            return;
+        }
+        int selected = page == PAGE_SYMBOLS ? 1 : page == PAGE_CONTROLS ? 2 : 0;
+        for (int i = 0; i < pageSegments.length; i++) {
+            boolean on = i == selected;
+            pageSegments[i].setBackgroundResource(on ? R.drawable.dash_segment_on : 0);
+            pageSegments[i].setTextColor(game.getResources().getColor(on ? R.color.dash_ink : R.color.dash_text_2));
         }
     }
 
@@ -768,9 +791,10 @@ public class GamepadOnscreenKeyboard {
             view.setTag(this);
             view.setGravity(android.view.Gravity.CENTER);
             view.setText(def.label);
-            view.setTextColor(game.getResources().getColor(R.color.console_text_primary));
-            view.setTextSize(def.action == Action.CHAR && def.letter ? 18 : 14);
-            view.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+            view.setTextColor(AppCompatResources.getColorStateList(game, R.color.dash_on_focus_text));
+            view.setTextSize(def.action == Action.CHAR && def.letter ? 17 : 13);
+            view.setTypeface(ResourcesCompat.getFont(game, def.action == Action.CHAR && def.letter ?
+                    R.font.albert_sans_semibold : R.font.albert_sans_bold));
             view.setBackgroundResource(R.drawable.console_keyboard_key_background);
             view.setClickable(true);
             view.setFocusable(true);

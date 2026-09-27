@@ -1,38 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Home: computers as tiles, the focused computer as the hero over its own games. -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <ImageView
+        android:id="@+id/homeBackdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/dash_scrim_left" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/dash_scrim_bottom" />
+
+    <!-- Top bar -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/console_header_height"
+        android:layout_height="32dp"
+        android:layout_marginStart="@dimen/console_screen_horizontal_padding"
+        android:layout_marginTop="@dimen/console_screen_vertical_padding"
+        android:layout_marginEnd="@dimen/console_screen_horizontal_padding"
         android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="@dimen/console_screen_horizontal_padding"
-        android:paddingEnd="@dimen/console_screen_horizontal_padding">
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:contentDescription="@string/artemisa_brand"
+            android:src="@drawable/app_icon" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-condensed"
-            android:letterSpacing="0.24"
-            android:text="@string/artemisa_brand"
-            android:textColor="@color/console_text_primary"
-            android:textSize="27sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginStart="76dp"
-            android:fontFamily="sans-serif-condensed"
-            android:gravity="center"
-            android:letterSpacing="0.06"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp"
-            android:text="@string/console_home"
-            android:textColor="@color/console_accent"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:layout_marginStart="14dp"
+            android:fontFamily="@font/albert_sans_semibold"
+            android:text="@string/dash_computers"
+            android:textColor="@color/dash_text"
+            android:textSize="14sp" />
 
         <Space
             android:layout_width="0dp"
@@ -41,147 +54,152 @@
 
         <ImageButton
             android:id="@+id/settingsButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:background="@drawable/console_button_background"
             android:contentDescription="@string/console_settings"
-            android:padding="12dp"
+            android:padding="8dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_settings" />
+            android:src="@drawable/ic_dash_settings"
+            app:tint="@color/dash_text" />
 
         <ImageButton
             android:id="@+id/helpButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="10dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="9dp"
             android:background="@drawable/console_button_background"
             android:contentDescription="@string/help"
-            android:padding="12dp"
+            android:padding="8dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_help" />
-
-        <ImageButton
-            android:id="@+id/manuallyAddPc"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="10dp"
-            android:background="@drawable/console_button_background"
-            android:contentDescription="@string/console_add_computer"
-            android:padding="12dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_add" />
+            android:src="@drawable/ic_dash_help"
+            app:tint="@color/dash_text" />
 
         <ImageButton
             android:id="@+id/profilesButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="10dp"
-            android:background="@drawable/console_button_background"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="9dp"
+            android:background="@drawable/dash_avatar"
             android:contentDescription="@string/profile_manager_choose_profile"
-            android:padding="12dp"
+            android:padding="8dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_profiles"
-            app:tint="@color/console_text_primary" />
+            android:src="@drawable/ic_dash_user"
+            app:tint="@color/dash_on_go" />
+
+        <TextClock
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:fontFamily="@font/albert_sans_semibold"
+            android:fontFeatureSettings="tnum"
+            android:textColor="@color/dash_text"
+            android:textSize="14sp" />
     </LinearLayout>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fontFamily="sans-serif-condensed"
-        android:letterSpacing="0.08"
-        android:paddingStart="@dimen/console_screen_horizontal_padding"
-        android:paddingTop="18dp"
-        android:paddingEnd="@dimen/console_screen_horizontal_padding"
-        android:paddingBottom="6dp"
-        android:text="@string/console_your_computers"
-        android:textColor="@color/console_text_primary"
-        android:textSize="17sp"
-        android:textStyle="bold" />
-
+    <!-- Computer tiles (HorizontalGameListView is inflated into this container) -->
     <FrameLayout
         android:id="@+id/pcFragmentContainer"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_height="126dp"
+        android:layout_marginStart="42dp"
+        android:layout_marginTop="74dp" />
 
-        <RelativeLayout
-            android:id="@+id/no_pc_found_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:padding="28dp">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ProgressBar
-                    android:id="@+id/pcs_loading"
-                    android:layout_width="52dp"
-                    android:layout_height="52dp"
-                    android:indeterminate="true"
-                    android:indeterminateTint="@color/console_accent" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    android:fontFamily="sans-serif"
-                    android:gravity="center"
-                    android:text="@string/searching_pc"
-                    android:textColor="@color/console_text_secondary"
-                    android:textSize="18sp" />
-            </LinearLayout>
-        </RelativeLayout>
-    </FrameLayout>
-
+    <!-- Hero: the focused computer -->
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/console_footer_height"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="@dimen/console_screen_horizontal_padding"
-        android:paddingEnd="@dimen/console_screen_horizontal_padding">
+        android:id="@+id/homeHero"
+        android:layout_width="600dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="@dimen/console_screen_horizontal_padding"
+        android:layout_marginBottom="66dp"
+        android:orientation="vertical"
+        android:visibility="invisible">
 
         <TextView
+            android:id="@+id/homeTitle"
+            style="@style/DashTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textSize="52sp"
+            tools:text="VaporZPC" />
+
+        <TextView
+            android:id="@+id/homeMeta"
+            style="@style/DashMeta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            tools:text="Online · Paired · 5 games" />
+
+        <LinearLayout
+            android:id="@+id/homeCovers"
+            android:layout_width="wrap_content"
+            android:layout_height="84dp"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal" />
+    </LinearLayout>
+
+    <!-- Shown until the first computer turns up -->
+    <LinearLayout
+        android:id="@+id/no_pc_found_layout"
+        android:layout_width="560dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="@dimen/console_screen_horizontal_padding"
+        android:layout_marginBottom="66dp"
+        android:orientation="vertical">
+
+        <ProgressBar
+            android:id="@+id/pcs_loading"
             android:layout_width="28dp"
             android:layout_height="28dp"
-            android:background="@drawable/console_controller_badge_green"
-            android:gravity="center"
-            android:text="@string/console_button_a"
-            android:textColor="@color/console_background"
-            android:textStyle="bold" />
+            android:indeterminate="true"
+            android:indeterminateTint="@color/dash_go" />
+
+        <TextView
+            style="@style/DashTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/dash_searching_title"
+            android:textSize="36sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="9dp"
-            android:letterSpacing="0.08"
-            android:text="@string/console_select"
-            android:textColor="@color/console_text_primary"
-            android:textSize="12sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="10dp"
+            android:lineSpacingMultiplier="1.2"
+            android:text="@string/dash_searching_message"
+            android:textColor="@color/dash_text_2"
+            android:textSize="15sp" />
+    </LinearLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="36dp"
-            android:text="@string/console_button_menu"
-            android:textColor="@color/console_text_secondary"
-            android:textSize="24sp" />
+    <!-- Controller hints -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="31dp"
+        android:layout_marginBottom="@dimen/console_screen_vertical_padding"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
+        <TextView style="@style/ArtemisaControllerHintBadge" android:text="@string/console_button_a" />
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="9dp"
-            android:letterSpacing="0.08"
-            android:text="@string/console_options"
-            android:textColor="@color/console_text_primary"
-            android:textSize="12sp"
-            android:textStyle="bold" />
+            android:id="@+id/homeHintPrimary"
+            style="@style/ArtemisaControllerHintLabel"
+            android:text="@string/dash_open_library" />
+        <ImageView
+            android:id="@+id/homeHintMenuIcon"
+            style="@style/ArtemisaControllerHintIcon"
+            android:src="@drawable/ic_dash_menu" />
+        <TextView
+            android:id="@+id/homeHintMenuLabel"
+            style="@style/ArtemisaControllerHintLabel"
+            android:text="@string/dash_options" />
     </LinearLayout>
 
 </merge>

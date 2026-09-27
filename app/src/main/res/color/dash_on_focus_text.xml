@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Text on a surface that fills green when focused (menu rows, keys). -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/dash_on_go" android:state_focused="true" />
+    <item android:color="@color/dash_on_go" android:state_pressed="true" />
+    <item android:color="@color/dash_text" />
+</selector>

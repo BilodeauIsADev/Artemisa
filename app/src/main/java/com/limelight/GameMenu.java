@@ -97,10 +97,14 @@ public class GameMenu implements Game.GameMenuCallbacks {
     private final Context dialogScreenContext;
 
     private Dialog currentDialog;
+    private TextView menuTitle;
     private TextView menuSubtitle;
+    private View menuScroll;
     private TextView menuBackActionLabel;
     private LinearLayout menuItems;
     private Runnable currentBackAction;
+    private String pendingSubtitle;
+    private int pendingFocusIndex;
     private int menuTransitionGeneration;
 
     public GameMenu(Game game, Context dialogScreenContext) {
@@ -169,11 +173,14 @@ public class GameMenu implements Game.GameMenuCallbacks {
         FrameLayout inflationParent = new FrameLayout(themedContext);
         View contentView = LayoutInflater.from(themedContext)
                 .inflate(R.layout.dialog_game_menu, inflationParent, false);
-        if (contentView.getBackground() != null) {
+        View sheet = contentView.findViewById(R.id.gameMenuSheet);
+        if (sheet.getBackground() != null) {
             int opacity = PreferenceConfiguration.readPreferences(game).quickMenuOpacity;
-            contentView.getBackground().mutate().setAlpha(Math.round(opacity * 2.55f));
+            sheet.getBackground().mutate().setAlpha(Math.round(opacity * 2.55f));
         }
+        menuTitle = contentView.findViewById(R.id.gameMenuTitle);
         menuSubtitle = contentView.findViewById(R.id.gameMenuSubtitle);
+        menuScroll = contentView.findViewById(R.id.gameMenuScroll);
         menuItems = contentView.findViewById(R.id.gameMenuItems);
         menuBackActionLabel = contentView.findViewById(R.id.gameMenuBackActionLabel);
 
@@ -204,11 +211,11 @@ public class GameMenu implements Game.GameMenuCallbacks {
         Window window = dialog.getWindow();
         if (window != null) {
             window.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-            window.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+            window.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
             WindowManager.LayoutParams params = window.getAttributes();
-            params.width = WindowManager.LayoutParams.WRAP_CONTENT;
-            params.height = WindowManager.LayoutParams.MATCH_PARENT;
-            params.dimAmount = 0.58f;
+            params.width = WindowManager.LayoutParams.MATCH_PARENT;
+            params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+            params.dimAmount = 0.35f;
             window.setAttributes(params);
             window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         }
@@ -221,7 +228,7 @@ public class GameMenu implements Game.GameMenuCallbacks {
         int transitionGeneration = menuTransitionGeneration;
 
         menuItems.animate().cancel();
-        menuSubtitle.animate().cancel();
+        menuTitle.animate().cancel();
         if (!animateTransition) {
             bindMenuContent(title, options, backAction);
             return;
@@ -230,7 +237,7 @@ public class GameMenu implements Game.GameMenuCallbacks {
         menuItems.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
         menuItems.animate()
                 .alpha(0f)
-                .translationX(-dpToPx(12))
+                .translationY(dpToPx(8))
                 .setDuration(70)
                 .withEndAction(() -> {
                     if (transitionGeneration != menuTransitionGeneration || menuItems == null) {
@@ -238,34 +245,61 @@ public class GameMenu implements Game.GameMenuCallbacks {
                     }
                     bindMenuContent(title, options, backAction);
                     menuItems.setAlpha(0f);
-                    menuItems.setTranslationX(dpToPx(12));
+                    menuItems.setTranslationY(dpToPx(8));
                     menuItems.animate()
                             .alpha(1f)
-                            .translationX(0f)
-                            .setDuration(120)
+                            .translationY(0f)
+                            .setDuration(140)
                             .start();
                 })
                 .start();
-        menuSubtitle.animate().alpha(0f).setDuration(70).withEndAction(() -> {
-            if (transitionGeneration == menuTransitionGeneration && menuSubtitle != null) {
-                menuSubtitle.setText(title);
-                menuSubtitle.animate().alpha(1f).setDuration(120).start();
-            }
-        }).start();
     }
+
+    private static final int CARD_COLUMNS_MAX = 6;
+    private static final int COMPACT_COLUMNS = 4;
+    private static final int COMPACT_VISIBLE_ROWS = 4;
 
     private void bindMenuContent(String title, MenuOption[] options, Runnable backAction) {
         Context themedContext = menuItems.getContext();
-        menuSubtitle.setText(title);
-        menuBackActionLabel.setText(backAction == null ? R.string.console_close : R.string.console_back);
+        menuTitle.setText(title);
+        // A menu can replace the "Streaming from" line once, for example with a warning
+        menuSubtitle.setText(pendingSubtitle != null ? pendingSubtitle :
+                game.getString(R.string.dash_streaming_from, game.getStreamingComputerName()));
+        pendingSubtitle = null;
+        // Set per menu; destructive confirmations focus the safe choice
+        int focusIndex = pendingFocusIndex;
+        pendingFocusIndex = 0;
+        menuBackActionLabel.setText(backAction == null ? R.string.dash_close : R.string.dash_back);
         menuItems.removeAllViews();
 
+        // Short menus are one row of cards; long ones become a grid of compact cards.
+        boolean compact = options.length > CARD_COLUMNS_MAX;
+        int columns = compact ? COMPACT_COLUMNS : Math.max(1, options.length);
+        int layout = compact ? R.layout.game_menu_option_compact : R.layout.game_menu_option;
+        int gap = dpToPx(10);
+
         View firstFocusable = null;
-        for (MenuOption option : options) {
-            View row = LayoutInflater.from(themedContext).inflate(R.layout.game_menu_option, menuItems, false);
-            ImageView icon = row.findViewById(R.id.gameMenuOptionIcon);
-            TextView label = row.findViewById(R.id.gameMenuOptionLabel);
-            TextView status = row.findViewById(R.id.gameMenuOptionStatus);
+        LinearLayout row = null;
+        int rows = 0;
+        for (int i = 0; i < options.length; i++) {
+            MenuOption option = options[i];
+            if (i % columns == 0) {
+                row = new LinearLayout(themedContext);
+                row.setOrientation(LinearLayout.HORIZONTAL);
+                row.setClipChildren(false);
+                LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                if (rows > 0) {
+                    rowParams.topMargin = gap;
+                }
+                menuItems.addView(row, rowParams);
+                rows++;
+            }
+
+            View card = LayoutInflater.from(themedContext).inflate(layout, row, false);
+            ImageView icon = card.findViewById(R.id.gameMenuOptionIcon);
+            TextView label = card.findViewById(R.id.gameMenuOptionLabel);
+            TextView status = card.findViewById(R.id.gameMenuOptionStatus);
 
             label.setText(option.label);
             if (option.iconRes != 0) {
@@ -275,23 +309,24 @@ public class GameMenu implements Game.GameMenuCallbacks {
             }
 
             if (TextUtils.isEmpty(option.status)) {
-                status.setVisibility(View.GONE);
+                status.setVisibility(compact ? View.GONE : View.INVISIBLE);
             } else {
                 status.setText(option.status);
             }
 
             if (option.destructive) {
-                row.setBackgroundResource(R.drawable.console_menu_row_danger_background);
-                label.setTextColor(game.getResources().getColor(R.color.console_danger));
+                int danger = game.getResources().getColor(R.color.dash_stop);
+                label.setTextColor(danger);
+                icon.setColorFilter(danger);
             }
 
-            row.setOnClickListener(view -> {
+            card.setOnClickListener(view -> {
                 if (option.dismissMenuOnRun) {
                     hideMenu();
                 }
                 run(option);
             });
-            row.setOnKeyListener((view, keyCode, event) -> {
+            card.setOnKeyListener((view, keyCode, event) -> {
                 if (event.getAction() != KeyEvent.ACTION_UP) {
                     return keyCode == KeyEvent.KEYCODE_BUTTON_A ||
                             keyCode == KeyEvent.KEYCODE_BUTTON_B ||
@@ -308,11 +343,37 @@ public class GameMenu implements Game.GameMenuCallbacks {
                 }
                 return false;
             });
-            menuItems.addView(row);
-            if (firstFocusable == null) {
-                firstFocusable = row;
+
+            LinearLayout.LayoutParams cardParams = (LinearLayout.LayoutParams) card.getLayoutParams();
+            if (i % columns != columns - 1) {
+                cardParams.setMarginEnd(gap);
+            }
+            row.addView(card, cardParams);
+            if (firstFocusable == null || i == focusIndex) {
+                firstFocusable = card;
             }
         }
+
+        // Keep the last grid row's cards the same width as the others
+        if (compact && row != null) {
+            int filled = options.length % columns;
+            for (int i = filled; filled != 0 && i < columns; i++) {
+                View spacer = new View(themedContext);
+                LinearLayout.LayoutParams spacerParams = new LinearLayout.LayoutParams(0, 1, 1f);
+                if (i != columns - 1) {
+                    spacerParams.setMarginEnd(gap);
+                }
+                row.addView(spacer, spacerParams);
+            }
+        }
+
+        // Long grids scroll inside the sheet instead of covering the stream
+        ViewGroup.LayoutParams scrollParams = menuScroll.getLayoutParams();
+        scrollParams.height = compact && rows > COMPACT_VISIBLE_ROWS ?
+                dpToPx(COMPACT_VISIBLE_ROWS * 56 + 12) : ViewGroup.LayoutParams.WRAP_CONTENT;
+        menuScroll.setLayoutParams(scrollParams);
+        menuScroll.scrollTo(0, 0);
+
         menuItems.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
 
         if (firstFocusable != null) {
@@ -336,7 +397,9 @@ public class GameMenu implements Game.GameMenuCallbacks {
     private void clearMenuDialogState() {
         menuTransitionGeneration++;
         currentDialog = null;
+        menuTitle = null;
         menuSubtitle = null;
+        menuScroll = null;
         menuBackActionLabel = null;
         menuItems = null;
         currentBackAction = null;
@@ -521,28 +584,28 @@ public class GameMenu implements Game.GameMenuCallbacks {
 
         options.add(MenuOption.console(
                 getString(R.string.console_performance_off),
-                R.drawable.ic_console_performance,
-                currentMode == Game.PERFORMANCE_OVERLAY_OFF ? getString(R.string.console_on) : null,
+                R.drawable.ic_dash_eyeoff,
+                currentMode == Game.PERFORMANCE_OVERLAY_OFF ? getString(R.string.dash_current) : null,
                 false,
                 true,
                 () -> game.setPerformanceOverlayMode(Game.PERFORMANCE_OVERLAY_OFF)));
         options.add(MenuOption.console(
                 getString(R.string.console_performance_simple),
-                R.drawable.ic_console_performance,
-                currentMode == Game.PERFORMANCE_OVERLAY_SIMPLE ? getString(R.string.console_on) : null,
+                R.drawable.ic_dash_chart,
+                currentMode == Game.PERFORMANCE_OVERLAY_SIMPLE ? getString(R.string.dash_current) : null,
                 false,
                 true,
                 () -> game.setPerformanceOverlayMode(Game.PERFORMANCE_OVERLAY_SIMPLE)));
         options.add(MenuOption.console(
                 getString(R.string.console_performance_advanced),
-                R.drawable.ic_console_performance,
-                currentMode == Game.PERFORMANCE_OVERLAY_ADVANCED ? getString(R.string.console_on) : null,
+                R.drawable.ic_dash_layers,
+                currentMode == Game.PERFORMANCE_OVERLAY_ADVANCED ? getString(R.string.dash_current) : null,
                 false,
                 true,
                 () -> game.setPerformanceOverlayMode(Game.PERFORMANCE_OVERLAY_ADVANCED)));
 
         showMenuDialog(
-                getString(R.string.console_performance_mode),
+                getString(R.string.dash_performance),
                 options.toArray(new MenuOption[0]),
                 () -> showMenu(device));
     }
@@ -551,51 +614,54 @@ public class GameMenu implements Game.GameMenuCallbacks {
         List<MenuOption> options = new ArrayList<>();
 
         options.add(MenuOption.consoleNavigation(
-                getString(R.string.console_performance_overlay),
-                R.drawable.ic_console_performance,
+                getString(R.string.dash_performance),
+                R.drawable.ic_dash_chart,
                 getPerformanceModeLabel(),
                 () -> showPerformanceMenu(device)));
 
         if (game.isControllerMouseEmulationAvailable() && device != null) {
             options.add(MenuOption.console(
                     getString(R.string.console_mouse_mode),
-                    R.drawable.ic_console_mouse,
+                    R.drawable.ic_dash_mouse,
                     getString(device.isMouseEmulationActive() ? R.string.console_on : R.string.console_off),
                     false,
                     true,
                     device::toggleMouseEmulation));
         }
 
-        options.add(MenuOption.consoleNavigation(
-                getString(R.string.console_advanced_settings),
-                R.drawable.ic_console_controller,
-                null,
-                () -> showAdvancedMenu(device)));
-
         options.add(MenuOption.console(
-                getString(R.string.console_show_keyboard),
-                R.drawable.ic_android_keyboard,
-                null,
+                getString(R.string.dash_keyboard),
+                R.drawable.ic_dash_keyboard,
+                getString(R.string.dash_keyboard_type_on_pc),
                 false,
                 false,
                 game::showGamepadKeyboard));
 
+        options.add(MenuOption.consoleNavigation(
+                getString(R.string.dash_advanced),
+                R.drawable.ic_dash_command,
+                getString(R.string.dash_shortcuts_status),
+                () -> showAdvancedMenu(device)));
+
         options.add(MenuOption.console(
                 getString(R.string.game_menu_disconnect),
-                R.drawable.ic_console_link,
-                null,
+                R.drawable.ic_dash_unlink,
+                getString(R.string.dash_disconnect_status),
                 false,
                 false,
                 game::disconnect));
 
-        options.add(MenuOption.consoleNavigation(
+        options.add(new MenuOption(
                 getString(R.string.console_end_stream),
-                R.drawable.ic_console_stop,
-                null,
-                () -> showEndStreamConfirmation(device)));
+                false,
+                () -> showEndStreamConfirmation(device),
+                R.drawable.ic_dash_power,
+                getString(R.string.dash_end_stream_status),
+                true,
+                false));
 
         showMenuDialog(
-                game.getString(R.string.console_streaming_on, game.getStreamingComputerName()),
+                game.getStreamingAppName(),
                 options.toArray(new MenuOption[0]));
     }
 
@@ -603,20 +669,23 @@ public class GameMenu implements Game.GameMenuCallbacks {
         List<MenuOption> options = new ArrayList<>();
         options.add(MenuOption.console(
                 getString(R.string.console_end_stream),
-                R.drawable.ic_console_stop,
+                R.drawable.ic_dash_power,
                 null,
                 true,
                 false,
                 game::endStream));
         options.add(MenuOption.console(
                 getString(R.string.console_keep_playing),
-                R.drawable.ic_console_resume,
+                R.drawable.ic_dash_play,
                 null,
                 false,
                 false,
                 () -> {}));
+        pendingSubtitle = getString(R.string.console_end_stream_message);
+        // Land on "Keep playing" so a double press of A cannot end the session
+        pendingFocusIndex = 1;
         showMenuDialog(
-                getString(R.string.console_end_stream_message),
+                getString(R.string.dash_end_stream_title),
                 options.toArray(new MenuOption[0]),
                 () -> showMenu(device));
     }

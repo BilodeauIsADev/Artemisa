@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="#4D272C34" android:state_enabled="false" />
+    <item android:color="@color/dash_go" android:state_checked="true" />
+    <item android:color="#3A404A" />
+</selector>

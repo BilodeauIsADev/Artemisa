@@ -185,13 +185,13 @@
     <!-- Preferences -->
     <string name="category_general_settings">General Settings</string>
     <string name="category_video_settings">Video Settings</string>
-    <string name="title_resolution_list">Video resolution</string>
+    <string name="title_resolution_list">Resolution</string>
     <string name="summary_resolution_list">Increase to improve image clarity. Decrease for better performance on lower end devices and slower networks.</string>
     <string name="title_native_res_dialog">Native Resolution Warning</string>
     <string name="text_native_res_dialog">Native resolution and/or FPS may not be supported by the streaming server. You will probably need to configure a matching custom display mode for the host PC manually.\n\nIf you choose to create a custom resolution in NVIDIA Control Panel to match your screen settings, please ensure you have read and understood NVIDIA\'s warning regarding possible monitor damage, PC instability, and other potential problems.\n\nWe are not responsible for any problems resulting from creating a custom resolution on your PC.\n\nIt may be that your monitor does not support a necessary display configuration. If so, you may try to set up a virtual monitor. Finally, if your device or host PC does not support streaming at a specific resolution or refresh rate, you\'re out of luck unfortunately.</string>
-    <string name="title_fps_list">Video frame rate</string>
+    <string name="title_fps_list">Frame rate</string>
     <string name="summary_fps_list">Increase for a smoother video stream. Decrease for better performance on lower end devices.</string>
-    <string name="title_seekbar_bitrate">Video bitrate</string>
+    <string name="title_seekbar_bitrate">Bitrate</string>
     <string name="summary_seekbar_bitrate">Increase for better image quality. Decrease to improve performance on slower connections.</string>
     <string name="title_seekbar_metered_bitrate">Video bitrate on metered networks</string>
     <string name="summary_seekbar_metered_bitrate">High bitrates consume more data, lower bitrates improve smoothness in metered networks.\nSet 0 for ¼ of the above bitrate settings.</string>
@@ -352,7 +352,7 @@
     <string name="videoformat_hevcalways">Prefer HEVC</string>
     <string name="videoformat_h264always">Prefer H.264</string>
 
-    <string name="title_frame_pacing">Video frame pacing</string>
+    <string name="title_frame_pacing">Frame pacing</string>
     <string name="summary_frame_pacing">Specify how to balance video latency and smoothness</string>
     <string name="pacing_responsive_hq">Responsive HQ (Recommended)</string>
     <string name="pacing_warp">Warp Drive (Experimental)</string>
@@ -775,12 +775,12 @@
     <string name="console_preparing_stream">Preparing your stream</string>
     <string name="console_show_keyboard">Show keyboard</string>
     <string name="console_keyboard_title">KEYBOARD</string>
-    <string name="console_keyboard_page_letters">LETTERS</string>
-    <string name="console_keyboard_page_symbols">SYMBOLS</string>
-    <string name="console_keyboard_page_controls">CONTROLS</string>
-    <string name="console_keyboard_hint_type">TYPE</string>
-    <string name="console_keyboard_hint_space">SPACE</string>
-    <string name="console_keyboard_hint_backspace">BKSP</string>
+    <string name="console_keyboard_page_letters">Letters</string>
+    <string name="console_keyboard_page_symbols">Symbols</string>
+    <string name="console_keyboard_page_controls">Controls</string>
+    <string name="console_keyboard_hint_type">Type</string>
+    <string name="console_keyboard_hint_space">Space</string>
+    <string name="console_keyboard_hint_backspace">Backspace</string>
     <string name="console_keyboard_hint_page">PAGE</string>
     <string name="console_button_x" translatable="false">X</string>
     <string name="console_button_y" translatable="false">Y</string>
@@ -809,8 +809,8 @@
     <string name="console_end_stream">End stream</string>
     <string name="console_end_stream_message">The host application will close. Make sure your progress is saved.</string>
     <string name="console_keep_playing">Keep playing</string>
-    <string name="console_on">ON</string>
-    <string name="console_off">OFF</string>
+    <string name="console_on">On</string>
+    <string name="console_off">Off</string>
     <string name="console_close">CLOSE</string>
     <string name="console_settings_title">SETTINGS</string>
     <string name="console_settings_tab_stream">STREAM</string>
@@ -832,4 +832,63 @@
     <string name="console_button_rb" translatable="false">RB</string>
     <string name="console_previous_tab">PREVIOUS TAB</string>
     <string name="console_next_tab">NEXT TAB</string>
+
+    <!-- Art-led dashboard -->
+    <string name="dash_games">Games</string>
+    <string name="dash_computers">Computers</string>
+    <string name="dash_play">Play</string>
+    <string name="dash_resume">Resume</string>
+    <string name="dash_running">Running</string>
+    <string name="dash_more_options">More options</string>
+    <string name="dash_options">Options</string>
+    <string name="dash_select">Select</string>
+    <string name="dash_back">Back</string>
+    <string name="dash_close">Close</string>
+    <string name="dash_cancel">Cancel</string>
+    <string name="dash_change">Change</string>
+    <string name="dash_change_section">Section</string>
+    <string name="dash_open_library">Open library</string>
+    <string name="dash_pair">Pair</string>
+    <string name="dash_wake">Wake</string>
+    <string name="dash_library_meta">%1$s · %2$s · %3$d FPS · %4$d Mbps</string>
+    <string name="dash_status_online">Online</string>
+    <string name="dash_status_offline">Offline</string>
+    <string name="dash_status_refreshing">Refreshing</string>
+    <string name="dash_status_paired">Paired</string>
+    <string name="dash_status_not_paired">Not paired</string>
+    <string name="dash_status_running">Playing now</string>
+    <plurals name="dash_games_count">
+        <item quantity="one">%d game</item>
+        <item quantity="other">%d games</item>
+    </plurals>
+    <string name="dash_searching_title">Looking for computers</string>
+    <string name="dash_searching_message">Computers running Apollo or Sunshine on your network show up here. You can also add one by its address.</string>
+    <string name="dash_add_computer">Add a computer</string>
+    <string name="dash_pair_title">Pair with %1$s</string>
+    <string name="dash_pair_message">Enter this PIN on the host to finish pairing.</string>
+    <string name="dash_pair_help">On Apollo or Sunshine, open the web UI and go to the PIN page.</string>
+    <string name="dash_pair_otp_message">Pairing with the PIN and passphrase you entered. Keep the host\'s web UI open until this finishes.</string>
+    <string name="dash_starting">Starting the game on %1$s</string>
+    <string name="dash_streaming_from">Streaming from %1$s</string>
+    <string name="dash_keyboard_type_on_pc">Type on the PC</string>
+    <string name="dash_shortcuts">Shortcuts</string>
+    <string name="dash_shortcuts_status">Keys and commands</string>
+    <string name="dash_disconnect_status">Game keeps running</string>
+    <string name="dash_end_stream_status">Closes the game</string>
+    <string name="dash_performance">Performance</string>
+    <string name="dash_current">Current</string>
+    <string name="dash_perf_fps">FPS</string>
+    <string name="dash_perf_network">network</string>
+    <string name="dash_perf_decode">decode</string>
+    <string name="dash_perf_dropped">dropped</string>
+    <string name="dash_perf_mbps">Mbps</string>
+    <string name="dash_keyboard">Keyboard</string>
+    <string name="dash_advanced">Advanced</string>
+    <string name="dash_end_stream_title">End stream?</string>
+    <string name="dash_settings_video">Video</string>
+    <string name="dash_settings_audio_host">Audio and host</string>
+    <string name="dash_settings_controller">Controller</string>
+    <string name="dash_settings_overlay">Overlay</string>
+    <string name="dash_settings_library">Library</string>
+    <string name="dash_settings_system">System</string>
 </resources>

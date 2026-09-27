@@ -154,7 +154,7 @@ public class PreferenceConfiguration {
     private static final boolean DEFAULT_HOST_AUDIO = false;
     private static final int DEFAULT_DEADZONE = 5;
     private static final int DEFAULT_OPACITY = 90;
-    private static final int DEFAULT_QUICK_MENU_OPACITY = 95;
+    private static final int DEFAULT_QUICK_MENU_OPACITY = 100;
     private static final boolean DEFAULT_HORIZONTAL_GAME_GRID = false;
     public static final String DEFAULT_LANGUAGE = "default";
     private static final boolean DEFAULT_MULTI_CONTROLLER = true;

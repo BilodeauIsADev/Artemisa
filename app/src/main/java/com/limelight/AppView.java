@@ -17,7 +17,9 @@ import com.limelight.preferences.StreamSettings;
 import com.limelight.profiles.ProfilesManager;
 import com.limelight.ui.AdapterFragment;
 import com.limelight.ui.AdapterFragmentCallbacks;
+import com.limelight.ui.ConsoleMenu;
 import com.limelight.ui.HorizontalGameListView;
+import com.limelight.utils.ArtHelper;
 import com.limelight.utils.CacheHelper;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.ServerHelper;
@@ -33,23 +35,20 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.view.ContextMenu;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AbsListView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.AdapterContextMenuInfo;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -70,8 +69,17 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
     private boolean inForeground;
     private boolean showHiddenApps;
     private HashSet<Integer> hiddenAppIds = new HashSet<>();
-    private int pendingContextMenuPosition = -1;
-    private View pendingContextMenuTarget;
+
+    private HorizontalGameListView tileRow;
+    private ImageView backdropView;
+    private ImageView keyArtView;
+    private TextView heroTitle;
+    private TextView heroMeta;
+    private TextView playLabel;
+    private View playButton;
+    private View moreButton;
+    private final ExecutorService artExecutor = Executors.newSingleThreadExecutor();
+    private int artGeneration;
 
     private PreferenceConfiguration prefConfig;
 
@@ -179,13 +187,11 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
     }
 
     private void updateGridLayout(PreferenceConfiguration updatedPrefs, boolean force) {
-        boolean layoutChanged = prefConfig == null ||
-                prefConfig.smallIconMode != updatedPrefs.smallIconMode ||
-                prefConfig.horizontalGameGrid != updatedPrefs.horizontalGameGrid;
         prefConfig = updatedPrefs;
 
         // If the adapter isn't initialized yet, it will use the latest preferences when created.
-        if (appGridAdapter == null || (!force && !layoutChanged)) {
+        if (appGridAdapter == null || !force) {
+            updateHero();
             return;
         }
 
@@ -319,11 +325,43 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
             setShouldDockBigOverlays(false);
         }
 
-        UiHelper.notifyNewRootView(this);
+        UiHelper.notifyNewRootView(this, false);
 
-        // Setup the profiles button
+        // Setup the top bar
         findViewById(R.id.profilesButton)
             .setOnClickListener(v -> startActivity(new Intent(this, ProfilesActivity.class)));
+        findViewById(R.id.settingsButton).setOnClickListener(v -> openSettings());
+
+        backdropView = findViewById(R.id.libraryBackdrop);
+        backdropView.setColorFilter(ArtHelper.backdropFilter(0.5f));
+        keyArtView = findViewById(R.id.libraryKeyArt);
+        heroTitle = findViewById(R.id.libraryTitle);
+        heroMeta = findViewById(R.id.libraryMeta);
+        playLabel = findViewById(R.id.libraryPlayLabel);
+        playButton = findViewById(R.id.libraryPlayButton);
+        moreButton = findViewById(R.id.libraryMoreButton);
+
+        playButton.setOnClickListener(v -> {
+            int position = getFocusedAppPosition();
+            if (position >= 0) {
+                handleAppSelection(playButton, position);
+            }
+        });
+        moreButton.setOnClickListener(v -> {
+            int position = getFocusedAppPosition();
+            if (position >= 0) {
+                showAppOptions(position, moreButton);
+            }
+        });
+        View.OnKeyListener backToRow = (v, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_DPAD_UP && event.getAction() == KeyEvent.ACTION_DOWN
+                    && tileRow != null) {
+                return tileRow.requestFocusOnCurrent();
+            }
+            return false;
+        };
+        playButton.setOnKeyListener(backToRow);
+        moreButton.setOnKeyListener(backToRow);
 
         showHiddenApps = getIntent().getBooleanExtra(SHOW_HIDDEN_APPS_EXTRA, false);
         uuidString = getIntent().getStringExtra(UUID_EXTRA);
@@ -340,13 +378,8 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         label.setText(computerName);
 
         this.prefConfig = PreferenceConfiguration.readPreferences(this);
-        TextView streamProfile = findViewById(R.id.streamProfileText);
-        streamProfile.setText(getString(
-                R.string.console_stream_profile_summary,
-                prefConfig.width,
-                prefConfig.height,
-                Math.round(prefConfig.fps),
-                Math.round(prefConfig.bitrate / 1000f)));
+        heroTitle.setText(computerName);
+        updateHero();
 
         // Bind to the computer manager service
         bindService(new Intent(this, ComputerManagerService.class), serviceConnection,
@@ -361,10 +394,84 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_MENU ||
                 keyCode == KeyEvent.KEYCODE_BUTTON_START) {
-            openSettings();
+            int position = getFocusedAppPosition();
+            if (position >= 0) {
+                showAppOptions(position, moreButton);
+            }
             return true;
         }
         return super.onKeyUp(keyCode, event);
+    }
+
+    private int getFocusedAppPosition() {
+        if (appGridAdapter == null || tileRow == null || appGridAdapter.getCount() == 0) {
+            return -1;
+        }
+        return Math.min(tileRow.getFocusedPosition(), appGridAdapter.getCount() - 1);
+    }
+
+    private static String resolutionLabel(int width, int height) {
+        switch (height) {
+            case 2160: return "4K";
+            case 1440: return "1440p";
+            case 1080: return "1080p";
+            case 720: return "720p";
+            default: return width + "×" + height;
+        }
+    }
+
+    // Title, meta line and Play/Resume label for the focused game.
+    private void updateHero() {
+        if (heroMeta == null || prefConfig == null) {
+            return;
+        }
+        String meta = getString(R.string.dash_library_meta,
+                getTitle(),
+                resolutionLabel(prefConfig.width, prefConfig.height),
+                Math.round(prefConfig.fps),
+                Math.round(prefConfig.bitrate / 1000f));
+
+        int position = getFocusedAppPosition();
+        boolean running = false;
+        if (position >= 0) {
+            AppObject app = (AppObject) appGridAdapter.getItem(position);
+            heroTitle.setText(app.app.getAppName());
+            running = app.isRunning;
+        }
+        heroMeta.setText(running ? getString(R.string.dash_running) + " · " + meta : meta);
+        playLabel.setText(running ? R.string.dash_resume : R.string.dash_play);
+    }
+
+    // The backdrop and key art follow the focused game.
+    private void onGameFocused(View tile, int position) {
+        updateHero();
+        if (computer == null || position >= appGridAdapter.getCount()) {
+            return;
+        }
+
+        final int generation = ++artGeneration;
+        final AppObject app = (AppObject) appGridAdapter.getItem(position);
+        final Bitmap tileBitmap = ArtHelper.bitmapOf(tile.findViewById(R.id.grid_image));
+        final String uuid = computer.uuid;
+        artExecutor.execute(() -> {
+            Bitmap cover = ArtHelper.loadCachedCover(this, uuid, app.app.getAppId(), 900);
+            if (cover == null) {
+                cover = tileBitmap;
+            }
+            final Bitmap keyArt = cover;
+            final Bitmap blurred = ArtHelper.blur(cover);
+            runOnUiThread(() -> {
+                if (generation != artGeneration || isFinishing()) {
+                    return;
+                }
+                ArtHelper.setBackdrop(backdropView, blurred);
+                keyArtView.setImageBitmap(keyArt);
+                keyArtView.setAlpha(0f);
+                keyArtView.animate().alpha(0.92f).setDuration(220).start();
+                backdropView.setAlpha(0.4f);
+                backdropView.animate().alpha(1f).setDuration(260).start();
+            });
+        });
     }
 
     private void updateHiddenApps(boolean hideImmediately) {
@@ -411,6 +518,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
 
         SpinnerDialog.closeDialogs(this);
         Dialog.closeDialogs();
+        artExecutor.shutdownNow();
 
         if (managerBinder != null) {
             unbindService(serviceConnection);
@@ -468,89 +576,58 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         }
     }
 
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-
-        int position = getContextMenuPosition(menuInfo);
-        View targetView = getContextMenuTarget(menuInfo);
+    private void showAppOptions(int position, View anchor) {
         if (position < 0 || position >= appGridAdapter.getCount()) {
             return;
         }
 
         AppObject selectedApp = (AppObject) appGridAdapter.getItem(position);
-
-        menu.setHeaderTitle(selectedApp.app.getAppName());
+        ConsoleMenu menu = new ConsoleMenu(this, selectedApp.app.getAppName());
 
         if (lastRunningAppId == 0) {
             if (prefConfig.useVirtualDisplay) {
-                menu.add(Menu.NONE, START_OR_RESUME_ID, 1, getResources().getString(R.string.applist_menu_start_primarydisplay));
+                menu.add(START_OR_RESUME_ID, getString(R.string.applist_menu_start_primarydisplay), R.drawable.ic_dash_monitor);
             } else {
-                menu.add(Menu.NONE, START_WITH_VDISPLAY, 1, getResources().getString(R.string.applist_menu_start_vdisplay));
+                menu.add(START_WITH_VDISPLAY, getString(R.string.applist_menu_start_vdisplay), R.drawable.ic_dash_monitor);
             }
         } else {
             if (lastRunningAppId == selectedApp.app.getAppId()) {
-                menu.add(Menu.NONE, START_OR_RESUME_ID, 1, getResources().getString(R.string.applist_menu_resume));
-                menu.add(Menu.NONE, QUIT_ID, 2, getResources().getString(R.string.applist_menu_quit));
+                menu.add(START_OR_RESUME_ID, getString(R.string.applist_menu_resume), R.drawable.ic_dash_play);
+                menu.addDestructive(QUIT_ID, getString(R.string.applist_menu_quit), R.drawable.ic_dash_power);
             }
             else {
                 if (prefConfig.useVirtualDisplay) {
-                    menu.add(Menu.NONE, START_WITH_QUIT_VDISPLAY, 1, getResources().getString(R.string.applist_menu_quit_and_start));
-                    menu.add(Menu.NONE, START_WITH_QUIT, 2, getResources().getString(R.string.applist_menu_quit_and_start_primarydisplay));
-                } else{
-                    menu.add(Menu.NONE, START_WITH_QUIT, 1, getResources().getString(R.string.applist_menu_quit_and_start));
-                    menu.add(Menu.NONE, START_WITH_QUIT_VDISPLAY, 2, getResources().getString(R.string.applist_menu_quit_and_start_vdisplay));
+                    menu.add(START_WITH_QUIT_VDISPLAY, getString(R.string.applist_menu_quit_and_start), R.drawable.ic_dash_refresh);
+                    menu.add(START_WITH_QUIT, getString(R.string.applist_menu_quit_and_start_primarydisplay), R.drawable.ic_dash_monitor);
+                } else {
+                    menu.add(START_WITH_QUIT, getString(R.string.applist_menu_quit_and_start), R.drawable.ic_dash_refresh);
+                    menu.add(START_WITH_QUIT_VDISPLAY, getString(R.string.applist_menu_quit_and_start_vdisplay), R.drawable.ic_dash_monitor);
                 }
             }
         }
+        menu.addSeparator();
 
-        // Only show the hide checkbox if this is not the currently running app or it's already hidden
+        // Only show the hide option if this is not the currently running app or it's already hidden
         if (lastRunningAppId != selectedApp.app.getAppId() || selectedApp.isHidden) {
-            MenuItem hideAppItem = menu.add(Menu.NONE, HIDE_APP_ID, 3, getResources().getString(R.string.applist_menu_hide_app));
-            hideAppItem.setCheckable(true);
-            hideAppItem.setChecked(selectedApp.isHidden);
+            menu.addChecked(HIDE_APP_ID, getString(R.string.applist_menu_hide_app), R.drawable.ic_dash_eyeoff, selectedApp.isHidden);
         }
 
-        menu.add(Menu.NONE, VIEW_DETAILS_ID, 4, getResources().getString(R.string.applist_menu_details));
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Only add an option to create shortcut if box art is loaded
-            // and when we're in grid-mode (not list-mode).
-            ImageView appImageView = targetView != null ? targetView.findViewById(R.id.grid_image) : null;
-            if (appImageView != null) {
-                // We have a grid ImageView, so we must be in grid-mode
-                BitmapDrawable drawable = (BitmapDrawable)appImageView.getDrawable();
-                if (drawable != null && drawable.getBitmap() != null) {
-                    // We have a bitmap loaded too
-                    menu.add(Menu.NONE, CREATE_SHORTCUT_ID, 5, getResources().getString(R.string.applist_menu_scut));
-                }
+        View tile = tileRow != null ? tileRow.getFocusedItemView() : null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && tile != null) {
+            // Only offer a shortcut once the box art has loaded
+            Bitmap art = ArtHelper.bitmapOf(tile.findViewById(R.id.grid_image));
+            if (art != null) {
+                menu.add(CREATE_SHORTCUT_ID, getString(R.string.applist_menu_scut), R.drawable.ic_dash_pin);
             }
         }
 
-        menu.add(Menu.NONE, EXPORT_LAUNCHER_FILE_ID, 6, getResources().getString(R.string.applist_menu_export_launcher));
+        menu.add(EXPORT_LAUNCHER_FILE_ID, getString(R.string.applist_menu_export_launcher), R.drawable.ic_dash_external);
+        menu.add(VIEW_DETAILS_ID, getString(R.string.applist_menu_details), R.drawable.ic_dash_info);
+
+        menu.show(anchor, itemId -> handleAppMenuAction(itemId, selectedApp, tile));
     }
 
-    @Override
-    public void onContextMenuClosed(Menu menu) {
-        super.onContextMenuClosed(menu);
-        if (pendingContextMenuTarget != null) {
-            unregisterForContextMenu(pendingContextMenuTarget);
-        }
-        pendingContextMenuPosition = -1;
-        pendingContextMenuTarget = null;
-    }
-
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        ContextMenuInfo menuInfo = item.getMenuInfo();
-        int position = getContextMenuPosition(menuInfo);
-        View targetView = getContextMenuTarget(menuInfo);
-        if (position < 0 || position >= appGridAdapter.getCount()) {
-            return super.onContextItemSelected(item);
-        }
-
-        final AppObject app = (AppObject) appGridAdapter.getItem(position);
-        int itemId = item.getItemId();
+    private void handleAppMenuAction(int itemId, final AppObject app, View targetView) {
         switch (itemId) {
             case START_WITH_QUIT:
             case START_WITH_QUIT_VDISPLAY: {
@@ -576,7 +653,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
                         }
                     }, null);
                 }
-                return true;
+                return;
             }
 
             case START_OR_RESUME_ID:
@@ -593,7 +670,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
                     // Resume is the same as start for us
                     ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, withVDiaplay);
                 }
-                return true;
+                return;
             }
 
             case QUIT_ID: {
@@ -615,16 +692,16 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
                                 });
                     }
                 }, null);
-                return true;
+                return;
             }
 
             case VIEW_DETAILS_ID: {
                 Dialog.displayDialog(AppView.this, getResources().getString(R.string.title_details), app.app.toString(), false);
-                return true;
+                return;
             }
 
             case HIDE_APP_ID: {
-                if (item.isChecked()) {
+                if (app.isHidden) {
                     // Transitioning hidden to shown
                     hiddenAppIds.remove(app.app.getAppId());
                 } else {
@@ -632,16 +709,15 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
                     hiddenAppIds.add(app.app.getAppId());
                 }
                 updateHiddenApps(false);
-                return true;
+                return;
             }
 
             case CREATE_SHORTCUT_ID: {
-                ImageView appImageView = targetView.findViewById(R.id.grid_image);
-                Bitmap appBits = ((BitmapDrawable) appImageView.getDrawable()).getBitmap();
-                if (!shortcutHelper.createPinnedGameShortcut(computer, app.app, appBits)) {
+                Bitmap appBits = targetView != null ? ArtHelper.bitmapOf(targetView.findViewById(R.id.grid_image)) : null;
+                if (appBits == null || !shortcutHelper.createPinnedGameShortcut(computer, app.app, appBits)) {
                     Toast.makeText(AppView.this, getResources().getString(R.string.unable_to_pin_shortcut), Toast.LENGTH_LONG).show();
                 }
-                return true;
+                return;
             }
 
             case EXPORT_LAUNCHER_FILE_ID: {
@@ -658,34 +734,11 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
                 } else {
                     shortcutHelper.exportLauncherFile(computer, app.app);
                 }
-                return true;
+                return;
             }
 
-            default: {
-                return super.onContextItemSelected(item);
-            }
+            default:
         }
-    }
-
-    private int getContextMenuPosition(ContextMenuInfo menuInfo) {
-        if (menuInfo instanceof AdapterContextMenuInfo) {
-            return ((AdapterContextMenuInfo) menuInfo).position;
-        }
-        return pendingContextMenuPosition;
-    }
-
-    private View getContextMenuTarget(ContextMenuInfo menuInfo) {
-        if (menuInfo instanceof AdapterContextMenuInfo) {
-            return ((AdapterContextMenuInfo) menuInfo).targetView;
-        }
-        return pendingContextMenuTarget;
-    }
-
-    private void showAppContextMenu(View targetView, int position) {
-        pendingContextMenuPosition = position;
-        pendingContextMenuTarget = targetView;
-        registerForContextMenu(targetView);
-        openContextMenu(targetView);
     }
 
     private void updateUiWithServerinfo(final ComputerDetails details) {
@@ -721,6 +774,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
 
                 if (updated) {
                     appGridAdapter.notifyDataSetChanged();
+                    updateHero();
                 }
             }
         });
@@ -802,39 +856,26 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
 
     @Override
     public int getAdapterFragmentLayoutId() {
-        PreferenceConfiguration currentPrefs = PreferenceConfiguration.readPreferences(AppView.this);
-        if (currentPrefs.horizontalGameGrid) {
-            return R.layout.app_grid_view_horizontal;
-        }
-        return currentPrefs.smallIconMode ? R.layout.app_grid_view_small : R.layout.app_grid_view;
+        return R.layout.app_grid_view_horizontal;
     }
 
     @Override
     public void receiveAdapterView(View adapterView) {
-        if (adapterView instanceof HorizontalGameListView) {
-            HorizontalGameListView horizontalListView = (HorizontalGameListView) adapterView;
-            horizontalListView.setAdapter(appGridAdapter);
-            horizontalListView.setOnItemClickListener(
-                    (view, position, id) -> handleAppSelection(view, position));
-            horizontalListView.setOnItemLongClickListener((view, position, id) -> {
-                showAppContextMenu(view, position);
-                return true;
-            });
-            UiHelper.applyStatusBarPadding(horizontalListView);
-        }
-        else {
-            receiveAbsListView((AbsListView) adapterView);
-        }
+        tileRow = (HorizontalGameListView) adapterView;
+        tileRow.setNextFocusDownTarget(R.id.libraryPlayButton);
+        tileRow.setOnItemFocusListener(this::onGameFocused);
+        tileRow.setAdapter(appGridAdapter);
+        tileRow.setOnItemClickListener(
+                (view, position, id) -> handleAppSelection(view, position));
+        tileRow.setOnItemLongClickListener((view, position, id) -> {
+            showAppOptions(position, moreButton);
+            return true;
+        });
     }
 
     @Override
     public void receiveAbsListView(AbsListView listView) {
-        listView.setAdapter(appGridAdapter);
-        listView.setOnItemClickListener((parent, view, position, id) ->
-                handleAppSelection(view, position));
-        UiHelper.applyStatusBarPadding(listView);
-        registerForContextMenu(listView);
-        listView.requestFocus();
+        // The library is always a single row of tiles
     }
 
     private void handleAppSelection(View targetView, int position) {
@@ -846,7 +887,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
                 ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, prefConfig.useVirtualDisplay);
             }
             else {
-                showAppContextMenu(targetView, position);
+                showAppOptions(position, moreButton);
             }
         }
         else if (prefConfig.useVirtualDisplay &&

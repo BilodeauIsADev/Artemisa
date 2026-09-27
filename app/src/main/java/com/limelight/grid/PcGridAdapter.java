@@ -51,55 +51,26 @@ public class PcGridAdapter extends GenericGridAdapter<PcView.ComputerObject> {
 
     @Override
     public void populateView(View parentView, ImageView imgView, RelativeLayout gridMask, ProgressBar prgView, TextView txtView, ImageView overlayView, PcView.ComputerObject obj) {
-        TextView statusView = parentView.findViewById(R.id.grid_status);
-        View statusDot = parentView.findViewById(R.id.grid_status_dot);
-
-        imgView.setImageResource(R.drawable.ic_computer);
-        if (obj.details.state == ComputerDetails.State.ONLINE) {
-            imgView.setAlpha(1.0f);
-            statusView.setText(R.string.console_stream_ready);
-            statusView.setTextColor(context.getResources().getColor(R.color.console_accent));
-            statusDot.setAlpha(1.0f);
-        }
-        else if (obj.details.state == ComputerDetails.State.UNKNOWN) {
-            imgView.setAlpha(0.4f);
-            statusView.setText(R.string.console_connecting);
-            statusView.setTextColor(context.getResources().getColor(R.color.console_text_secondary));
-            statusDot.setAlpha(0.45f);
-        }
-        else {
-            imgView.setAlpha(0.4f);
-            statusView.setText(R.string.console_offline);
-            statusView.setTextColor(context.getResources().getColor(R.color.console_text_secondary));
-            statusDot.setAlpha(0.25f);
-        }
-
-        if (obj.details.state == ComputerDetails.State.UNKNOWN) {
-            prgView.setVisibility(View.VISIBLE);
-        }
-        else {
-            prgView.setVisibility(View.INVISIBLE);
-        }
-
+        imgView.setImageResource(R.drawable.ic_dash_monitor);
         txtView.setText(obj.details.name);
-        if (obj.details.state == ComputerDetails.State.ONLINE) {
-            txtView.setAlpha(1.0f);
-        }
-        else {
-            txtView.setAlpha(0.4f);
-        }
+        parentView.setContentDescription(obj.details.name);
+
+        boolean online = obj.details.state == ComputerDetails.State.ONLINE;
+        imgView.setAlpha(online ? 1.0f : 0.45f);
+        prgView.setVisibility(obj.details.state == ComputerDetails.State.UNKNOWN ? View.VISIBLE : View.GONE);
 
         if (obj.details.state == ComputerDetails.State.OFFLINE) {
-            overlayView.setImageResource(R.drawable.ic_pc_offline);
-            overlayView.setAlpha(0.4f);
+            overlayView.setImageResource(R.drawable.ic_dash_moon);
             overlayView.setVisibility(View.VISIBLE);
         }
         // We must check if the status is exactly online and unpaired
         // to avoid colliding with the loading spinner when status is unknown
-        else if (obj.details.state == ComputerDetails.State.ONLINE &&
-                obj.details.pairState == PairingManager.PairState.NOT_PAIRED) {
-            overlayView.setImageResource(R.drawable.ic_lock);
-            overlayView.setAlpha(1.0f);
+        else if (online && obj.details.pairState == PairingManager.PairState.NOT_PAIRED) {
+            overlayView.setImageResource(R.drawable.ic_dash_lock);
+            overlayView.setVisibility(View.VISIBLE);
+        }
+        else if (online && obj.details.runningGameId != 0) {
+            overlayView.setImageResource(R.drawable.ic_dash_play);
             overlayView.setVisibility(View.VISIBLE);
         }
         else {

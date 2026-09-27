@@ -69,6 +69,23 @@ public class SeekBarPreference extends Preference
         seekbarMax = maxValue - minValue;
     }
 
+    // On a TV the current value is more useful under the title than a description
+    @Override
+    public CharSequence getSummary() {
+        int value = getPersistedInt(defaultValue);
+        String text;
+        if (divisor != 1) {
+            float floatValue = value / (float) divisor;
+            text = floatValue == Math.round(floatValue) ?
+                    String.valueOf(Math.round(floatValue)) :
+                    String.format((Locale) null, "%.1f", floatValue);
+        }
+        else {
+            text = String.valueOf(value);
+        }
+        return suffix == null ? text : text.concat(suffix.length() > 1 ? " " + suffix : suffix);
+    }
+
     protected AlertDialog getDialog() {
         if (dialog != null) {
             return dialog;
@@ -151,6 +168,7 @@ public class SeekBarPreference extends Preference
                 currentValue = seekBar.getProgress() + minValue;
                 persistInt(currentValue);
                 callChangeListener(currentValue);
+                notifyChanged();
             }
 
             dialog.dismiss();

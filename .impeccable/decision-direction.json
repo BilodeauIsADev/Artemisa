@@ -1,0 +1,143 @@
+{
+  "title": "Choose the visual world for Artemisa",
+  "question": "The roll assigned the TV On-Screen Display direction. Keep it, take my pick or the Android TV standard, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "On-Screen Display",
+      "kicker": "THE ROLL",
+      "lineage": "TV picture-settings menus, input switchers and broadcast lower-thirds",
+      "thesis": "Your PC is an input on the TV, and Artemisa is its on-screen display.",
+      "palette": ["#16191D", "#23272D", "#8B939C", "#F2F4F5", "#76D600"],
+      "materials": ["flat broadcast panels", "lower-third info bars", "inline ◀ value ▶ controls"],
+      "viewport": "The focused game's art fills the screen, covers run in one row, and a lower-third bar shows title, host and 4K · 60 · HDR signal badges.",
+      "risk": "Dark ground plus green sits near the old look; it only reads new if selection is a solid green bar and panels stay flat, with no glow.",
+      "raised": [
+        {"from": "challenger-teletext", "raise": "Everything sits inside the TV's title-safe frame on one fixed grid; nothing floats."},
+        {"from": "challenger-jcard", "raise": "Every screen fits without scrolling: settings tabs cap at seven rows, the quick menu at six."},
+        {"from": "challenger-zonesheets", "raise": "Neutrals come from one fixed nine-step grey ramp, and in-stream panels slide over the live picture instead of replacing it."},
+        {"from": "challenger-iridescent", "raise": "Green appears only on what is selected or live; every other pixel is achromatic."},
+        {"from": "challenger-leather", "raise": "Focus is physical: the selected tile lifts with scale and a real shadow, never a glow ring."}
+      ],
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "focused game art (full bleed)", "x": 0, "y": 0, "w": 12, "h": 10},
+        {"label": "input / clock strip", "x": 1, "y": 0, "w": 10, "h": 1},
+        {"label": "cover row", "x": 1, "y": 3, "w": 10, "h": 3, "accent": true},
+        {"label": "lower-third: title · host · signal badges", "x": 0, "y": 7, "w": 12, "h": 2},
+        {"label": "button hints", "x": 1, "y": 9, "w": 10, "h": 1}
+      ]}
+    },
+    {
+      "id": "model-pick",
+      "label": "Art-led Dashboard",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "PS5 and Xbox Series home screens",
+      "thesis": "The focused game owns the whole screen; the UI is one row of tiles and a title.",
+      "palette": ["#0B0D10", "#1A1E24", "#FFFFFF", "#76D600"],
+      "materials": ["full-bleed key art", "small square tiles", "large game title"],
+      "viewport": "Small tiles run along the top, the focused game's art floods the rest, and its title plus a big Play button sit bottom-left.",
+      "risk": "The most familiar direction: it reads as a console instantly because PS5 and Xbox already ship it, so it says 'console' more than 'Artemisa'.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "key art (full bleed)", "x": 0, "y": 0, "w": 12, "h": 10},
+        {"label": "tile row", "x": 1, "y": 1, "w": 10, "h": 2, "accent": true},
+        {"label": "title + Play", "x": 1, "y": 6, "w": 5, "h": 3}
+      ]}
+    },
+    {
+      "id": "challenger-teletext",
+      "label": "Teletext Service",
+      "verdict": "declined",
+      "lineage": "broadcast teletext magazines",
+      "thesis": "Artemisa as a teletext service: games and settings as numbered pages.",
+      "palette": ["#000000", "#FFFF00", "#00FFFF", "#FFFFFF"],
+      "materials": ["block mosaic", "40×24 cell grid"],
+      "viewport": "P100 index, each game a numbered row with its page number.",
+      "case": "A controller can't key page numbers, and Shield users don't identify with teletext; loses on both axes.",
+      "kept": "One strict grid inside the TV's title-safe frame.",
+      "risk": "Reads as retro novelty.",
+      "hero": "https://impeccable.style/worlds/cards/broadcast-programming-teletext-service-hero.webp"
+    },
+    {
+      "id": "challenger-jcard",
+      "label": "Mixtape J-Card",
+      "verdict": "declined",
+      "lineage": "hand-lettered cassette inlays",
+      "thesis": "The library as a mixtape: games as tracks on side A and side B.",
+      "palette": ["#F4F1EA", "#1D3A8A", "#C8102E"],
+      "materials": ["ballpoint on inlay stock", "spine titles"],
+      "viewport": "An unfolded j-card with games listed as tracks.",
+      "case": "Nothing about streaming PC games maps to a tape; loses on both axes.",
+      "kept": "Every screen has to fit its sheet: no scrolling.",
+      "risk": "Pure costume.",
+      "hero": "https://impeccable.style/worlds/cards/vernacular-ephemera-cassette-j-card-hero.webp"
+    },
+    {
+      "id": "challenger-zonesheets",
+      "label": "Exposure Record",
+      "verdict": "declined",
+      "lineage": "darkroom printing records",
+      "thesis": "Settings as translucent sheets stacked over the picture.",
+      "palette": ["#0E0E0E", "#7A7A7A", "#EDEDED", "#D0208A"],
+      "materials": ["tracing-paper overlays", "zone ramp"],
+      "viewport": "Stacked, slightly rotated sheets over a zone wedge.",
+      "case": "The angled sheets fight D-pad focus, and gamers don't know the darkroom; loses on both axes.",
+      "kept": "A fixed tonal ramp as the only greys, and panels sliding over the live picture.",
+      "risk": "Unreadable at ten feet.",
+      "hero": "https://impeccable.style/worlds/cards/operate-b-exposure-record-zone-sheets-hero.webp"
+    },
+    {
+      "id": "challenger-iridescent",
+      "label": "Iridescent Cloud Edge",
+      "verdict": "declined",
+      "lineage": "atmospheric optics",
+      "thesis": "An achromatic field with colour only at the active edge.",
+      "palette": ["#FFFFFF", "#5B6570", "#9BE7C4", "#B79CFF"],
+      "materials": ["white field", "spectral hairlines"],
+      "viewport": "White screen, pastel band on the focused tile.",
+      "case": "A white TV UI in a dark room is glaring, and the pastels drop the required green; loses on both axes.",
+      "kept": "Colour reserved strictly for the active element.",
+      "risk": "Glare in a dark room.",
+      "hero": "https://impeccable.style/worlds/cards/clouds-storms-auroras-iridescent-cloud-edge-hero.webp"
+    },
+    {
+      "id": "challenger-leather",
+      "label": "Leather Studio",
+      "verdict": "declined",
+      "lineage": "2010-era skeuomorphic apps",
+      "thesis": "Games as boxed objects on a stitched-leather shelf.",
+      "palette": ["#8B5A2B", "#EDE3D1", "#5A3A22"],
+      "materials": ["stitched leather", "walnut shelf"],
+      "viewport": "A wooden shelf of game cases under a leather header.",
+      "case": "Heavy textures fight the key art and read as dated; loses on both axes.",
+      "kept": "The active item physically lifts, with a true shadow.",
+      "risk": "Dated.",
+      "hero": "https://impeccable.style/worlds/cards/digital-design-canon-skeuomorph-leather-studio-hero.webp"
+    },
+    {
+      "id": "challenger-cloudquarry",
+      "label": "Cloud Quarry",
+      "verdict": "declined",
+      "lineage": "surreal impossible worlds",
+      "thesis": "Menus cut from blocks of weather.",
+      "palette": ["#F7F8FA", "#6FA8DC", "#5E6670", "#C0C6CC"],
+      "materials": ["cumulus blocks", "silver cut line"],
+      "viewport": "A cloud cliff with games cut into it.",
+      "case": "No relationship to game streaming; loses on both axes.",
+      "kept": "Panels move with weight: a short slide and settle, never a fade in place.",
+      "risk": "Incomprehensible.",
+      "hero": "https://impeccable.style/worlds/cards/dream-surreal-impossible-worlds-cloud-quarry-hero.webp"
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "code", "toggle": false},
+  "canon": true,
+  "canonCard": {
+    "label": "Android TV standard",
+    "thesis": "Google TV / Leanback browse rows, executed cleanly with the Artemisa green.",
+    "palette": ["#202124", "#303134", "#E8EAED", "#76D600"],
+    "materials": ["left navigation rail", "rows of landscape cards"],
+    "viewport": "A left rail (Home, Library, Settings) beside rows of cards with a featured banner on top.",
+    "risk": "Looks like every Android TV app, by design."
+  },
+  "steer": true
+}

@@ -28,8 +28,8 @@ import java.util.Set;
 @SuppressWarnings("unchecked")
 public class AppGridAdapter extends GenericGridAdapter<AppView.AppObject> {
     private static final int ART_WIDTH_PX = 300;
-    private static final int SMALL_WIDTH_DP = 126;
-    private static final int LARGE_WIDTH_DP = 190;
+    // Focused tile width in the library row
+    private static final int TILE_WIDTH_DP = 96;
 
     private final ComputerDetails computer;
     private final String uniqueId;
@@ -75,24 +75,12 @@ public class AppGridAdapter extends GenericGridAdapter<AppView.AppObject> {
     }
 
     private static int getLayoutIdForPreferences(PreferenceConfiguration prefs) {
-        if (prefs.smallIconMode) {
-            return R.layout.app_grid_item_small;
-        }
-        else {
-            return R.layout.app_grid_item;
-        }
+        return R.layout.app_grid_item;
     }
 
     public void updateLayoutWithPreferences(Context context, PreferenceConfiguration prefs) {
         int dpi = context.getResources().getDisplayMetrics().densityDpi;
-        int dp;
-
-        if (prefs.smallIconMode) {
-            dp = SMALL_WIDTH_DP;
-        }
-        else {
-            dp = LARGE_WIDTH_DP;
-        }
+        int dp = TILE_WIDTH_DP;
 
         double scalingDivisor = ART_WIDTH_PX / (dp * (dpi / 160.0));
         if (scalingDivisor < 1.0) {
@@ -173,14 +161,12 @@ public class AppGridAdapter extends GenericGridAdapter<AppView.AppObject> {
         loader.populateImageView(obj.app, imgView, txtView);
 
         if (obj.isRunning) {
-            // Show the play button overlay
-            overlayView.setImageResource(R.drawable.ic_play);
+            // Mark the running game with a small play badge
+            overlayView.setImageResource(R.drawable.ic_dash_play);
             overlayView.setVisibility(View.VISIBLE);
-            gridMask.setBackgroundColor(0x66000000);
         }
         else {
             overlayView.setVisibility(View.GONE);
-            gridMask.setBackgroundColor(0x00000000);
         }
 
         if (obj.isHidden) {

@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Artemisa mock · Android TV standard</title>
+<link rel="stylesheet" href="assets/base.css">
+<style>
+  :root {
+    --bg: #1B1C1F; --s1: #242529; --s2: #2D2F33; --s3: #3A3C41;
+    --t1: #E8EAED; --t2: #A8ADB3; --t3: #7D8288;
+    --go: #76D600; --on-go: #0A1200; --stop: #FF7B72;
+    --safe-x: 96px; --safe-y: 54px;
+    --f: 'Roboto', sans-serif;
+  }
+  .atv { background: var(--bg); color: var(--t1); font-family: var(--f); }
+
+  /* Nav rail */
+  .rail { position: absolute; left: 0; top: 0; bottom: 0; width: 176px; padding: 150px 0 0 56px; display: flex; flex-direction: column; gap: 14px; }
+  .rail .r { width: 72px; height: 72px; border-radius: 36px; display: grid; place-items: center; color: var(--t2); }
+  .rail .r .ic { font-size: 32px; }
+  .rail .r.on { background: var(--s3); color: var(--t1); }
+  .rail .r.bottom { margin-top: auto; margin-bottom: 64px; }
+  .rail .logo { position: absolute; left: 60px; top: 50px; width: 64px; height: 64px; mix-blend-mode: screen; }
+
+  .main { position: absolute; left: 200px; right: 0; top: 0; bottom: 0; }
+  .clock { position: absolute; right: var(--safe-x); top: 64px; font-size: 28px; color: var(--t2); }
+
+  /* Banner */
+  .banner { position: absolute; left: 0; right: var(--safe-x); top: 150px; height: 440px; border-radius: 20px; overflow: hidden; background: var(--s1); }
+  .banner .mosaic { position: absolute; inset: -60px; display: flex; filter: blur(50px) brightness(.55) saturate(1.2); }
+  .banner .mosaic img { flex: 1; min-width: 0; object-fit: cover; }
+  .banner .fade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(27,28,31,.92) 0%, rgba(27,28,31,.4) 60%, rgba(27,28,31,0) 100%); }
+  .banner .copy { position: absolute; left: 64px; top: 70px; }
+  .banner h1 { margin: 0; font-size: 72px; font-weight: 500; letter-spacing: -.01em; }
+  .banner p { margin: 14px 0 0; font-size: 28px; color: var(--t2); }
+  .banner .covers { position: absolute; right: 64px; top: 60px; display: flex; gap: 18px; }
+  .banner .covers img { width: 180px; height: 270px; object-fit: cover; border-radius: 10px; box-shadow: 0 20px 40px -10px rgba(0,0,0,.7); }
+  .mbtn { margin-top: 40px; height: 72px; padding: 0 36px; border-radius: 36px; background: rgba(255,255,255,.14); display: inline-flex; align-items: center; gap: 14px; font-size: 26px; font-weight: 500; }
+  .mbtn .ic { font-size: 28px; }
+  .mbtn.focus { background: var(--go); color: var(--on-go); transform: scale(1.05); box-shadow: 0 16px 30px -10px rgba(0,0,0,.8); }
+
+  .rowh { position: absolute; font-size: 28px; font-weight: 500; color: var(--t1); }
+  .row { position: absolute; display: flex; gap: 28px; align-items: flex-start; }
+  .card { border-radius: 12px; overflow: hidden; background: var(--s2); flex: none; position: relative; }
+  .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card.land { width: 352px; height: 198px; display: flex; flex-direction: column; justify-content: flex-end; padding: 24px; }
+  .card.land .ic { position: absolute; left: 24px; top: 24px; font-size: 52px; color: var(--t2); }
+  .card.land b { font-size: 28px; font-weight: 500; }
+  .card.land span { margin-top: 4px; font-size: 22px; color: var(--t2); }
+  .card.port { width: 200px; height: 300px; }
+  .card.desk { display: grid; place-items: center; }
+  .card.desk .ic { font-size: 64px; color: var(--t2); }
+  .card.focus { outline: 4px solid var(--go); outline-offset: 4px; transform: scale(1.1); z-index: 2; box-shadow: 0 24px 40px -12px rgba(0,0,0,.8); }
+  .card.port.focus { transform-origin: 50% 0; }
+
+  /* Library details */
+  .glow { position: absolute; right: 0; top: 0; width: 1300px; height: 760px; z-index: -1; background-size: cover; background-position: center 30%;
+    -webkit-mask-image: radial-gradient(ellipse 80% 80% at 80% 20%, #000 20%, transparent 75%); filter: blur(28px) saturate(1.2) brightness(.5); }
+  .details { position: absolute; left: 0; top: 140px; width: 1100px; }
+  .details h1 { margin: 0; font-size: 64px; font-weight: 500; line-height: 1.08; letter-spacing: -.01em; }
+  .chips { margin-top: 22px; display: flex; gap: 12px; }
+  .chip { height: 44px; padding: 0 18px; border-radius: 22px; background: rgba(255,255,255,.12); display: inline-flex; align-items: center; font-size: 22px; font-weight: 500; color: var(--t1); }
+  .details p { margin: 22px 0 0; font-size: 26px; color: var(--t2); line-height: 1.45; }
+
+  .hints { position: absolute; right: var(--safe-x); bottom: var(--safe-y); display: flex; gap: 32px; font-size: 22px; color: var(--t2); }
+  .hint { display: flex; align-items: center; gap: 10px; }
+  .btn { width: 38px; height: 38px; border-radius: 50%; background: var(--s3); color: var(--t1); display: grid; place-items: center; font-size: 19px; font-weight: 700; }
+  .btn .ic { font-size: 20px; }
+  .btn.pill { width: auto; padding: 0 10px; border-radius: 10px; font-size: 17px; }
+
+  /* Guided step */
+  .guide { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 820px; }
+  .guide .l { padding: 220px 80px 0 var(--safe-x); }
+  .guide .l .card { width: 180px; height: 270px; margin-bottom: 40px; }
+  .guide .l h1 { margin: 0; font-size: 56px; font-weight: 400; line-height: 1.15; }
+  .guide .l p { margin: 20px 0 0; font-size: 28px; color: var(--t2); line-height: 1.45; max-width: 760px; }
+  .guide .r { background: var(--s1); padding: 220px var(--safe-x) 0 56px; }
+  .act { height: 92px; border-radius: 12px; padding: 0 28px; display: flex; flex-direction: column; justify-content: center; font-size: 30px; }
+  .act small { font-size: 22px; color: var(--t2); margin-top: 4px; }
+  .act.sel { background: var(--go); color: var(--on-go); font-weight: 500; }
+  .act.sel small { color: rgba(10,18,0,.72); }
+
+  /* Launch */
+  #launch .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .spinner { width: 96px; height: 96px; border-radius: 50%; border: 8px solid rgba(255,255,255,.12); border-top-color: var(--go); border-right-color: var(--go); }
+  #launch h1 { margin: 48px 0 0; font-size: 44px; font-weight: 400; }
+  #launch p { margin: 14px 0 0; font-size: 26px; color: var(--t2); }
+
+  /* Stream */
+  .stream { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
+  .panel { position: absolute; top: 0; right: 0; bottom: 0; width: 640px; background: var(--s1); padding: 72px 48px var(--safe-y); display: flex; flex-direction: column; box-shadow: -20px 0 60px rgba(0,0,0,.5); }
+  .panel h2 { margin: 0 0 0 20px; font-size: 40px; font-weight: 400; }
+  .panel .sub { margin: 10px 0 32px 20px; font-size: 24px; color: var(--t2); }
+  .it { min-height: 96px; border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 24px; }
+  .it .ic { font-size: 32px; color: var(--t2); }
+  .it .tx { font-size: 28px; }
+  .it .tx small { display: block; font-size: 22px; color: var(--t2); margin-top: 4px; }
+  .it .end { margin-left: auto; }
+  .it.sel { background: var(--go); color: var(--on-go); }
+  .it.sel .ic, .it.sel small { color: rgba(10,18,0,.75); }
+  .it.stop, .it.stop .ic { color: var(--stop); }
+  .sw { width: 64px; height: 36px; border-radius: 18px; background: var(--s3); position: relative; display: block; }
+  .sw::after { content: ""; position: absolute; left: 6px; top: 6px; width: 24px; height: 24px; border-radius: 50%; background: var(--t2); }
+  .sw.on { background: var(--go); } .sw.on::after { left: 34px; background: var(--on-go); }
+  .panel .hints { position: static; margin-top: auto; justify-content: flex-end; }
+
+  .perf { position: absolute; left: var(--safe-x); top: var(--safe-y); width: 460px; border-radius: 16px; background: rgba(27,28,31,.86); padding: 24px 28px; font-size: 22px; }
+  .perf .h { font-size: 26px; font-weight: 500; }
+  .perf dl { margin: 14px 0 0; display: grid; grid-template-columns: 1fr auto; row-gap: 8px; }
+  .perf dt { color: var(--t2); } .perf dd { margin: 0; text-align: right; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  .kb { position: absolute; left: 0; right: 0; bottom: 0; background: var(--s1); padding: 34px var(--safe-x) var(--safe-y); }
+  .kbtop { display: flex; align-items: center; gap: 16px; }
+  .kbtop .field { flex: 1; height: 64px; border-radius: 32px; background: var(--bg); display: flex; align-items: center; padding: 0 28px; font-size: 24px; color: var(--t3); }
+  .tabsr { display: flex; gap: 8px; }
+  .tabsr span { height: 52px; padding: 0 22px; border-radius: 26px; display: grid; place-items: center; font-size: 22px; font-weight: 500; color: var(--t2); }
+  .tabsr span.on { background: var(--s3); color: var(--t1); }
+  .keys { margin-top: 24px; display: grid; grid-template-columns: repeat(10, 1fr) 1.6fr; gap: 12px; }
+  .k { height: 76px; border-radius: 38px; background: var(--s2); display: grid; place-items: center; font-size: 30px; }
+  .k .ic { font-size: 28px; }
+  .k.mod { font-size: 21px; font-weight: 500; color: var(--t2); }
+  .k.sel { background: var(--go); color: var(--on-go); font-weight: 700; transform: scale(1.08); }
+  .kb .hints { position: static; justify-content: flex-end; margin-top: 24px; }
+
+  /* Settings */
+  .set { position: absolute; inset: 0; display: grid; grid-template-columns: 640px 1fr; }
+  .set .l { padding: 130px 48px 0 var(--safe-x); }
+  .set .l h1 { margin: 0 0 40px 20px; font-size: 52px; font-weight: 400; }
+  .set .r { background: var(--s1); padding: 130px var(--safe-x) 0 48px; }
+  .set .r h2 { margin: 0 0 24px 20px; font-size: 32px; font-weight: 400; color: var(--t2); }
+  .cat { height: 84px; border-radius: 12px; padding: 0 20px; display: flex; align-items: center; gap: 22px; font-size: 28px; color: var(--t2); }
+  .cat .ic { font-size: 30px; }
+  .cat.here { background: var(--s2); color: var(--t1); }
+  .pref { min-height: 96px; border-radius: 12px; padding: 12px 20px; display: flex; align-items: center; }
+  .pref .tx { font-size: 28px; }
+  .pref .tx small { display: block; font-size: 22px; color: var(--t2); margin-top: 4px; }
+  .pref .end { margin-left: auto; }
+  .pref.sel { background: var(--go); color: var(--on-go); }
+  .pref.sel small { color: rgba(10,18,0,.72); }
+
+  .pin { display: flex; gap: 18px; margin-bottom: 48px; }
+  .pin span { width: 132px; height: 168px; border-radius: 16px; background: var(--bg); display: grid; place-items: center; font-size: 100px; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<header class="gallery-head">
+  <h1>Direction 3 · Android TV standard</h1>
+  <p>The Google TV / Leanback conventions played straight, in Roboto, with the Artemisa green as the focus colour. 1920×1080 frames of a 960×540 dp TV surface. Covers and stream capture are from your own screenshots; stats, clock and PIN are sample values.</p>
+</header>
+
+<!-- 1. HOME -->
+<figure class="frame"><figcaption>1 · Home</figcaption>
+<section class="screen atv" id="home">
+  <nav class="rail">
+    <img class="logo" src="assets/icon.png" alt="">
+    <span class="r on"><i data-i="home"></i></span>
+    <span class="r"><i data-i="grid"></i></span>
+    <span class="r"><i data-i="settings"></i></span>
+    <span class="r bottom"><i data-i="user"></i></span>
+  </nav>
+  <div class="main">
+    <span class="clock">21:47</span>
+    <div class="banner">
+      <div class="mosaic"><img src="assets/quiet-place.jpg" alt=""><img src="assets/fatal-frame.jpg" alt=""><img src="assets/star-rail.jpg" alt=""><img src="assets/outer-wilds.jpg" alt=""></div>
+      <div class="fade"></div>
+      <div class="copy">
+        <h1>VaporZPC</h1>
+        <p>Online · 5 games ready to stream</p>
+        <span class="mbtn focus"><i data-i="grid"></i>Open library</span>
+      </div>
+      <div class="covers"><img src="assets/fatal-frame.jpg" alt=""><img src="assets/star-rail.jpg" alt=""><img src="assets/outer-wilds.jpg" alt=""></div>
+    </div>
+    <div class="rowh" style="left:0;top:640px">Computers</div>
+    <div class="row" style="left:0;top:700px">
+      <div class="card land"><i data-i="monitor"></i><b>VaporZPC</b><span>Online · Paired</span></div>
+      <div class="card land"><i data-i="plus"></i><b>Add a computer</b><span>Find or enter an address</span></div>
+    </div>
+  </div>
+  <div class="hints">
+    <span class="hint"><span class="btn">A</span>Select</span>
+    <span class="hint"><span class="btn"><i data-i="menu"></i></span>Options</span>
+  </div>
+</section></figure>
+
+<!-- 2. LIBRARY -->
+<figure class="frame"><figcaption>2 · Library: details header over a row of covers</figcaption>
+<section class="screen atv" id="library">
+  <div class="glow" style="background-image:url(assets/fatal-frame.jpg)"></div>
+  <nav class="rail">
+    <img class="logo" src="assets/icon.png" alt="">
+    <span class="r"><i data-i="home"></i></span>
+    <span class="r on"><i data-i="grid"></i></span>
+    <span class="r"><i data-i="settings"></i></span>
+    <span class="r bottom"><i data-i="user"></i></span>
+  </nav>
+  <div class="main">
+    <span class="clock">21:47</span>
+    <div class="details">
+      <h1>Fatal Frame II: Crimson Butterfly Remake</h1>
+      <div class="chips"><span class="chip">VaporZPC</span><span class="chip">4K</span><span class="chip">60 FPS</span><span class="chip">80 Mbps</span></div>
+      <p>Starts in the virtual display. Press Menu for more ways to start.</p>
+    </div>
+    <div class="rowh" style="left:0;top:560px">All games</div>
+    <div class="row" style="left:0;top:620px">
+      <div class="card port"><img src="assets/quiet-place.jpg" alt=""></div>
+      <div class="card port desk"><i data-i="monitor"></i></div>
+      <div class="card port focus"><img src="assets/fatal-frame.jpg" alt=""></div>
+      <div class="card port"><img src="assets/star-rail.jpg" alt=""></div>
+      <div class="card port"><img src="assets/outer-wilds.jpg" alt=""></div>
+    </div>
+  </div>
+  <div class="hints">
+    <span class="hint"><span class="btn">A</span>Play</span>
+    <span class="hint"><span class="btn"><i data-i="menu"></i></span>Options</span>
+    <span class="hint"><span class="btn">B</span>Back</span>
+  </div>
+</section></figure>
+
+<!-- 3. OPTIONS -->
+<figure class="frame"><figcaption>3 · Game options: guided-step screen</figcaption>
+<section class="screen atv" id="options">
+  <div class="guide">
+    <div class="l">
+      <div class="card"><img src="assets/fatal-frame.jpg" alt=""></div>
+      <h1>Fatal Frame II: Crimson Butterfly Remake</h1>
+      <p>On VaporZPC</p>
+    </div>
+    <div class="r">
+      <div class="act sel">Start in virtual display<small>Matches this TV's resolution and frame rate</small></div>
+      <div class="act">Start in primary display</div>
+      <div class="act">Add to home screen</div>
+      <div class="act">Hide from library</div>
+      <div class="act">Details</div>
+    </div>
+  </div>
+  <div class="hints">
+    <span class="hint"><span class="btn">A</span>Select</span>
+    <span class="hint"><span class="btn">B</span>Back</span>
+  </div>
+</section></figure>
+
+<!-- 4. LAUNCH -->
+<figure class="frame"><figcaption>4 · Launching</figcaption>
+<section class="screen atv" id="launch">
+  <div class="glow" style="background-image:url(assets/fatal-frame.jpg);opacity:.6"></div>
+  <div class="center">
+    <div class="spinner"></div>
+    <h1>Starting Fatal Frame II: Crimson Butterfly Remake</h1>
+    <p>Connecting to VaporZPC</p>
+  </div>
+  <div class="hints"><span class="hint"><span class="btn">B</span>Cancel</span></div>
+</section></figure>
+
+<!-- 5. QUICK MENU -->
+<figure class="frame"><figcaption>5 · In-stream quick menu: side panel</figcaption>
+<section class="screen atv" id="quick">
+  <img class="stream" src="assets/desktop-stream.jpg" alt="">
+  <aside class="panel">
+    <h2>Quick menu</h2>
+    <div class="sub">Desktop · VaporZPC</div>
+    <div class="it sel"><i data-i="chart"></i><div class="tx">Performance overlay<small>Simple</small></div></div>
+    <div class="it"><i data-i="mouse"></i><div class="tx">Mouse mode</div><span class="end sw"></span></div>
+    <div class="it"><i data-i="keyboard"></i><div class="tx">Keyboard</div></div>
+    <div class="it"><i data-i="command"></i><div class="tx">Shortcuts and commands</div></div>
+    <div class="it"><i data-i="unlink"></i><div class="tx">Disconnect<small>The game keeps running</small></div></div>
+    <div class="it stop"><i data-i="power"></i><div class="tx">End stream</div></div>
+    <div class="hints">
+      <span class="hint"><span class="btn">A</span>Select</span>
+      <span class="hint"><span class="btn">B</span>Close</span>
+    </div>
+  </aside>
+</section></figure>
+
+<!-- 6. PERF -->
+<figure class="frame"><figcaption>6 · Performance overlay</figcaption>
+<section class="screen atv" id="perf">
+  <img class="stream" src="assets/desktop-stream.jpg" alt="">
+  <div class="perf">
+    <div class="h">3840×2160 · 59.9 FPS</div>
+    <dl>
+      <dt>Network latency</dt><dd>2 ms</dd>
+      <dt>Decode time</dt><dd>4.1 ms</dd>
+      <dt>Frames dropped</dt><dd>0.02%</dd>
+      <dt>Bitrate</dt><dd>78.4 Mbps</dd>
+      <dt>Codec</dt><dd>HEVC 10-bit</dd>
+    </dl>
+  </div>
+</section></figure>
+
+<!-- 7. KEYBOARD -->
+<figure class="frame"><figcaption>7 · Gamepad keyboard</figcaption>
+<section class="screen atv" id="keyboard">
+  <img class="stream" src="assets/desktop-stream.jpg" alt="">
+  <div class="kb">
+    <div class="kbtop">
+      <span class="btn pill">LB</span>
+      <div class="tabsr"><span class="on">Letters</span><span>Symbols</span><span>Controls</span></div>
+      <span class="btn pill">RB</span>
+      <div class="field">Keys go straight to the PC</div>
+    </div>
+    <div class="keys">
+      <div class="k">q</div><div class="k">w</div><div class="k">e</div><div class="k">r</div><div class="k">t</div><div class="k">y</div><div class="k">u</div><div class="k">i</div><div class="k">o</div><div class="k">p</div><div class="k mod"><i data-i="backspace"></i></div>
+      <div class="k">a</div><div class="k">s</div><div class="k">d</div><div class="k sel">f</div><div class="k">g</div><div class="k">h</div><div class="k">j</div><div class="k">k</div><div class="k">l</div><div class="k">'</div><div class="k mod"><i data-i="enter"></i></div>
+      <div class="k mod"><i data-i="shift"></i></div><div class="k">z</div><div class="k">x</div><div class="k">c</div><div class="k">v</div><div class="k">b</div><div class="k">n</div><div class="k">m</div><div class="k">,</div><div class="k">.</div><div class="k mod">Esc</div>
+      <div class="k mod">Ctrl</div><div class="k mod">Alt</div><div class="k mod">Win</div><div class="k mod">Tab</div><div class="k mod" style="grid-column:span 5">Space</div><div class="k mod">?123</div><div class="k mod">Done</div>
+    </div>
+    <div class="hints">
+      <span class="hint"><span class="btn">A</span>Type</span>
+      <span class="hint"><span class="btn">X</span>Space</span>
+      <span class="hint"><span class="btn">Y</span>Backspace</span>
+      <span class="hint"><span class="btn">B</span>Close</span>
+    </div>
+  </div>
+</section></figure>
+
+<!-- 8. SETTINGS -->
+<figure class="frame"><figcaption>8 · Settings: two-pane Android TV settings</figcaption>
+<section class="screen atv" id="settings">
+  <div class="set">
+    <div class="l">
+      <h1>Settings</h1>
+      <div class="cat here"><i data-i="film"></i>Video</div>
+      <div class="cat"><i data-i="speaker"></i>Audio and host</div>
+      <div class="cat"><i data-i="gamepad"></i>Controller</div>
+      <div class="cat"><i data-i="chart"></i>Overlay</div>
+      <div class="cat"><i data-i="grid"></i>Library</div>
+      <div class="cat"><i data-i="globe"></i>System</div>
+    </div>
+    <div class="r">
+      <h2>Video</h2>
+      <div class="pref"><div class="tx">Resolution<small>4K (3840×2160)</small></div></div>
+      <div class="pref"><div class="tx">Frame rate<small>60 FPS</small></div></div>
+      <div class="pref sel"><div class="tx">Bitrate<small>80 Mbps</small></div></div>
+      <div class="pref"><div class="tx">Frame pacing<small>Responsive HQ (Recommended)</small></div></div>
+      <div class="pref"><div class="tx">Low-latency frame balance<small>Drops queued frames to cut delay</small></div><span class="end sw"></span></div>
+      <div class="pref"><div class="tx">Virtual display<small>Requires Apollo on the host</small></div><span class="end sw on"></span></div>
+      <div class="pref"><div class="tx">HDR</div><span class="end sw"></span></div>
+    </div>
+  </div>
+  <div class="hints">
+    <span class="hint"><span class="btn">A</span>Select</span>
+    <span class="hint"><span class="btn">B</span>Back</span>
+  </div>
+</section></figure>
+
+<!-- 9. PAIR -->
+<figure class="frame"><figcaption>9 · Pairing a computer: guided-step screen</figcaption>
+<section class="screen atv" id="pair">
+  <div class="guide">
+    <div class="l">
+      <h1>Pair with VaporZPC</h1>
+      <p>Enter this PIN on the host to finish pairing. On Apollo or Sunshine, open the web UI and go to the PIN page.</p>
+    </div>
+    <div class="r">
+      <div class="pin"><span>4</span><span>8</span><span>1</span><span>7</span></div>
+      <div class="act sel">Cancel</div>
+    </div>
+  </div>
+</section></figure>
+
+<script src="assets/mock.js"></script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Artemisa mock · On-Screen Display</title>
+<link rel="stylesheet" href="assets/base.css">
+<style>
+  :root {
+    /* One fixed nine-step graphite ramp; nothing else is grey. */
+    --g0: #0B0D0F; --g1: #111316; --g2: #171A1E; --g3: #1F2328; --g4: #2A2F35;
+    --g5: #3B4148; --g6: #5F6771; --g7: #9BA3AC; --g8: #D6DBDF; --w: #F4F6F7;
+    --live: #76D600; --on-live: #0A1200;
+    --stop: #FF5A5F;
+    --safe-x: 96px; --safe-y: 54px;
+    --ui: 'Barlow Semi Condensed', sans-serif;
+    --disp: 'Barlow Condensed', sans-serif;
+  }
+  .osd { background: var(--g1); color: var(--w); font-family: var(--ui); font-variant-numeric: tabular-nums; }
+
+  /* Top strip */
+  .strip { position: absolute; left: var(--safe-x); right: var(--safe-x); top: var(--safe-y); height: 48px;
+    display: flex; align-items: center; gap: 20px; font-size: 26px; font-weight: 500; color: var(--g8); }
+  .strip .mark { width: 44px; height: 44px; mix-blend-mode: screen; }
+  .strip .word { font-family: var(--disp); font-weight: 700; font-size: 32px; letter-spacing: .14em; color: var(--w); }
+  .strip .sep { width: 2px; height: 28px; background: var(--g5); }
+  .strip .src { display: flex; align-items: center; gap: 12px; }
+  .strip .src .ic { font-size: 28px; color: var(--g7); }
+  .strip .muted { color: var(--g7); }
+  .strip .push { margin-left: auto; }
+  .clock { font-weight: 600; color: var(--w); }
+
+  /* Signal badges */
+  .badges { display: flex; gap: 10px; }
+  .badge { height: 40px; padding: 0 14px; display: inline-flex; align-items: center; border: 2px solid var(--g6);
+    font: 600 22px/1 var(--ui); letter-spacing: .04em; color: var(--g8); }
+  .badges.sm .badge { height: 34px; font-size: 19px; padding: 0 10px; }
+
+  /* Controller hints */
+  .hints { position: absolute; left: var(--safe-x); right: var(--safe-x); bottom: var(--safe-y); height: 48px;
+    display: flex; align-items: center; gap: 44px; font: 600 24px/1 var(--ui); letter-spacing: .06em; text-transform: uppercase; color: var(--g8); }
+  .hint { display: flex; align-items: center; gap: 14px; }
+  .btn { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--g7); display: grid; place-items: center;
+    font: 700 22px/1 var(--ui); color: var(--w); letter-spacing: 0; }
+  .btn .ic { font-size: 22px; }
+  .btn.pill { width: auto; padding: 0 12px; border-radius: 10px; font-size: 19px; }
+  .hints .push { margin-left: auto; color: var(--g7); }
+
+  /* Panels and rows: flat, square, solid */
+  .panel { background: var(--g2); border-top: 2px solid var(--g4); }
+  .ptitle { font: 600 24px/1 var(--disp); letter-spacing: .16em; text-transform: uppercase; color: var(--g7); }
+  .rows { display: flex; flex-direction: column; }
+  .row { height: 84px; padding: 0 28px; display: flex; align-items: center; gap: 22px; font-size: 32px; font-weight: 500; color: var(--w); }
+  .row .ic { font-size: 32px; color: var(--g7); }
+  .row .val { margin-left: auto; display: flex; align-items: center; gap: 14px; color: var(--g7); font-weight: 500; }
+  .row .val .arr { display: none; font-size: 28px; }
+  .row .chev { margin-left: auto; font-size: 30px; color: var(--g6); }
+  .row.sel { background: var(--live); color: var(--on-live); font-weight: 600; }
+  .row.sel .ic, .row.sel .val, .row.sel .chev { color: var(--on-live); }
+  .row.sel .val { font-weight: 700; }
+  .row.sel .val .arr { display: block; }
+  .row.stop .ic, .row.stop { color: var(--stop); }
+  .gap { height: 20px; }
+  .rule { height: 2px; background: var(--g4); margin: 18px 28px; }
+
+  /* Covers and physical focus */
+  .cover { position: relative; width: 232px; height: 348px; flex: none; background: var(--g3); }
+  .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cover.desk { display: grid; place-items: center; align-content: center; gap: 18px; background: var(--g4); }
+  .cover.desk .ic { font-size: 84px; color: var(--g8); }
+  .cover.desk span { font: 700 30px/1 var(--disp); letter-spacing: .14em; color: var(--g8); }
+  .cover.focus { transform: translateY(-14px) scale(1.14); transform-origin: 50% 100%;
+    box-shadow: 0 36px 60px -12px rgba(0,0,0,.85), 0 10px 20px rgba(0,0,0,.5); z-index: 2; }
+  .cover.focus::after { content: ""; position: absolute; left: 0; right: 0; bottom: -22px; height: 7px; background: var(--live); }
+
+  .scrim { position: absolute; inset: 0; z-index: -1; }
+  .art-bg { position: absolute; inset: -80px; z-index: -2; background-size: cover; background-position: center;
+    filter: blur(48px) brightness(.34) saturate(1.25); }
+
+  /* Lower third */
+  .lower { position: absolute; left: 0; right: 0; top: 752px; height: 176px; background: rgba(23,26,30,.94); border-top: 2px solid var(--g4);
+    display: flex; align-items: center; padding: 0 var(--safe-x); gap: 48px; }
+  .lower h2 { margin: 0; font: 700 64px/1 var(--disp); letter-spacing: .01em; text-transform: uppercase; }
+  .lower .sub { margin-top: 12px; font-size: 28px; color: var(--g7); display: flex; gap: 14px; align-items: center; }
+  .lower .right { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
+
+  /* Screen: home */
+  #home .inputs { position: absolute; left: var(--safe-x); top: 170px; width: 640px; padding: 32px 0 24px; }
+  #home .inputs .ptitle { padding: 0 28px 22px; }
+  #home .preview { position: absolute; left: 820px; right: var(--safe-x); top: 170px; bottom: 150px; }
+  #home .preview h1 { margin: 0; font: 700 150px/.9 var(--disp); letter-spacing: -.005em; }
+  #home .preview .status { display: flex; align-items: center; gap: 18px; margin: 26px 0 30px; font-size: 32px; color: var(--g8); }
+  #home .preview .status .live { width: 14px; height: 14px; background: var(--live); }
+  #home .shelf { display: flex; gap: 22px; margin-top: 58px; }
+  #home .shelf .cover { width: 150px; height: 225px; }
+  #home .shelf .cover.desk .ic { font-size: 54px; }
+  #home .shelf .cover.desk span { font-size: 20px; }
+  #home .shelf-label { margin-top: 44px; font-size: 26px; color: var(--g7); }
+
+  /* Screen: library */
+  .lib-row { position: absolute; left: var(--safe-x); top: 262px; display: flex; gap: 40px; align-items: flex-end; }
+
+  /* Screen: options panel */
+  .dim { position: absolute; inset: 0; background: rgba(5,6,7,.62); z-index: 5; }
+  .side { position: absolute; top: 0; bottom: 0; right: 0; width: 760px; z-index: 6; background: var(--g2); border-left: 2px solid var(--g4);
+    padding: var(--safe-y) var(--safe-x) var(--safe-y) 56px; display: flex; flex-direction: column; }
+  .side .head { display: flex; gap: 28px; align-items: center; padding: 0 0 36px 28px; }
+  .side .head .cover { width: 104px; height: 156px; }
+  .side .head h3 { margin: 0; font: 700 40px/1.02 var(--disp); text-transform: uppercase; }
+  .side .head p { margin: 10px 0 0; font-size: 24px; color: var(--g7); }
+  .side .hints { position: static; margin-top: auto; padding-left: 28px; }
+
+  /* Screen: launching */
+  #launch .center { position: absolute; left: var(--safe-x); top: 190px; display: flex; gap: 64px; align-items: flex-end; }
+  #launch .center .cover { width: 330px; height: 495px; box-shadow: 0 36px 70px -16px rgba(0,0,0,.9); }
+  #launch h1 { margin: 0; font: 700 88px/.95 var(--disp); text-transform: uppercase; max-width: 1180px; }
+  #launch .steps { margin-top: 44px; display: flex; flex-direction: column; gap: 16px; font-size: 30px; }
+  #launch .step { display: flex; gap: 18px; align-items: center; color: var(--g7); }
+  #launch .step .ic { font-size: 28px; }
+  #launch .step.done { color: var(--g8); }
+  #launch .step.now { color: var(--w); font-weight: 600; }
+  #launch .step .box { width: 28px; height: 28px; border: 2px solid var(--g6); }
+  #launch .step.now .box { border-color: var(--live); background: var(--live); }
+  .progress { position: absolute; left: 0; right: 0; top: 752px; height: 176px; background: rgba(23,26,30,.94); border-top: 2px solid var(--g4);
+    padding: 40px var(--safe-x) 0; }
+  .progress .bar { height: 8px; background: var(--g4); }
+  .progress .bar i { display: block; height: 100%; width: 64%; background: var(--live); }
+  .progress .meta { margin-top: 26px; display: flex; align-items: center; font-size: 28px; color: var(--g8); gap: 24px; }
+  .progress .meta .badges { margin-left: auto; }
+
+  /* Stream surfaces */
+  .stream { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
+  .qm { position: absolute; left: 0; top: 0; bottom: 0; width: 720px; background: rgba(23,26,30,.95); border-right: 2px solid var(--g4);
+    padding: var(--safe-y) 56px var(--safe-y) var(--safe-x); display: flex; flex-direction: column; }
+  .qm .who { padding: 0 28px; }
+  .qm .who .word { font: 700 32px/1 var(--disp); letter-spacing: .14em; }
+  .qm .who .now { margin-top: 14px; display: flex; align-items: center; gap: 12px; font-size: 26px; color: var(--g8); }
+  .qm .who .now .live { width: 12px; height: 12px; background: var(--live); }
+  .qm .rows { margin-top: 44px; }
+  .qm .hints { position: static; margin-top: auto; padding-left: 28px; }
+
+  /* Performance overlay */
+  .perf { position: absolute; left: var(--safe-x); top: var(--safe-y); width: 560px; background: rgba(17,19,22,.88); border-top: 2px solid var(--g4);
+    padding: 22px 26px 24px; font-size: 24px; }
+  .perf .top { display: flex; align-items: baseline; gap: 14px; }
+  .perf .fps { font: 700 64px/1 var(--disp); }
+  .perf .fps small { font-size: 28px; color: var(--g7); margin-left: 6px; font-weight: 600; }
+  .perf .top .res { margin-left: auto; color: var(--g8); font-weight: 600; }
+  .perf dl { margin: 18px 0 0; display: grid; grid-template-columns: 1fr auto; row-gap: 10px; }
+  .perf dt { color: var(--g7); } .perf dd { margin: 0; text-align: right; font-weight: 600; color: var(--w); }
+  .perf .graph { margin-top: 20px; height: 64px; display: flex; align-items: flex-end; gap: 3px; border-bottom: 2px solid var(--g5); position: relative; }
+  .perf .graph i { flex: 1; background: var(--g6); }
+  .perf .graph i.spike { background: var(--w); }
+  .perf .graph::before { content: "16.7 ms"; position: absolute; right: 0; top: -2px; font-size: 16px; color: var(--g7); }
+  .perf .graph::after { content: ""; position: absolute; left: 0; right: 0; top: 18px; border-top: 1px dashed var(--g5); }
+  .perf .cap { margin-top: 10px; font-size: 18px; color: var(--g7); }
+
+  /* Keyboard */
+  .kb { position: absolute; left: 0; right: 0; bottom: 0; height: 560px; background: rgba(23,26,30,.96); border-top: 2px solid var(--g4);
+    padding: 34px var(--safe-x) var(--safe-y); display: flex; flex-direction: column; }
+  .kb .tabs { display: flex; align-items: center; gap: 14px; }
+  .kb .tab { height: 48px; padding: 0 22px; display: grid; place-items: center; font: 600 24px/1 var(--disp); letter-spacing: .14em; color: var(--g7); border: 2px solid transparent; }
+  .kb .tab.on { color: var(--w); border-color: var(--g6); }
+  .kb .keys { margin-top: 24px; display: grid; grid-template-columns: repeat(10, 1fr) 1.6fr; gap: 10px; }
+  .key { height: 76px; background: var(--g3); display: grid; place-items: center; font: 500 32px/1 var(--ui); color: var(--w); }
+  .key .ic { font-size: 30px; }
+  .key.mod { font-size: 22px; font-weight: 600; letter-spacing: .06em; color: var(--g8); text-transform: uppercase; }
+  .key.sel { background: var(--live); color: var(--on-live); font-weight: 700; transform: scale(1.06); box-shadow: 0 14px 24px -8px rgba(0,0,0,.8); }
+  .kb .hints { position: static; margin-top: auto; }
+
+  /* Settings */
+  #settings .cats { position: absolute; left: var(--safe-x); top: 170px; width: 420px; bottom: 150px; padding: 32px 0; }
+  #settings .opts { position: absolute; left: 556px; right: var(--safe-x); top: 170px; bottom: 150px; padding: 32px 0; display: flex; flex-direction: column; }
+  #settings .cats .row.here { background: var(--g4); }
+  #settings .cats .row.here .ic { color: var(--w); }
+  #settings .opts .ptitle { padding: 0 28px 22px; }
+  #settings .cats .ptitle { padding: 0 28px 22px; }
+  .meter { width: 180px; height: 8px; background: var(--g5); position: relative; }
+  .meter i { position: absolute; left: 0; top: 0; bottom: 0; width: 27%; background: var(--g8); }
+  .row.sel .meter { background: rgba(10,18,0,.25); }
+  .row.sel .meter i { background: var(--on-live); }
+  .onoff { font-weight: 600; }
+  #settings .help { margin-top: auto; padding: 22px 28px 0; border-top: 2px solid var(--g4); font-size: 26px; line-height: 1.4; color: var(--g8); max-width: 1100px; }
+  #settings .help b { color: var(--w); font-weight: 600; }
+
+  /* Pairing */
+  .dialog { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 1080px; background: var(--g2); border-top: 2px solid var(--g4);
+    padding: 56px 64px 48px; box-shadow: 0 40px 80px -20px rgba(0,0,0,.9); z-index: 6; }
+  .dialog h2 { margin: 0; font: 700 56px/1 var(--disp); text-transform: uppercase; }
+  .dialog p { margin: 18px 0 0; font-size: 30px; line-height: 1.4; color: var(--g8); max-width: 900px; }
+  .pin { margin: 44px 0 40px; display: flex; gap: 20px; }
+  .pin span { width: 150px; height: 190px; background: var(--g1); border-bottom: 6px solid var(--live); display: grid; place-items: center; font: 700 140px/1 var(--disp); }
+  .dialog .note { display: flex; gap: 16px; align-items: center; font-size: 26px; color: var(--g7); }
+  .dialog .note .ic { font-size: 30px; }
+  .dialog .hints { position: static; margin-top: 44px; }
+</style>
+</head>
+<body>
+
+<header class="gallery-head">
+  <h1>Direction 1 · On-Screen Display</h1>
+  <p>Your PC is an input on the TV, and Artemisa is its on-screen display. 1920×1080 frames of a 960×540 dp TV surface. Covers and stream capture are from your own screenshots; stats, clock and PIN are sample values.</p>
+</header>
+
+<!-- 1. HOME -->
+<figure class="frame"><figcaption>1 · Home: input select</figcaption>
+<section class="screen osd" id="home">
+  <div class="strip">
+    <img class="mark" src="assets/icon.png" alt="">
+    <span class="word">ARTEMISA</span>
+    <span class="push clock">21:47</span>
+  </div>
+
+  <div class="inputs panel">
+    <div class="ptitle">Inputs</div>
+    <div class="rows">
+      <div class="row sel"><i data-i="monitor"></i>VaporZPC<span class="val">Online</span></div>
+      <div class="row"><i data-i="plus"></i>Add a computer</div>
+      <div class="rule"></div>
+      <div class="row"><i data-i="settings"></i>Settings</div>
+      <div class="row"><i data-i="user"></i>Profile<span class="val">Default</span></div>
+      <div class="row"><i data-i="help"></i>Help</div>
+    </div>
+  </div>
+
+  <div class="preview">
+    <h1>VaporZPC</h1>
+    <div class="status"><span class="live"></span>Online · Paired · Ready to stream</div>
+    <div class="badges"><span class="badge">3840×2160</span><span class="badge">60 FPS</span><span class="badge">80 Mbps</span><span class="badge">STEREO</span></div>
+    <div class="shelf">
+      <div class="cover"><img src="assets/quiet-place.jpg" alt=""></div>
+      <div class="cover desk"><i data-i="monitor"></i><span>DESKTOP</span></div>
+      <div class="cover"><img src="assets/fatal-frame.jpg" alt=""></div>
+      <div class="cover"><img src="assets/star-rail.jpg" alt=""></div>
+      <div class="cover"><img src="assets/outer-wilds.jpg" alt=""></div>
+    </div>
+    <div class="shelf-label">5 games on this computer</div>
+  </div>
+
+  <div class="hints">
+    <span class="hint"><span class="btn">A</span>Open library</span>
+    <span class="hint"><span class="btn"><i data-i="menu"></i></span>Computer options</span>
+  </div>
+</section></figure>
+
+<!-- 2. LIBRARY -->
+<figure class="frame"><figcaption>2 · Library: covers row and broadcast lower-third</figcaption>
+<section class="screen osd" id="library">
+  <div class="art-bg" style="background-image:url(assets/fatal-frame.jpg)"></div>
+  <div class="scrim" style="background:linear-gradient(180deg,rgba(11,13,15,.55) 0%,rgba(11,13,15,0) 30%,rgba(11,13,15,0) 60%,rgba(11,13,15,.9) 100%)"></div>
+  <div class="strip">
+    <span class="src"><i data-i="monitor"></i>VaporZPC</span><span class="sep"></span><span class="muted">Library</span>
+    <span class="push badges sm"><span class="badge">4K</span><span class="badge">60</span><span class="badge">80 Mbps</span></span>
+    <span class="clock">21:47</span>
+  </div>
+
+  <div class="lib-row">
+    <div class="cover"><img src="assets/quiet-place.jpg" alt=""></div>
+    <div class="cover desk"><i data-i="monitor"></i><span>DESKTOP</span></div>
+    <div class="cover focus"><img src="assets/fatal-frame.jpg" alt=""></div>
+    <div class="cover"><img src="assets/star-rail.jpg" alt=""></div>
+    <div class="cover"><img src="assets/outer-wilds.jpg" alt=""></div>
+  </div>
+
+  <div class="lower">
+    <div>
+      <h2>Fatal Frame II: Crimson Butterfly Remake</h2>
+      <div class="sub">VaporZPC · Starts on the virtual display</div>
+    </div>
+    <div class="right">
+      <div class="badges"><span class="badge">3840×2160</span><span class="badge">60 FPS</span><span class="badge">80 Mbps</span></div>
+    </div>
+  </div>
+
+  <div class="hints">
+    <span class="hint"><span class="btn">A</span>Play</span>
+    <span class="hint"><span class="btn"><i data-i="menu"></i></span>Options</span>
+    <span class="hint"><span class="btn">B</span>Back</span>
+    <span class="push">3 of 5</span>
+  </div>
+</section></figure>
+
+<!-- 3. GAME OPTIONS -->
+<figure class="frame"><figcaption>3 · Game options: side panel over the library</figcaption>
+<section class="screen osd" id="options">
+  <div class="art-bg" style="background-image:url(assets/fatal-frame.jpg)"></div>
+  <div class="lib-row">
+    <div class="cover"><img src="assets/quiet-place.jpg" alt=""></div>
+    <div class="cover desk"><i data-i="monitor"></i><span>DESKTOP</span></div>
+    <div class="cover focus"><img src="assets/fatal-frame.jpg" alt=""></div>
+    <div class="cover"><img src="assets/star-rail.jpg" alt=""></div>
+  </div>
+  <div class="dim"></div>
+  <aside class="side">
+    <div class="head">
+      <div class="cover"><img src="assets/fatal-frame.jpg" alt=""></div>
+      <div><h3>Fatal Frame II: Crimson Butterfly Remake</h3><p>VaporZPC</p></div>
+    </div>
+    <div class="rows">
+      <div class="row sel"><i data-i="play"></i>Play</div>
+      <div class="row"><i data-i="monitor"></i>Start in virtual display</div>
+      <div class="row"><i data-i="monitor"></i>Start in primary display</div>
+      <div class="row"><i data-i="pin"></i>Add to home screen</div>
+      <div class="row"><i data-i="eyeoff"></i>Hide from library</div>
+      <div class="row"><i data-i="info"></i>Details</div>
+    </div>
+    <div class="hints">
+      <span class="hint"><span class="btn">A</span>Select</span>
+      <span class="hint"><span class="btn">B</span>Close</span>
+    </div>
+  </aside>
+</section></figure>
+
+<!-- 4. LAUNCHING -->
+<figure class="frame"><figcaption>4 · Launching: the stream coming up</figcaption>
+<section class="screen osd" id="launch">
+  <div class="art-bg" style="background-image:url(assets/fatal-frame.jpg)"></div>
+  <div class="scrim" style="background:linear-gradient(90deg,rgba(11,13,15,.7),rgba(11,13,15,.2))"></div>
+  <div class="center">
+    <div class="cover"><img src="assets/fatal-frame.jpg" alt=""></div>
+    <div>
+      <h1>Fatal Frame II: Crimson Butterfly Remake</h1>
+      <div class="steps">
+        <div class="step done"><i data-i="check"></i>Connected to VaporZPC</div>
+        <div class="step done"><i data-i="check"></i>Virtual display created at 3840×2160</div>
+        <div class="step now"><span class="box"></span>Starting the game</div>
+        <div class="step"><span class="box"></span>Receiving video</div>
+      </div>
+    </div>
+  </div>
+  <div class="progress">
+    <div class="bar"><i></i></div>
+    <div class="meta">Starting the game on VaporZPC
+      <span class="badges"><span class="badge">3840×2160</span><span class="badge">60 FPS</span><span class="badge">80 Mbps</span><span class="badge">HEVC</span></span>
+    </div>
+  </div>
+  <div class="hints"><span class="hint"><span class="btn">B</span>Cancel</span></div>
+</section></figure>
+
+<!-- 5. QUICK MENU -->
+<figure class="frame"><figcaption>5 · In-stream quick menu (Select + Start): values change inline with left/right</figcaption>
+<section class="screen osd" id="quick">
+  <img class="stream" src="assets/desktop-stream.jpg" alt="">
+  <aside class="qm">
+    <div class="who">
+      <div class="word">ARTEMISA</div>
+      <div class="now"><span class="live"></span>Streaming Desktop from VaporZPC</div>
+    </div>
+    <div class="rows">
+      <div class="row sel"><i data-i="chart"></i>Performance overlay<span class="val"><i data-i="left" class="arr"></i>Simple<i data-i="right" class="arr"></i></span></div>
+      <div class="row"><i data-i="mouse"></i>Mouse mode<span class="val">Off</span></div>
+      <div class="row"><i data-i="keyboard"></i>Keyboard</div>
+      <div class="row"><i data-i="command"></i>Shortcuts and commands<i data-i="right" class="chev"></i></div>
+      <div class="row"><i data-i="unlink"></i>Disconnect</div>
+      <div class="row stop"><i data-i="power"></i>End stream</div>
+    </div>
+    <div class="hints">
+      <span class="hint"><span class="btn"><i data-i="left"></i></span>Change</span>
+      <span class="hint"><span class="btn">B</span>Close</span>
+    </div>
+  </aside>
+</section></figure>
+
+<!-- 6. PERFORMANCE OVERLAY -->
+<figure class="frame"><figcaption>6 · Performance overlay (Advanced) over the live stream</figcaption>
+<section class="screen osd" id="perf">
+  <img class="stream" src="assets/desktop-stream.jpg" alt="">
+  <div class="perf">
+    <div class="top"><span class="fps">59.9<small>FPS</small></span><span class="res">3840×2160 · HEVC 10-bit</span></div>
+    <dl>
+      <dt>Network latency</dt><dd>2 ms ± 0.4</dd>
+      <dt>Decode time</dt><dd>4.1 ms</dd>
+      <dt>Render queue</dt><dd>1.2 ms</dd>
+      <dt>Frames dropped</dt><dd>0.02 %</dd>
+      <dt>Bitrate</dt><dd>78.4 Mbps</dd>
+    </dl>
+    <div class="graph">
+      <i style="height:44%"></i><i style="height:46%"></i><i style="height:43%"></i><i style="height:47%"></i><i style="height:45%"></i><i style="height:44%"></i><i style="height:48%"></i><i style="height:45%"></i><i style="height:44%"></i><i style="height:46%"></i><i class="spike" style="height:86%"></i><i style="height:47%"></i><i style="height:44%"></i><i style="height:45%"></i><i style="height:43%"></i><i style="height:46%"></i><i style="height:45%"></i><i style="height:44%"></i><i style="height:47%"></i><i style="height:45%"></i><i style="height:44%"></i><i style="height:46%"></i><i style="height:45%"></i><i style="height:43%"></i><i style="height:45%"></i><i style="height:44%"></i><i style="height:47%"></i><i style="height:45%"></i><i style="height:44%"></i><i style="height:46%"></i><i style="height:45%"></i><i style="height:44%"></i><i style="height:45%"></i><i style="height:46%"></i><i style="height:44%"></i><i style="height:45%"></i>
+    </div>
+    <div class="cap">Frame time, last 2 seconds</div>
+  </div>
+</section></figure>
+
+<!-- 7. KEYBOARD -->
+<figure class="frame"><figcaption>7 · Gamepad keyboard docked over the stream</figcaption>
+<section class="screen osd" id="keyboard">
+  <img class="stream" src="assets/desktop-stream.jpg" alt="">
+  <div class="kb">
+    <div class="tabs">
+      <span class="btn pill">LB</span>
+      <span class="tab on">Letters</span><span class="tab">Symbols</span><span class="tab">Controls</span>
+      <span class="btn pill">RB</span>
+    </div>
+    <div class="keys">
+      <div class="key">Q</div><div class="key">W</div><div class="key">E</div><div class="key">R</div><div class="key">T</div><div class="key">Y</div><div class="key">U</div><div class="key">I</div><div class="key">O</div><div class="key">P</div><div class="key mod"><i data-i="backspace"></i></div>
+      <div class="key">A</div><div class="key">S</div><div class="key">D</div><div class="key sel">F</div><div class="key">G</div><div class="key">H</div><div class="key">J</div><div class="key">K</div><div class="key">L</div><div class="key">'</div><div class="key mod"><i data-i="enter"></i></div>
+      <div class="key mod"><i data-i="shift"></i></div><div class="key">Z</div><div class="key">X</div><div class="key">C</div><div class="key">V</div><div class="key">B</div><div class="key">N</div><div class="key">M</div><div class="key">,</div><div class="key">.</div><div class="key mod">Esc</div>
+      <div class="key mod">Ctrl</div><div class="key mod">Alt</div><div class="key mod">Win</div><div class="key mod">Tab</div><div class="key mod" style="grid-column:span 5">Space</div><div class="key mod">?123</div><div class="key mod">Done</div>
+    </div>
+    <div class="hints">
+      <span class="hint"><span class="btn">A</span>Type</span>
+      <span class="hint"><span class="btn">X</span>Space</span>
+      <span class="hint"><span class="btn">Y</span>Backspace</span>
+      <span class="hint"><span class="btn">B</span>Close</span>
+    </div>
+  </div>
+</section></figure>
+
+<!-- 8. SETTINGS -->
+<figure class="frame"><figcaption>8 · Settings: TV picture-menu layout, no pop-up dialogs</figcaption>
+<section class="screen osd" id="settings">
+  <div class="strip">
+    <img class="mark" src="assets/icon.png" alt="">
+    <span class="word">SETTINGS</span>
+    <span class="push clock">21:47</span>
+  </div>
+  <div class="cats panel">
+    <div class="ptitle">Category</div>
+    <div class="rows">
+      <div class="row here"><i data-i="film"></i>Video</div>
+      <div class="row"><i data-i="speaker"></i>Audio and host</div>
+      <div class="row"><i data-i="gamepad"></i>Controller</div>
+      <div class="row"><i data-i="chart"></i>Overlay</div>
+      <div class="row"><i data-i="grid"></i>Library</div>
+      <div class="row"><i data-i="globe"></i>System</div>
+    </div>
+  </div>
+  <div class="opts panel">
+    <div class="ptitle">Video</div>
+    <div class="rows">
+      <div class="row">Resolution<span class="val">4K · 3840×2160</span></div>
+      <div class="row">Frame rate<span class="val">60 FPS</span></div>
+      <div class="row sel">Bitrate<span class="val"><i data-i="left" class="arr"></i><span class="meter"><i></i></span>80 Mbps<i data-i="right" class="arr"></i></span></div>
+      <div class="row">Frame pacing<span class="val">Responsive HQ</span></div>
+      <div class="row">Low-latency frame balance<span class="val onoff">Off</span></div>
+      <div class="row">Virtual display<span class="val onoff">On</span></div>
+      <div class="row">HDR<span class="val onoff">Off</span></div>
+    </div>
+    <div class="help"><b>Bitrate.</b> Higher looks sharper; lower holds up better on a weak connection. Hold left or right to move in 5 Mbps steps.</div>
+  </div>
+  <div class="hints">
+    <span class="hint"><span class="btn"><i data-i="left"></i></span>Change</span>
+    <span class="hint"><span class="btn">B</span>Back</span>
+  </div>
+</section></figure>
+
+<!-- 9. PAIRING -->
+<figure class="frame"><figcaption>9 · Pairing a computer</figcaption>
+<section class="screen osd" id="pair">
+  <div class="strip">
+    <img class="mark" src="assets/icon.png" alt="">
+    <span class="word">ARTEMISA</span>
+  </div>
+  <div class="dialog">
+    <h2>Pair with VaporZPC</h2>
+    <p>Enter this PIN on the host to finish pairing.</p>
+    <div class="pin"><span>4</span><span>8</span><span>1</span><span>7</span></div>
+    <div class="note"><i data-i="info"></i>On Apollo or Sunshine, open the web UI and go to the PIN page.</div>
+    <div class="hints"><span class="hint"><span class="btn">B</span>Cancel</span></div>
+  </div>
+</section></figure>
+
+<script src="assets/mock.js"></script>
+</body>
+</html>

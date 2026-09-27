@@ -7,31 +7,25 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Rect;
 import android.media.MediaCodecInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.app.Activity;
 import android.os.Handler;
-import android.os.Vibrator;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.DialogFragment;
-import androidx.preference.CheckBoxPreference;
-import androidx.preference.EditTextPreference;
+import androidx.preference.TwoStatePreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
-import androidx.preference.PreferenceScreen;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.text.InputFilter;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -43,7 +37,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -71,11 +64,12 @@ import java.util.Map;
 
 public class StreamSettings extends AppCompatActivity {
     private static final int TAB_STREAM = 0;
-    private static final int TAB_CONTROLS = 1;
-    private static final int TAB_INTERFACE = 2;
-    private static final int TAB_APPEARANCE = 3;
-    private static final int TAB_SYSTEM = 4;
-    private static final int TAB_COUNT = 5;
+    private static final int TAB_AUDIO = 1;
+    private static final int TAB_CONTROLS = 2;
+    private static final int TAB_OVERLAY = 3;
+    private static final int TAB_APPEARANCE = 4;
+    private static final int TAB_SYSTEM = 5;
+    private static final int TAB_COUNT = 6;
 
     private int currentTab = TAB_STREAM;
     private PreferenceConfiguration previousPrefs;
@@ -120,8 +114,9 @@ public class StreamSettings extends AppCompatActivity {
     private void setupCategoryTabs() {
         tabViews = new TextView[]{
                 findViewById(R.id.settingsTabStream),
+                findViewById(R.id.settingsTabAudio),
                 findViewById(R.id.settingsTabControls),
-                findViewById(R.id.settingsTabInterface),
+                findViewById(R.id.settingsTabOverlay),
                 findViewById(R.id.settingsTabAppearance),
                 findViewById(R.id.settingsTabSystem)
         };
@@ -130,6 +125,12 @@ public class StreamSettings extends AppCompatActivity {
         for (int i = 0; i < tabViews.length; i++) {
             final int tab = i;
             tabViews[i].setOnClickListener(view -> selectCategoryTab(tab));
+            // Moving through the list of sections shows each one, like Android TV settings
+            tabViews[i].setOnFocusChangeListener((view, hasFocus) -> {
+                if (hasFocus && tab != currentTab) {
+                    selectCategoryTab(tab);
+                }
+            });
         }
         updateCategoryTabs();
         tabViews[currentTab].post(() -> tabViews[currentTab].requestFocus());
@@ -154,25 +155,7 @@ public class StreamSettings extends AppCompatActivity {
             tabViews[i].setSelected(i == currentTab);
         }
 
-        int description;
-        switch (currentTab) {
-            case TAB_CONTROLS:
-                description = R.string.console_settings_controls_description;
-                break;
-            case TAB_INTERFACE:
-                description = R.string.console_settings_interface_description;
-                break;
-            case TAB_APPEARANCE:
-                description = R.string.console_settings_appearance_description;
-                break;
-            case TAB_SYSTEM:
-                description = R.string.console_settings_system_description;
-                break;
-            default:
-                description = R.string.console_settings_stream_description;
-                break;
-        }
-        sectionDescription.setText(description);
+        sectionDescription.setText(tabViews[currentTab].getText());
     }
 
     @Override
@@ -255,21 +238,18 @@ public class StreamSettings extends AppCompatActivity {
         private static final int TAB_ALL = -1;
         private static final String[][] CATEGORY_KEYS = {
                 {
-                        "category_video_settings",
+                        "category_video_settings"
+                },
+                {
                         "category_audio_settings",
-                        "category_host_settings",
-                        "category_perf_monitor_settings"
+                        "category_host_settings"
                 },
                 {
                         "category_gamepad_settings",
-                        "category_input_settings",
-                        "category_onscreen_controls",
-                        "category_special_key_layout",
-                        "category_virtual_trackpad_settings"
+                        "category_input_settings"
                 },
                 {
-                        "category_general_settings",
-                        "category_ui_settings"
+                        "category_perf_monitor_settings"
                 },
                 {
                         "category_appearance_settings"
@@ -444,6 +424,9 @@ public class StreamSettings extends AppCompatActivity {
         public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View view = super.onCreateView(inflater, container, savedInstanceState);
             UiHelper.applyStatusBarPadding(view);
+            // One grouped panel: rows separated by hairlines rather than floating cards
+            setDivider(new android.graphics.drawable.ColorDrawable(getResources().getColor(R.color.dash_line)));
+            setDividerHeight(Math.max(1, Math.round(getResources().getDisplayMetrics().density)));
             return view;
         }
 
@@ -452,18 +435,7 @@ public class StreamSettings extends AppCompatActivity {
         public RecyclerView onCreateRecyclerView(@NonNull LayoutInflater inflater,
                                                  @NonNull ViewGroup parent,
                                                  Bundle savedInstanceState) {
-            RecyclerView recyclerView = super.onCreateRecyclerView(inflater, parent, savedInstanceState);
-            int rowSpacing = getResources().getDimensionPixelSize(R.dimen.console_preference_row_spacing);
-            recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
-                @Override
-                public void getItemOffsets(@NonNull Rect outRect,
-                                           @NonNull View view,
-                                           @NonNull RecyclerView parent,
-                                           @NonNull RecyclerView.State state) {
-                    outRect.bottom = rowSpacing;
-                }
-            });
-            return recyclerView;
+            return super.onCreateRecyclerView(inflater, parent, savedInstanceState);
         }
 
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState, boolean unused) {
@@ -492,6 +464,10 @@ public class StreamSettings extends AppCompatActivity {
                     Preference category = findPreference(key);
                     if (category != null) {
                         category.setVisible(visible);
+                        // A section with one category already shows its name above the list
+                        if (CATEGORY_KEYS[tab].length == 1) {
+                            category.setLayoutResource(R.layout.dash_preference_category_hidden);
+                        }
                     }
                 }
             }
@@ -499,31 +475,10 @@ public class StreamSettings extends AppCompatActivity {
 
         public void initializePreferences() {
             addPreferencesFromResource(R.xml.preferences);
-            PreferenceScreen screen = getPreferenceScreen();
+            showListValuesAsSummaries(getPreferenceScreen());
 
             AppCompatActivity activity = (AppCompatActivity) requireActivity();
             PackageManager pm = activity.getPackageManager();
-
-            // hide on-screen controls category on non touch screen devices
-            if (!pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)) {
-                PreferenceCategory category = findPreference("category_onscreen_controls");
-                if (category != null) {
-                    screen.removePreference(category);
-                }
-                category = findPreference("category_special_key_layout");
-                if (category != null) {
-                    screen.removePreference(category);
-                }
-            }
-
-            // Hide remote desktop mouse mode on pre-Oreo (which doesn't have pointer capture)
-            // and NVIDIA SHIELD devices (which support raw mouse input in pointer capture mode)
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
-                    getActivity().getPackageManager().hasSystemFeature("com.nvidia.feature.shield")) {
-                PreferenceCategory category =
-                        (PreferenceCategory) findPreference("category_input_settings");
-                category.removePreference(findPreference("checkbox_absolute_mouse_mode"));
-            }
 
             // Hide gamepad motion sensor option when running on OSes before Android 12.
             // Support for motion, LED, battery, and other extensions were introduced in S.
@@ -533,63 +488,12 @@ public class StreamSettings extends AppCompatActivity {
                 category.removePreference(findPreference("checkbox_gamepad_motion_sensors"));
             }
 
-            // Hide gamepad motion sensor fallback option if the device has no gyro or accelerometer
-            if (!pm.hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER) &&
-                    !activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE)) {
-                PreferenceCategory category =
-                        (PreferenceCategory) findPreference("category_gamepad_settings");
-                category.removePreference(findPreference("checkbox_force_device_motion"));
-                category.removePreference(findPreference("checkbox_gamepad_motion_fallback"));
-            }
-
             // Hide USB driver options on devices without USB host support
             if (!pm.hasSystemFeature(PackageManager.FEATURE_USB_HOST)) {
                 PreferenceCategory category =
                         (PreferenceCategory) findPreference("category_gamepad_settings");
                 category.removePreference(findPreference("checkbox_usb_bind_all"));
                 category.removePreference(findPreference("checkbox_usb_driver"));
-            }
-
-            // Remove PiP mode on devices pre-Oreo, where the feature is not available (some low RAM devices),
-            // and on Fire OS where it violates the Amazon App Store guidelines for some reason.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
-                    !pm.hasSystemFeature("android.software.picture_in_picture") ||
-                    pm.hasSystemFeature("com.amazon.software.fireos")) {
-                PreferenceCategory category =
-                        (PreferenceCategory) findPreference("category_ui_settings");
-                category.removePreference(findPreference("checkbox_enable_pip"));
-            }
-
-            // Fire TV apps are not allowed to use WebViews or browsers, so hide the Help category
-            /*if (getActivity().getPackageManager().hasSystemFeature("amazon.hardware.fire_tv")) {
-                PreferenceCategory category =
-                        (PreferenceCategory) findPreference("category_help");
-                screen.removePreference(category);
-            }*/
-            PreferenceCategory category_gamepad_settings =
-                    (PreferenceCategory) findPreference("category_gamepad_settings");
-            // Remove the vibration options if the device can't vibrate
-            if (!((Vibrator)getActivity().getSystemService(Context.VIBRATOR_SERVICE)).hasVibrator()) {
-                category_gamepad_settings.removePreference(findPreference("checkbox_vibrate_fallback"));
-                category_gamepad_settings.removePreference(findPreference("seekbar_vibrate_fallback_strength"));
-                // The entire OSC category may have already been removed by the touchscreen check above
-                PreferenceCategory category = findPreference("category_onscreen_controls");
-                if (category != null) {
-                    category.removePreference(findPreference("checkbox_vibrate_osc"));
-                }
-                category = findPreference("category_special_key_layout");
-                if (category != null) {
-                    category.removePreference(findPreference("checkbox_vibrate_keyboard"));
-                }
-                category = findPreference("category_gamepad_settings");
-                if (category != null) {
-                    category.removePreference(findPreference("checkbox_enable_device_rumble"));
-                }
-            }
-            else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
-                    !((Vibrator)getActivity().getSystemService(Context.VIBRATOR_SERVICE)).hasAmplitudeControl()) {
-                // Remove the vibration strength selector of the device doesn't have amplitude control
-                category_gamepad_settings.removePreference(findPreference("seekbar_vibrate_fallback_strength"));
             }
 
             // Check custom resolution
@@ -826,7 +730,7 @@ public class StreamSettings extends AppCompatActivity {
                     LimeLog.info("Disabling HDR toggle on old broken SHIELD TV firmware");
                     PreferenceCategory category =
                             (PreferenceCategory) findPreference("category_video_settings");
-                    CheckBoxPreference hdrPref = (CheckBoxPreference) category.findPreference("checkbox_enable_hdr");
+                    TwoStatePreference hdrPref = category.findPreference("checkbox_enable_hdr");
                     hdrPref.setEnabled(false);
                     hdrPref.setChecked(false);
                     hdrPref.setSummary("Update the firmware on your NVIDIA SHIELD Android TV to enable HDR");
@@ -1022,104 +926,18 @@ public class StreamSettings extends AppCompatActivity {
                     }
                 });
             }
+        }
 
-            EditTextPreference bitrateEditPref = findPreference(PreferenceConfiguration.CUSTOM_BITRATE_PREF_STRING);
-            if (bitrateEditPref != null) {
-                bitrateEditPref.setOnBindEditTextListener((EditText editText) -> {
-                    editText.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
-                    editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)});
-                });
-
-                bitrateEditPref.setOnPreferenceChangeListener((preference, newValue) -> {
-                    String value = (String) newValue;
-                    if (TextUtils.isEmpty(value)) {
-                        Toast.makeText(getActivity(), getString(R.string.pref_enter_value_0_9999), Toast.LENGTH_SHORT).show();
-                        return false;
-                    }
-                    float bitrateValue = Float.parseFloat(value) * 1000;
-                    int bitrate = (int) bitrateValue;
-                    SharedPreferences prefs = getPrefs();
-                    prefs.edit().putInt(PreferenceConfiguration.BITRATE_PREF_STRING, bitrate).apply();
-                    Toast.makeText(getActivity(), getString(R.string.pref_set_success), Toast.LENGTH_SHORT).show();
-                    return true;
-                });
-            }
-
-            EditTextPreference resolutionEditPref = findPreference(PreferenceConfiguration.CUSTOM_RESOLUTION_PREF_STRING);
-            if (resolutionEditPref != null) {
-                resolutionEditPref.setOnBindEditTextListener((EditText editText) -> {
-                    editText.setInputType(InputType.TYPE_CLASS_TEXT);
-                    editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(11)});
-                });
-
-                resolutionEditPref.setOnPreferenceChangeListener((preference, newValue) -> {
-                    String value = (String) newValue;
-                    if (TextUtils.isEmpty(value)) {
-                        Toast.makeText(getActivity(), getString(R.string.pref_enter_value_0_9999), Toast.LENGTH_SHORT).show();
-                        return false;
-                    }
-
-                    // Verify format: [width]x[height]
-                    String[] resolutionSegments = value.split("x");
-                    if (resolutionSegments.length != 2) {
-                        Toast.makeText(getActivity(), getString(R.string.pref_error_occurred), Toast.LENGTH_SHORT).show();
-                        return false;
-                    }
-
-                    try {
-                        int width = Integer.parseInt(resolutionSegments[0]);
-                        int height = Integer.parseInt(resolutionSegments[1]);
-                        
-                        if (width <= 0 || height <= 0) {
-                            Toast.makeText(getActivity(), getString(R.string.pref_error_occurred), Toast.LENGTH_SHORT).show();
-                            return false;
-                        }
-
-                        // Save the value and reload settings
-                        editAndReload(PreferenceConfiguration.CUSTOM_RESOLUTION_PREF_STRING, value);
-
-                        return true;
-                    } catch (NumberFormatException e) {
-                        Toast.makeText(getActivity(), getString(R.string.pref_error_occurred), Toast.LENGTH_SHORT).show();
-                        return false;
-                    }
-                });
-            }
-
-            EditTextPreference customRefreshRatePref = findPreference(PreferenceConfiguration.CUSTOM_REFRESH_RATE_PREF_STRING);
-            if (customRefreshRatePref != null) {
-                customRefreshRatePref.setOnBindEditTextListener((EditText editText) -> {
-                    editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-                    editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(7)});
-                });
-
-                customRefreshRatePref.setOnPreferenceChangeListener((preference, newValue) -> {
-                    String value = (String) newValue;
-                    if (TextUtils.isEmpty(value)) {
-                        Toast.makeText(getActivity(), getString(R.string.pref_enter_value_0_9999), Toast.LENGTH_SHORT).show();
-                        return false;
-                    }
-                    
-                    try {
-                        float refreshRate = Float.parseFloat(value);
-                        if (refreshRate <= 0) {
-                            Toast.makeText(getActivity(), getString(R.string.pref_enter_value_0_9999), Toast.LENGTH_SHORT).show();
-                            return false;
-                        }
-                        
-                        // Format to max 3 decimal places
-                        String formattedValue = String.format("%.3f", refreshRate);
-                        // Remove trailing zeros
-                        formattedValue = formattedValue.replaceAll("0+$", "").replaceAll("\\.$", "");
-
-                        editAndReload(PreferenceConfiguration.CUSTOM_REFRESH_RATE_PREF_STRING, formattedValue);
-
-                        return true;
-                    } catch (NumberFormatException e) {
-                        Toast.makeText(getActivity(), getString(R.string.pref_error_occurred), Toast.LENGTH_SHORT).show();
-                        return false;
-                    }
-                });
+        // On a TV the current value is more useful under a list setting than its description
+        private void showListValuesAsSummaries(androidx.preference.PreferenceGroup group) {
+            for (int i = 0; i < group.getPreferenceCount(); i++) {
+                Preference preference = group.getPreference(i);
+                if (preference instanceof androidx.preference.PreferenceGroup) {
+                    showListValuesAsSummaries((androidx.preference.PreferenceGroup) preference);
+                }
+                else if (preference instanceof ListPreference) {
+                    preference.setSummaryProvider(ListPreference.SimpleSummaryProvider.getInstance());
+                }
             }
         }
 
@@ -1132,13 +950,6 @@ public class StreamSettings extends AppCompatActivity {
                     resetBitrateToDefault(prefs, null, null);
                 }
             });
-        }
-
-        private void editAndReload(String prefKey, String newVal) {
-            SharedPreferences prefs = getPrefs();
-            prefs.edit().putString(prefKey, newVal).apply();
-
-            reloadSettings();
         }
 
         protected void reloadSettings() {

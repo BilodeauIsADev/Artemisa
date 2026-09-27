@@ -47,3 +47,7 @@ app/.externalNativeBuild/
 
 # agent files
 AGENTS.md
+# Design review captures (large, contain host desktop screenshots)
+.impeccable/review/
+# Mock renders, regenerate with mockups/shoot.sh
+mockups/shots/

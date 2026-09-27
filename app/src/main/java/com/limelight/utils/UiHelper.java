@@ -124,6 +124,16 @@ public class UiHelper {
 
     public static void notifyNewRootView(final Activity activity)
     {
+        notifyNewRootView(activity, true);
+    }
+
+    /**
+     * @param tvOverscanPadding pad the root on TVs. Full-bleed screens (home, library) pass
+     *                          false: their art runs to the edges and their layouts keep
+     *                          text and controls inside the title-safe frame themselves.
+     */
+    public static void notifyNewRootView(final Activity activity, boolean tvOverscanPadding)
+    {
         View rootView = activity.findViewById(android.R.id.content);
         UiModeManager modeMgr = (UiModeManager) activity.getSystemService(Context.UI_MODE_SERVICE);
 
@@ -141,6 +151,10 @@ public class UiHelper {
         }
 
         if (modeMgr.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
+            if (!tvOverscanPadding) {
+                return;
+            }
+
             // Increase view padding on TVs
             float scale = activity.getResources().getDisplayMetrics().density;
             int verticalPaddingPixels = (int) (TV_VERTICAL_PADDING_DP*scale + 0.5f);

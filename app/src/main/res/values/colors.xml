@@ -1,12 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="profileAccent">#FF4081</color>
-    <color name="console_background">#070B09</color>
-    <color name="console_surface">#111713</color>
-    <color name="console_border">#3A463E</color>
-    <color name="console_accent">#76D600</color>
+
+    <!-- Art-led dashboard palette -->
+    <color name="dash_ink">#0B0D10</color>
+    <color name="dash_surface_1">#14171C</color>
+    <color name="dash_surface_2">#1C2027</color>
+    <color name="dash_surface_3">#272C34</color>
+    <color name="dash_surface_3_focused">#323842</color>
+    <color name="dash_line">#24FFFFFF</color>
+    <color name="dash_text">#FFFFFF</color>
+    <color name="dash_text_2">#BDFFFFFF</color>
+    <color name="dash_text_3">#85FFFFFF</color>
+    <color name="dash_go">#76D600</color>
+    <color name="dash_on_go">#0A1200</color>
+    <color name="dash_stop">#FF6B6E</color>
+    <color name="dash_glass">#1AFFFFFF</color>
+    <color name="dash_glass_strong">#29FFFFFF</color>
+    <color name="dash_hint_badge">#E6FFFFFF</color>
+
+    <!-- Legacy names, mapped onto the dashboard palette -->
+    <color name="console_background">@color/dash_ink</color>
+    <color name="console_surface">@color/dash_surface_2</color>
+    <color name="console_border">#2E333B</color>
+    <color name="console_accent">@color/dash_go</color>
     <color name="console_accent_soft">#2676D600</color>
-    <color name="console_text_primary">#F4F7F5</color>
-    <color name="console_text_secondary">#9DA8A1</color>
-    <color name="console_danger">#FF5D67</color>
+    <color name="console_text_primary">@color/dash_text</color>
+    <color name="console_text_secondary">@color/dash_text_2</color>
+    <color name="console_danger">@color/dash_stop</color>
 </resources>

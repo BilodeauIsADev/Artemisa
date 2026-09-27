@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true"><layer-list><item><shape android:shape="rectangle"><solid android:color="@color/dash_go" /><corners android:radius="40dp" /></shape></item><item android:bottom="3dp" android:left="3dp" android:right="3dp" android:top="3dp"><shape android:shape="rectangle"><solid android:color="@color/dash_ink" /><corners android:radius="40dp" /></shape></item><item android:bottom="6dp" android:left="6dp" android:right="6dp" android:top="6dp"><shape android:shape="rectangle"><solid android:color="@color/dash_text" /><corners android:radius="40dp" /></shape></item></layer-list></item>
+    <item><inset android:insetBottom="6dp" android:insetLeft="6dp" android:insetRight="6dp" android:insetTop="6dp"><shape android:shape="rectangle"><solid android:color="@color/dash_text" /><corners android:radius="40dp" /></shape></inset></item>
+</selector>

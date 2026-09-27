@@ -1,0 +1,494 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-27T16:43:43.653335+00:00",
+  "title": "Design System: Artemisa",
+  "extensions": {
+    "colorMeta": {
+      "go-green": {
+        "role": "primary",
+        "displayName": "Go Green",
+        "canonical": "#76D600 (@color/dash_go)",
+        "tonalRamp": [
+          "#1A3000",
+          "#2B4F00",
+          "#3E7000",
+          "#529200",
+          "#66B400",
+          "#76D600",
+          "#A4E85C",
+          "#D9F6B8"
+        ]
+      },
+      "on-go": {
+        "role": "primary",
+        "displayName": "Go Ink",
+        "canonical": "#0A1200 (@color/dash_on_go)",
+        "tonalRamp": [
+          "#050900",
+          "#0A1200",
+          "#172900",
+          "#2B4F00",
+          "#3E7000",
+          "#66B400",
+          "#A4E85C",
+          "#D9F6B8"
+        ]
+      },
+      "stop-coral": {
+        "role": "secondary",
+        "displayName": "Stop Coral",
+        "canonical": "#FF6B6E (@color/dash_stop)",
+        "tonalRamp": [
+          "#3A0F10",
+          "#62191B",
+          "#8C2427",
+          "#B83236",
+          "#E24A4E",
+          "#FF6B6E",
+          "#FF9C9E",
+          "#FFD4D5"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#0B0D10 (@color/dash_ink)",
+        "tonalRamp": [
+          "#0B0D10",
+          "#14171C",
+          "#1C2027",
+          "#272C34",
+          "#323842",
+          "#4A515D",
+          "#8A919C",
+          "#D5D9DF"
+        ]
+      },
+      "surface-1": {
+        "role": "neutral",
+        "displayName": "Surface 1",
+        "canonical": "#14171C (@color/dash_surface_1)",
+        "tonalRamp": [
+          "#0B0D10",
+          "#14171C",
+          "#1C2027",
+          "#272C34",
+          "#323842",
+          "#4A515D",
+          "#8A919C",
+          "#D5D9DF"
+        ]
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Surface 2",
+        "canonical": "#1C2027 (@color/dash_surface_2)",
+        "tonalRamp": [
+          "#0B0D10",
+          "#14171C",
+          "#1C2027",
+          "#272C34",
+          "#323842",
+          "#4A515D",
+          "#8A919C",
+          "#D5D9DF"
+        ]
+      },
+      "surface-3": {
+        "role": "neutral",
+        "displayName": "Surface 3",
+        "canonical": "#272C34 (@color/dash_surface_3)",
+        "tonalRamp": [
+          "#0B0D10",
+          "#14171C",
+          "#1C2027",
+          "#272C34",
+          "#323842",
+          "#4A515D",
+          "#8A919C",
+          "#D5D9DF"
+        ]
+      },
+      "surface-3-focused": {
+        "role": "neutral",
+        "displayName": "Surface 3 Focused",
+        "canonical": "#323842 (@color/dash_surface_3_focused)",
+        "tonalRamp": [
+          "#0B0D10",
+          "#14171C",
+          "#1C2027",
+          "#272C34",
+          "#323842",
+          "#4A515D",
+          "#8A919C",
+          "#D5D9DF"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "White",
+        "canonical": "#FFFFFF (@color/dash_text)",
+        "tonalRamp": [
+          "rgba(255,255,255,0.06)",
+          "rgba(255,255,255,0.10)",
+          "rgba(255,255,255,0.16)",
+          "rgba(255,255,255,0.30)",
+          "rgba(255,255,255,0.52)",
+          "rgba(255,255,255,0.74)",
+          "rgba(255,255,255,0.90)",
+          "#FFFFFF"
+        ]
+      },
+      "text-2": {
+        "role": "neutral",
+        "displayName": "74% White",
+        "canonical": "#BDFFFFFF Android ARGB (@color/dash_text_2)",
+        "tonalRamp": [
+          "rgba(255,255,255,0.06)",
+          "rgba(255,255,255,0.10)",
+          "rgba(255,255,255,0.16)",
+          "rgba(255,255,255,0.30)",
+          "rgba(255,255,255,0.52)",
+          "rgba(255,255,255,0.74)",
+          "rgba(255,255,255,0.90)",
+          "#FFFFFF"
+        ]
+      },
+      "text-3": {
+        "role": "neutral",
+        "displayName": "52% White",
+        "canonical": "#85FFFFFF Android ARGB (@color/dash_text_3)",
+        "tonalRamp": [
+          "rgba(255,255,255,0.06)",
+          "rgba(255,255,255,0.10)",
+          "rgba(255,255,255,0.16)",
+          "rgba(255,255,255,0.30)",
+          "rgba(255,255,255,0.52)",
+          "rgba(255,255,255,0.74)",
+          "rgba(255,255,255,0.90)",
+          "#FFFFFF"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "canonical": "#24FFFFFF Android ARGB (@color/dash_line)",
+        "tonalRamp": [
+          "rgba(255,255,255,0.06)",
+          "rgba(255,255,255,0.10)",
+          "rgba(255,255,255,0.16)",
+          "rgba(255,255,255,0.30)",
+          "rgba(255,255,255,0.52)",
+          "rgba(255,255,255,0.74)",
+          "rgba(255,255,255,0.90)",
+          "#FFFFFF"
+        ]
+      },
+      "glass": {
+        "role": "neutral",
+        "displayName": "Glass",
+        "canonical": "#1AFFFFFF Android ARGB (@color/dash_glass)",
+        "tonalRamp": [
+          "rgba(255,255,255,0.06)",
+          "rgba(255,255,255,0.10)",
+          "rgba(255,255,255,0.16)",
+          "rgba(255,255,255,0.30)",
+          "rgba(255,255,255,0.52)",
+          "rgba(255,255,255,0.74)",
+          "rgba(255,255,255,0.90)",
+          "#FFFFFF"
+        ]
+      },
+      "glass-strong": {
+        "role": "neutral",
+        "displayName": "Strong Glass",
+        "canonical": "#29FFFFFF Android ARGB (@color/dash_glass_strong)",
+        "tonalRamp": [
+          "rgba(255,255,255,0.06)",
+          "rgba(255,255,255,0.10)",
+          "rgba(255,255,255,0.16)",
+          "rgba(255,255,255,0.30)",
+          "rgba(255,255,255,0.52)",
+          "rgba(255,255,255,0.74)",
+          "rgba(255,255,255,0.90)",
+          "#FFFFFF"
+        ]
+      },
+      "hint-badge": {
+        "role": "neutral",
+        "displayName": "Hint White",
+        "canonical": "#E6FFFFFF Android ARGB (@color/dash_hint_badge)",
+        "tonalRamp": [
+          "rgba(255,255,255,0.06)",
+          "rgba(255,255,255,0.10)",
+          "rgba(255,255,255,0.16)",
+          "rgba(255,255,255,0.30)",
+          "rgba(255,255,255,0.52)",
+          "rgba(255,255,255,0.74)",
+          "rgba(255,255,255,0.90)",
+          "#FFFFFF"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Home hero title (host name)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Library hero game title, up to two lines."
+      },
+      "title-lg": {
+        "displayName": "Title Large",
+        "purpose": "Screen titles, launch overlay, empty/loading state (26-36sp)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Dialog titles."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Play pill and dialog buttons, sentence case."
+      },
+      "body-strong": {
+        "displayName": "Body Strong",
+        "purpose": "Preference row titles."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Line under hero titles and clocks; tabular figures, 74% white."
+      },
+      "card-title": {
+        "displayName": "Card Title",
+        "purpose": "Quick-menu and option card names."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Controller hint labels, keyboard segments, settings chrome."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Preference summaries showing current values."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Card state lines under card titles."
+      }
+    },
+    "shadows": [
+      {
+        "name": "tile-rest",
+        "value": "0 3px 12px rgba(0,0,0,0.45)",
+        "purpose": "Android cardElevation 6dp on library tiles."
+      },
+      {
+        "name": "card-lift",
+        "value": "0 8px 20px rgba(0,0,0,0.45)",
+        "purpose": "translationZ 8dp on focused quick-menu and option cards."
+      },
+      {
+        "name": "anchored-menu",
+        "value": "0 16px 32px rgba(0,0,0,0.5)",
+        "purpose": "elevation 16dp on option menus opened beside an element."
+      }
+    ],
+    "motion": [
+      {
+        "name": "card-lift",
+        "value": "140ms decelerate_cubic, scale 1.04, translationZ 8dp",
+        "purpose": "Focused card rises (res/animator/dash_card_lift.xml)."
+      },
+      {
+        "name": "card-settle",
+        "value": "120ms, scale 1, translationZ 0",
+        "purpose": "Card returns to rest on focus loss."
+      },
+      {
+        "name": "tile-grow",
+        "value": "160ms, 72x108dp to 96x144dp",
+        "purpose": "Focused library tile grows."
+      },
+      {
+        "name": "key-art-fade",
+        "value": "220ms to alpha 0.92",
+        "purpose": "Key art cross-fades to the focused game."
+      },
+      {
+        "name": "backdrop-fade",
+        "value": "260ms (Library), 300ms (Home) to alpha 1",
+        "purpose": "Blurred backdrop follows focus."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tv-canvas",
+        "value": "960x540dp (1080p and 4K at xhdpi scale)"
+      }
+    ],
+    "scrims": [
+      {
+        "name": "left",
+        "value": "linear-gradient(to right, rgba(11,13,16,0.88), rgba(11,13,16,0.55) 45%, rgba(11,13,16,0))"
+      },
+      {
+        "name": "bottom",
+        "value": "linear-gradient(to top, rgba(11,13,16,0.70), rgba(11,13,16,0)); 180dp tall"
+      },
+      {
+        "name": "top",
+        "value": "linear-gradient(to bottom, rgba(11,13,16,0.50), rgba(11,13,16,0)); 120dp tall"
+      }
+    ],
+    "artTreatment": {
+      "backdrop": "small blurred copy scaled to full screen, brightness 0.5-0.75, saturation 1.3",
+      "keyArt": "440dp right column at alpha 0.92, faded into the backdrop from its left edge"
+    },
+    "focusRing": {
+      "stroke": "3dp #76D600",
+      "gap": "6dp (dash_focus_gap)",
+      "radius": "16dp on tiles; follows the element's shape on pills and circles"
+    }
+  },
+  "components": [
+    {
+      "name": "Play Pill",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single primary action: white pill, ink label; focus adds a green ring with an ink gap.",
+      "html": "<button class=\"ds-btn-play\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\"><path d=\"M7 4.5v15l12.5-7.5z\" fill=\"#0B0D10\"/></svg>Play</button>",
+      "css": ".ds-btn-play{font-family:'Albert Sans',system-ui,sans-serif;display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 30px 0 25px;border:none;border-radius:40px;background:#FFFFFF;color:#0B0D10;font-weight:700;font-size:16px;outline:none;transition:box-shadow .14s} .ds-btn-play:hover,.ds-btn-play:focus-visible{box-shadow:0 0 0 3px #0B0D10,0 0 0 6px #76D600}"
+    },
+    {
+      "name": "Circle Button",
+      "kind": "button",
+      "refersTo": "button-circle",
+      "description": "Secondary round action (more) on strong glass over art.",
+      "html": "<button class=\"ds-btn-circle\" aria-label=\"More\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"#fff\"><circle cx=\"5\" cy=\"12\" r=\"2\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/><circle cx=\"19\" cy=\"12\" r=\"2\"/></svg></button>",
+      "css": ".ds-btn-circle{width:44px;height:44px;border:none;border-radius:50%;background:rgba(255,255,255,.16);display:inline-flex;align-items:center;justify-content:center;outline:none;transition:box-shadow .14s} .ds-btn-circle:hover,.ds-btn-circle:focus-visible{box-shadow:0 0 0 3px #0B0D10,0 0 0 6px #76D600}"
+    },
+    {
+      "name": "Dialog Button",
+      "kind": "button",
+      "refersTo": "button-dialog",
+      "description": "Glass pill at rest, green fill with ink-green text on focus.",
+      "html": "<button class=\"ds-btn-dialog\">Cancel</button>",
+      "css": ".ds-btn-dialog{font-family:'Albert Sans',system-ui,sans-serif;height:40px;padding:0 20px;border:none;border-radius:20px;background:rgba(255,255,255,.10);color:#fff;font-weight:700;font-size:15px;outline:none;transition:background .12s,color .12s} .ds-btn-dialog:hover,.ds-btn-dialog:focus-visible{background:#76D600;color:#0A1200}"
+    },
+    {
+      "name": "Library Tile",
+      "kind": "card",
+      "refersTo": "tile",
+      "description": "Portrait 2:3 cover; focus grows it and draws the 16dp green ring 6dp outside.",
+      "html": "<button class=\"ds-tile\" aria-label=\"Game\"><span class=\"ds-tile-art\"></span></button>",
+      "css": ".ds-tile{width:72px;height:108px;padding:0;border:none;border-radius:16px;background:transparent;outline:none;display:inline-flex;align-items:center;justify-content:center;transition:width .16s,height .16s,box-shadow .16s} .ds-tile-art{display:block;width:100%;height:100%;border-radius:8px;background:linear-gradient(315deg,#1B1F25,#2E343D);box-shadow:0 3px 12px rgba(0,0,0,.45)} .ds-tile:hover,.ds-tile:focus-visible{width:96px;height:144px;box-shadow:inset 0 0 0 3px #76D600;padding:9px}"
+    },
+    {
+      "name": "Quick-menu Card",
+      "kind": "card",
+      "refersTo": "quick-card",
+      "description": "Control-center card: icon, name, current state; focus lifts and rings it.",
+      "html": "<button class=\"ds-card\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M3 3v18h18M8 16v-4M13 16V8M18 16v-7\"/></svg><span class=\"ds-card-name\">Performance</span><span class=\"ds-card-state\">Off</span></button>",
+      "css": ".ds-card{font-family:'Albert Sans',system-ui,sans-serif;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;width:150px;height:98px;padding:13px;border:3px solid transparent;border-radius:11px;background:#272C34;color:#fff;text-align:left;outline:none;transition:transform .14s cubic-bezier(.22,1,.36,1),box-shadow .14s,background .14s} .ds-card-name{font-weight:700;font-size:13px;margin-top:auto} .ds-card-state{font-weight:500;font-size:11px;color:rgba(255,255,255,.74)} .ds-card:hover,.ds-card:focus-visible{background:#323842;border-color:#76D600;transform:scale(1.04);box-shadow:0 8px 20px rgba(0,0,0,.45)}"
+    },
+    {
+      "name": "Menu Row",
+      "kind": "custom",
+      "refersTo": "menu-row",
+      "description": "Option list row; focus fills green (coral for destructive).",
+      "html": "<div class=\"ds-menu\"><button class=\"ds-row\">Resume session</button><button class=\"ds-row ds-row-danger\">Quit session</button></div>",
+      "css": ".ds-menu{display:flex;flex-direction:column;gap:2px;width:220px;padding:8px;background:#1C2027;border-radius:16px;box-shadow:0 16px 32px rgba(0,0,0,.5)} .ds-row{font-family:'Albert Sans',system-ui,sans-serif;height:36px;padding:0 12px;border:none;border-radius:8px;background:transparent;color:#fff;font-weight:600;font-size:13px;text-align:left;outline:none} .ds-row:hover,.ds-row:focus-visible{background:#76D600;color:#0A1200} .ds-row-danger{color:#FF6B6E} .ds-row-danger:hover,.ds-row-danger:focus-visible{background:#FF6B6E;color:#0B0D10}"
+    },
+    {
+      "name": "Preference Row",
+      "kind": "input",
+      "refersTo": "preference-row",
+      "description": "Settings row with title and current-value summary; focus gives surface-3 plus the ring.",
+      "html": "<button class=\"ds-pref\"><span class=\"ds-pref-title\">Video resolution</span><span class=\"ds-pref-sum\">4K</span></button>",
+      "css": ".ds-pref{font-family:'Albert Sans',system-ui,sans-serif;display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:360px;padding:10px 14px;border:3px solid transparent;border-radius:9px;background:transparent;text-align:left;outline:none} .ds-pref-title{font-weight:600;font-size:15px;color:#fff} .ds-pref-sum{font-weight:400;font-size:12px;color:rgba(255,255,255,.74)} .ds-pref:hover,.ds-pref:focus-visible{background:#272C34;border-color:#76D600}"
+    },
+    {
+      "name": "Settings Nav",
+      "kind": "nav",
+      "refersTo": "settings-nav-item",
+      "description": "Left settings nav: selected is glass, focused adds the green stroke.",
+      "html": "<nav class=\"ds-nav\"><button class=\"ds-nav-item ds-nav-sel\">Video</button><button class=\"ds-nav-item\">Audio</button><button class=\"ds-nav-item\">Controllers</button></nav>",
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:3px;width:180px} .ds-nav-item{font-family:'Albert Sans',system-ui,sans-serif;height:38px;padding:0 11px;border:3px solid transparent;border-radius:8px;background:transparent;color:rgba(255,255,255,.74);font-weight:600;font-size:14px;text-align:left;outline:none} .ds-nav-sel{background:rgba(255,255,255,.10);color:#fff} .ds-nav-item:hover,.ds-nav-item:focus-visible{background:rgba(255,255,255,.16);border-color:#76D600;color:#fff}"
+    },
+    {
+      "name": "Controller Hint",
+      "kind": "chip",
+      "refersTo": "hint-badge",
+      "description": "Button letter disc plus the action it performs here.",
+      "html": "<span class=\"ds-hint\"><span class=\"ds-hint-badge\">A</span>Play</span>",
+      "css": ".ds-hint{font-family:'Albert Sans',system-ui,sans-serif;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:12px;color:rgba(255,255,255,.74)} .ds-hint-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.90);color:#0B0D10;font-weight:800;font-size:10px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Poster Wall",
+    "overview": "The focused game owns the whole screen. Its art is the room: a soft, blurred, slightly oversaturated backdrop fills the display, and the sharp key art fades in from the right edge. Ink shades pull the left side and the bottom back to near-black so white type stays legible. The interface itself is small by comparison: one row of portrait tiles, a big ExtraBold title, a meta line, and a white Play pill. Everything else (options, settings, the in-stream quick menu) comes up as dark surfaces and sheets layered over that art or over the live stream.\n\nThe system is built for a controller at ten feet on a Shield TV (960x540dp). Focus is the only cursor, so focus has to be unmistakable: a green ring standing off the element with a dark gap, or a solid green fill on rows and keys. Green is kept for that job and almost nothing else, which is what makes it readable at a glance. The primary action is white, not green, and destructive actions are coral.\n\nDepth comes from real Android elevation (soft, ambient shadows), tonal steps from ink to surface-3, and translucent white \"glass\" for chrome over art. There are no glows, no borders on cards, and no decorative gradients beyond the legibility scrims.",
+    "keyCharacteristics": [
+      "Full-bleed, focus-driven art: backdrop and key art cross-fade to whatever is focused.",
+      "One tile row; the focused tile grows 72x108dp to 96x144dp.",
+      "Green (#76D600) is focus and selection, never decoration or the primary button.",
+      "White pill for the primary action; glass circles and pills for secondary chrome.",
+      "Albert Sans throughout: ExtraBold titles, SemiBold labels, tabular figures for numbers.",
+      "Rounded forms from 8dp rows up to fully round pills; soft elevation, no glows."
+    ],
+    "rules": [
+      {
+        "name": "The Green Means Focus Rule",
+        "body": "Green marks where the controller is or what is selected: focus rings, focused/selected fills, switch-on tracks, the live dot, primary progress. It is never a resting background, a decorative accent, or the primary button.",
+        "section": "colors"
+      },
+      {
+        "name": "The White Play Rule",
+        "body": "The primary action is a white pill with ink text. Focus adds the green ring around it; it does not turn green.",
+        "section": "colors"
+      },
+      {
+        "name": "The Coral Stop Rule",
+        "body": "Destructive actions are coral and nothing else is. When a destructive action asks for confirmation, focus lands on the safe option.",
+        "section": "colors"
+      },
+      {
+        "name": "The Weight Not Case Rule",
+        "body": "Hierarchy comes from weight and size. Labels are sentence case; the system has no all-caps labels or small tracked-out lines above titles.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Numbers Rule",
+        "body": "Anything that updates or compares numbers (meta line, clock, performance figures) uses tabular figures.",
+        "section": "typography"
+      },
+      {
+        "name": "The No Glow Rule",
+        "body": "Shadows are soft, neutral Android elevation. Focus is shown with the ring or fill, never with a coloured glow or outer bloom.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Shade Not Box Rule",
+        "body": "Text over art is made legible with ink gradients, not by putting it on a panel.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** keep content inside the 48dp by 27dp title-safe frame, and let art and scrims run full-bleed behind it on Home and Library.",
+      "**Do** show focus with the 3dp green ring standing 6dp off the element, or with a solid green fill on rows, keys and dialog buttons.",
+      "**Do** make the primary action a white pill with ink text and put secondary actions on glass.",
+      "**Do** use coral only for destructive actions, and land focus on the safe option in destructive confirmations.",
+      "**Do** put text over art on ink gradients (left, bottom, top shades) rather than on panels.",
+      "**Do** use Albert Sans weights for hierarchy (ExtraBold titles at -0.02 tracking, SemiBold labels) and tabular figures for numbers.",
+      "**Do** show the current value as the summary of list and slider preferences.",
+      "**Do** use the authored stroked icon set on a 24dp grid, tinted by the view."
+    ],
+    "donts": [
+      "**Don't** use green as a resting background, a decorative accent or the primary button fill.",
+      "**Don't** put glows, outer blooms or coloured shadows on focused elements; elevation stays soft and neutral.",
+      "**Don't** add borders to cards at rest; a stroke only ever means focus.",
+      "**Don't** lay the library out as a grid of equal cards; it is one row of tiles under the focused game.",
+      "**Don't** set labels in all caps or place small tracked-out lines above titles.",
+      "**Don't** use sharp corners; the smallest radius on a surface is 8dp."
+    ]
+  }
+}

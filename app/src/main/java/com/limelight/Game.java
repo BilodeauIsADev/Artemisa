@@ -44,6 +44,7 @@ import com.limelight.ui.ExternalControllerView;
 import com.limelight.ui.GameGestures;
 import com.limelight.ui.GamepadOnscreenKeyboard;
 import com.limelight.ui.StreamContainer;
+import com.limelight.utils.ArtHelper;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.ExternalDisplayControlActivity;
 import com.limelight.utils.MouseModeOption;
@@ -69,6 +70,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Outline;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -103,6 +105,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -1192,6 +1195,36 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 appName == null || appName.trim().isEmpty() ? getString(R.string.artemisa_brand) : appName);
         connectionComputerNameView.setText(
                 pcName == null || pcName.trim().isEmpty() ? "" : pcName);
+        loadConnectionArt();
+    }
+
+    // Shows the game's cover and a blurred backdrop from the box art cache while connecting.
+    private void loadConnectionArt() {
+        // Read from the intent: this runs before onCreate() copies the extras into fields
+        final String uuid = getIntent().getStringExtra(EXTRA_PC_UUID);
+        final int appId = getIntent().getIntExtra(EXTRA_APP_ID, StreamConfiguration.INVALID_APP_ID);
+        if (uuid == null || appId == StreamConfiguration.INVALID_APP_ID) {
+            return;
+        }
+        final int coverWidth = Math.round(180 * getResources().getDisplayMetrics().density);
+        new Thread(() -> {
+            final Bitmap cover = ArtHelper.loadCachedCover(Game.this, uuid, appId, coverWidth);
+            if (cover == null) {
+                return;
+            }
+            final Bitmap blurred = ArtHelper.blur(cover);
+            runOnUiThread(() -> {
+                if (isFinishing() || connectionOverlayView == null ||
+                        connectionOverlayView.getVisibility() != View.VISIBLE) {
+                    return;
+                }
+                ImageView backdrop = findViewById(R.id.connectionBackdrop);
+                backdrop.setColorFilter(ArtHelper.backdropFilter(0.42f));
+                ArtHelper.setBackdrop(backdrop, blurred);
+                ((ImageView) findViewById(R.id.connectionCover)).setImageBitmap(cover);
+                findViewById(R.id.connectionCoverCard).setVisibility(View.VISIBLE);
+            });
+        }, "ConnectionArt").start();
     }
 
     private void updateConnectionStatus(String status) {
@@ -3993,15 +4026,71 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             @Override
             public void run() {
                 if (prefConfig.enablePerfOverlayLite) {
-                    performanceOverlayLite.setText(text
-                            .replace("\r", "")
-                            .replace("\n", "  |  ")
-                            .replace("\t", "  |  "));
+                    performanceOverlayLite.setText(styleSimplePerfText(text));
                 } else {
-                    performanceOverlayBig.setText(text);
+                    performanceOverlayBig.setText(styleAdvancedPerfText(text));
                 }
             }
         });
+    }
+
+    // Simple overlay: "value label" pairs, value bold and label muted, separated by dots.
+    private CharSequence styleSimplePerfText(String text) {
+        android.text.SpannableStringBuilder out = new android.text.SpannableStringBuilder();
+        int muted = getResources().getColor(R.color.dash_text_2);
+        for (String segment : text.replace("\r", "").replace("\n", "\t").split("\t")) {
+            if (segment.trim().isEmpty()) {
+                continue;
+            }
+            if (out.length() > 0) {
+                appendStyled(out, "   ·   ", muted, false);
+            }
+            int split = segment.indexOf(MediaCodecDecoderRenderer.PERF_LABEL_SEPARATOR);
+            if (split < 0) {
+                appendStyled(out, segment.trim(), muted, false);
+                continue;
+            }
+            appendStyled(out, segment.substring(0, split), 0, true);
+            appendStyled(out, " " + segment.substring(split + 1), muted, false);
+        }
+        return out;
+    }
+
+    // Advanced overlay: one stat per line, "Label: value" with the value bold.
+    private CharSequence styleAdvancedPerfText(String text) {
+        android.text.SpannableStringBuilder out = new android.text.SpannableStringBuilder();
+        int muted = getResources().getColor(R.color.dash_text_2);
+        String[] lines = text.replace("\r", "").split("\n");
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i].trim();
+            if (line.isEmpty()) {
+                continue;
+            }
+            if (out.length() > 0) {
+                out.append('\n');
+            }
+            int split = line.indexOf(": ");
+            if (split < 0) {
+                appendStyled(out, line, 0, true);
+                continue;
+            }
+            appendStyled(out, line.substring(0, split + 1) + " ", muted, false);
+            appendStyled(out, line.substring(split + 2), 0, true);
+        }
+        return out;
+    }
+
+    private static void appendStyled(android.text.SpannableStringBuilder out, String part, int color, boolean bold) {
+        int start = out.length();
+        out.append(part);
+        if (color != 0) {
+            out.setSpan(new android.text.style.ForegroundColorSpan(color), start, out.length(),
+                    android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        if (bold) {
+            out.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), start, out.length(),
+                    android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
     }
 
     @Override
@@ -4299,6 +4388,10 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
     public String getStreamingComputerName() {
         return pcName != null ? pcName : getString(R.string.artemisa_brand);
+    }
+
+    public String getStreamingAppName() {
+        return appName != null && !appName.trim().isEmpty() ? appName : getString(R.string.artemisa_brand);
     }
 
     //切换触控灵敏度开关

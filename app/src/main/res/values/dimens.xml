@@ -5,11 +5,21 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="tv_channel_logo_width">80dp</dimen>
     <dimen name="tv_channel_logo_height">80dp</dimen>
-    <dimen name="console_screen_horizontal_padding">42dp</dimen>
+
+    <!-- TV title-safe frame (5% of a 960x540dp screen) -->
+    <dimen name="console_screen_horizontal_padding">48dp</dimen>
+    <dimen name="console_screen_vertical_padding">27dp</dimen>
     <dimen name="console_header_height">76dp</dimen>
     <dimen name="console_footer_height">52dp</dimen>
     <dimen name="console_card_radius">8dp</dimen>
     <dimen name="console_focus_stroke">3dp</dimen>
-    <dimen name="console_preference_row_spacing">8dp</dimen>
+    <dimen name="console_preference_row_spacing">4dp</dimen>
+
+    <!-- Library tile row -->
+    <dimen name="dash_tile_width">72dp</dimen>
+    <dimen name="dash_tile_height">108dp</dimen>
+    <dimen name="dash_tile_focused_width">96dp</dimen>
+    <dimen name="dash_tile_focused_height">144dp</dimen>
+    <dimen name="dash_focus_gap">6dp</dimen>
 
 </resources>

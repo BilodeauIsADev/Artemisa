@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Quick menu entry for long submenus (shortcuts, commands): a compact card in a grid. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/gameMenuOption"
+    android:layout_width="0dp"
+    android:layout_height="46dp"
+    android:layout_weight="1"
+    android:background="@drawable/dash_card_background"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="false"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="13dp"
+    android:paddingEnd="13dp"
+    android:soundEffectsEnabled="true"
+    android:stateListAnimator="@animator/dash_card_lift">
+
+    <ImageView
+        android:id="@+id/gameMenuOptionIcon"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginEnd="10dp"
+        android:contentDescription="@null"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter"
+        app:tint="@color/dash_text" />
+
+    <TextView
+        android:id="@+id/gameMenuOptionLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:fontFamily="@font/albert_sans_semibold"
+        android:maxLines="1"
+        android:textColor="@color/dash_text"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/gameMenuOptionStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/albert_sans_bold"
+        android:textColor="@color/dash_go"
+        android:textSize="11sp" />
+</LinearLayout>

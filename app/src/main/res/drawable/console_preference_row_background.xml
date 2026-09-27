@@ -1,24 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_focused="true">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/console_accent_soft" />
-            <corners android:radius="6dp" />
-            <stroke
-                android:width="2dp"
-                android:color="@color/console_accent" />
-        </shape>
-    </item>
-    <item android:state_pressed="true">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/console_accent_soft" />
-            <corners android:radius="6dp" />
-        </shape>
-    </item>
-    <item>
-        <shape android:shape="rectangle">
-            <solid android:color="@color/console_surface" />
-            <corners android:radius="6dp" />
-        </shape>
-    </item>
+    <item android:state_focused="true"><shape android:shape="rectangle"><solid android:color="@color/dash_surface_3" /><corners android:radius="9dp" /><stroke android:width="3dp" android:color="@color/dash_go" /></shape></item>
+    <item android:state_pressed="true"><shape android:shape="rectangle"><solid android:color="@color/dash_surface_3" /><corners android:radius="9dp" /></shape></item>
+    <item><shape android:shape="rectangle"><solid android:color="@android:color/transparent" /><corners android:radius="9dp" /></shape></item>
 </selector>
