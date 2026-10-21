@@ -31,7 +31,7 @@ import com.limelight.profiles.ProfilesManager;
 import com.limelight.ui.AdapterFragment;
 import com.limelight.ui.AdapterFragmentCallbacks;
 import com.limelight.ui.ConsoleMenu;
-import com.limelight.ui.HorizontalGameListView;
+import com.limelight.ui.SpotlightCarouselView;
 import com.limelight.utils.ArtHelper;
 import com.limelight.utils.CacheHelper;
 import com.limelight.utils.Dialog;
@@ -79,13 +79,12 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class PcView extends AppCompatActivity implements AdapterFragmentCallbacks {
     private View noPcFoundLayout;
-    private HorizontalGameListView tileRow;
+    private SpotlightCarouselView tileRow;
     private View addComputerTile;
     private View homeHero;
     private TextView homeTitle;
     private TextView homeMeta;
     private TextView homeHintPrimary;
-    private LinearLayout homeCovers;
     private ImageView homeBackdrop;
     private final ExecutorService artExecutor = Executors.newSingleThreadExecutor();
     private int artGeneration;
@@ -95,6 +94,8 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
     private ShortcutHelper shortcutHelper;
     private ComputerManagerService.ComputerManagerBinder managerBinder;
     private boolean freezeUpdates, runningPolling, inForeground, completeOnCreateCalled;
+    // Home is a pass-through with one paired computer: open its library once per launch
+    private boolean libraryAutoOpenAllowed;
     private ComputerDetails.AddressTuple pendingPairingAddress;
     private String pendingPairingPin, pendingPairingPassphrase;
     private final ServiceConnection serviceConnection = new ServiceConnection() {
@@ -181,7 +182,6 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
         homeTitle = findViewById(R.id.homeTitle);
         homeMeta = findViewById(R.id.homeMeta);
         homeHintPrimary = findViewById(R.id.homeHintPrimary);
-        homeCovers = findViewById(R.id.homeCovers);
         homeBackdrop = findViewById(R.id.homeBackdrop);
         homeBackdrop.setColorFilter(ArtHelper.backdropFilter(0.75f));
         heroComputerUuid = null;
@@ -265,7 +265,7 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
         }
     }
 
-    // The hero, covers and backdrop follow the focused computer.
+    // The hero and backdrop follow the focused computer.
     private void onComputerFocused(int position) {
         if (position < 0 || position >= pcGridAdapter.getCount()) {
             return;
@@ -335,7 +335,7 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
                         continue;
                     }
                     count++;
-                    if (covers.size() < 6) {
+                    if (covers.size() < 4) {
                         Bitmap cover = ArtHelper.loadCachedCover(this, details.uuid, app.getAppId(), coverWidth);
                         if (cover != null) {
                             covers.add(cover);
@@ -347,7 +347,7 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
             }
 
             final int gameCount = count;
-            final Bitmap backdrop = ArtHelper.blurredMosaic(covers.subList(0, Math.min(4, covers.size())));
+            final Bitmap backdrop = ArtHelper.blurredMosaic(covers);
             runOnUiThread(() -> {
                 if (generation != artGeneration || isFinishing()) {
                     return;
@@ -356,7 +356,6 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
                 ArtHelper.setBackdrop(homeBackdrop, backdrop);
                 homeBackdrop.setAlpha(0f);
                 homeBackdrop.animate().alpha(1f).setDuration(300).start();
-                bindCovers(covers);
                 for (int i = 0; i < pcGridAdapter.getCount(); i++) {
                     ComputerObject computer = (ComputerObject) pcGridAdapter.getItem(i);
                     if (computer.details.uuid.equals(details.uuid)) {
@@ -366,23 +365,6 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
                 }
             });
         });
-    }
-
-    private void bindCovers(List<Bitmap> covers) {
-        homeCovers.removeAllViews();
-        float density = getResources().getDisplayMetrics().density;
-        for (Bitmap cover : covers) {
-            ImageView view = new ImageView(this);
-            view.setImageBitmap(cover);
-            view.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            view.setBackgroundResource(R.drawable.dash_pin_digit);
-            view.setClipToOutline(true);
-            view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    Math.round(56 * density), Math.round(84 * density));
-            params.setMarginEnd(Math.round(8 * density));
-            homeCovers.addView(view, params);
-        }
     }
 
     @Override
@@ -444,6 +426,9 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
             pendingPairingPin = null;
             pendingPairingPassphrase = null;
         }
+
+        // Not when restored (the user already left the library) or when launched to pair
+        libraryAutoOpenAllowed = savedInstanceState == null && pendingPairingPin == null;
     }
 
     private void completeOnCreate() {
@@ -1048,6 +1033,13 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
         else if (heroComputerUuid == null && tileRow != null) {
             onComputerFocused(tileRow.getFocusedPosition());
         }
+
+        if (libraryAutoOpenAllowed && inForeground && pcGridAdapter.getCount() == 1 &&
+                details.state == ComputerDetails.State.ONLINE &&
+                details.pairState == PairState.PAIRED) {
+            libraryAutoOpenAllowed = false;
+            doAppList(details, false, false);
+        }
     }
 
     @Override
@@ -1058,9 +1050,8 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
     @Override
     public void receiveAdapterView(View adapterView) {
         float density = getResources().getDisplayMetrics().density;
-        tileRow = (HorizontalGameListView) adapterView;
-        tileRow.setItemSizes(Math.round(80 * density), Math.round(80 * density),
-                Math.round(100 * density), Math.round(100 * density));
+        tileRow = (SpotlightCarouselView) adapterView;
+        tileRow.setItemSize(Math.round(168 * density), Math.round(168 * density));
         tileRow.setTrailingView(addComputerTile);
         tileRow.setOnItemFocusListener((view, position) -> onComputerFocused(position));
         tileRow.setAdapter(pcGridAdapter);

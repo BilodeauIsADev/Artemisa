@@ -2,6 +2,7 @@ package com.limelight;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -18,7 +19,7 @@ import com.limelight.profiles.ProfilesManager;
 import com.limelight.ui.AdapterFragment;
 import com.limelight.ui.AdapterFragmentCallbacks;
 import com.limelight.ui.ConsoleMenu;
-import com.limelight.ui.HorizontalGameListView;
+import com.limelight.ui.SpotlightCarouselView;
 import com.limelight.utils.ArtHelper;
 import com.limelight.utils.CacheHelper;
 import com.limelight.utils.Dialog;
@@ -38,12 +39,15 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.os.IBinder;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -70,9 +74,9 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
     private boolean showHiddenApps;
     private HashSet<Integer> hiddenAppIds = new HashSet<>();
 
-    private HorizontalGameListView tileRow;
+    private SpotlightCarouselView tileRow;
     private ImageView backdropView;
-    private ImageView keyArtView;
+    private LinearLayout dotsView;
     private TextView heroTitle;
     private TextView heroMeta;
     private TextView playLabel;
@@ -94,6 +98,9 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
     private final static int START_WITH_QUIT_VDISPLAY = 21;
 
     public final static String HIDDEN_APPS_PREF_FILENAME = "HiddenApps";
+
+    // Past this many games the position dots would be too long to read
+    private final static int MAX_DOTS = 15;
 
     public final static String NAME_EXTRA = "Name";
     public final static String UUID_EXTRA = "UUID";
@@ -334,7 +341,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
 
         backdropView = findViewById(R.id.libraryBackdrop);
         backdropView.setColorFilter(ArtHelper.backdropFilter(0.5f));
-        keyArtView = findViewById(R.id.libraryKeyArt);
+        dotsView = findViewById(R.id.libraryDots);
         heroTitle = findViewById(R.id.libraryTitle);
         heroMeta = findViewById(R.id.libraryMeta);
         playLabel = findViewById(R.id.libraryPlayLabel);
@@ -425,11 +432,14 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         if (heroMeta == null || prefConfig == null) {
             return;
         }
-        String meta = getString(R.string.dash_library_meta,
-                getTitle(),
-                resolutionLabel(prefConfig.width, prefConfig.height),
-                Math.round(prefConfig.fps),
-                Math.round(prefConfig.bitrate / 1000f));
+        List<String> parts = new ArrayList<>();
+        parts.add(resolutionLabel(prefConfig.width, prefConfig.height));
+        parts.add(getString(R.string.dash_meta_fps, Math.round(prefConfig.fps)));
+        if (prefConfig.enableHdr) {
+            parts.add(getString(R.string.dash_meta_hdr));
+        }
+        parts.add(getString(R.string.dash_meta_mbps, Math.round(prefConfig.bitrate / 1000f)));
+        String meta = TextUtils.join(" · ", parts);
 
         int position = getFocusedAppPosition();
         boolean running = false;
@@ -442,9 +452,37 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         playLabel.setText(running ? R.string.dash_resume : R.string.dash_play);
     }
 
-    // The backdrop and key art follow the focused game.
+    // One dot per game, the focused one drawn as a wider bar.
+    private void updateDots(int position) {
+        int count = appGridAdapter != null ? appGridAdapter.getCount() : 0;
+        if (count < 2 || count > MAX_DOTS) {
+            dotsView.removeAllViews();
+            return;
+        }
+        float density = getResources().getDisplayMetrics().density;
+        if (dotsView.getChildCount() != count) {
+            dotsView.removeAllViews();
+            for (int i = 0; i < count; i++) {
+                View dot = new View(this);
+                dot.setBackgroundResource(R.drawable.dash_dot);
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT);
+                params.setMarginStart(i == 0 ? 0 : Math.round(5 * density));
+                dotsView.addView(dot, params);
+            }
+        }
+        for (int i = 0; i < count; i++) {
+            View dot = dotsView.getChildAt(i);
+            ViewGroup.LayoutParams params = dot.getLayoutParams();
+            params.width = Math.round((i == position ? 16 : 5) * density);
+            dot.setLayoutParams(params);
+            dot.setAlpha(i == position ? 1f : 0.3f);
+        }
+    }
+
+    // The backdrop follows the focused game.
     private void onGameFocused(View tile, int position) {
         updateHero();
+        updateDots(position);
         if (computer == null || position >= appGridAdapter.getCount()) {
             return;
         }
@@ -454,20 +492,16 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         final Bitmap tileBitmap = ArtHelper.bitmapOf(tile.findViewById(R.id.grid_image));
         final String uuid = computer.uuid;
         artExecutor.execute(() -> {
-            Bitmap cover = ArtHelper.loadCachedCover(this, uuid, app.app.getAppId(), 900);
+            Bitmap cover = ArtHelper.loadCachedCover(this, uuid, app.app.getAppId(), 300);
             if (cover == null) {
                 cover = tileBitmap;
             }
-            final Bitmap keyArt = cover;
             final Bitmap blurred = ArtHelper.blur(cover);
             runOnUiThread(() -> {
                 if (generation != artGeneration || isFinishing()) {
                     return;
                 }
                 ArtHelper.setBackdrop(backdropView, blurred);
-                keyArtView.setImageBitmap(keyArt);
-                keyArtView.setAlpha(0f);
-                keyArtView.animate().alpha(0.92f).setDuration(220).start();
                 backdropView.setAlpha(0.4f);
                 backdropView.animate().alpha(1f).setDuration(260).start();
             });
@@ -861,7 +895,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
 
     @Override
     public void receiveAdapterView(View adapterView) {
-        tileRow = (HorizontalGameListView) adapterView;
+        tileRow = (SpotlightCarouselView) adapterView;
         tileRow.setNextFocusDownTarget(R.id.libraryPlayButton);
         tileRow.setOnItemFocusListener(this::onGameFocused);
         tileRow.setAdapter(appGridAdapter);

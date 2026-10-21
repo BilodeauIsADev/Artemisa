@@ -15,11 +15,10 @@
     <dimen name="console_focus_stroke">3dp</dimen>
     <dimen name="console_preference_row_spacing">4dp</dimen>
 
-    <!-- Library tile row -->
-    <dimen name="dash_tile_width">72dp</dimen>
-    <dimen name="dash_tile_height">108dp</dimen>
-    <dimen name="dash_tile_focused_width">96dp</dimen>
-    <dimen name="dash_tile_focused_height">144dp</dimen>
+    <!-- Spotlight carousel: the focused cover; neighbours are scaled down from it -->
+    <dimen name="dash_spotlight_width">168dp</dimen>
+    <dimen name="dash_spotlight_height">224dp</dimen>
+    <dimen name="dash_spotlight_spacing">14dp</dimen>
     <dimen name="dash_focus_gap">6dp</dimen>
 
 </resources>

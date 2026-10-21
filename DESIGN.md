@@ -124,12 +124,9 @@ components:
     padding: "0 12dp 0 10dp"
   tile:
     backgroundColor: "{colors.surface-3}"
-    rounded: "{rounded.sm}"
-    width: "72dp"
-    height: "108dp"
-  tile-focused:
-    width: "96dp"
-    height: "144dp"
+    rounded: "10dp"
+    width: "168dp"
+    height: "224dp"
   quick-card:
     backgroundColor: "{colors.surface-3}"
     textColor: "{colors.text}"
@@ -194,17 +191,17 @@ components:
 
 ## Overview
 
-**Creative North Star: "The Poster Wall"**
+**Creative North Star: "The Spotlight"**
 
-The focused game owns the whole screen. Its art is the room: a soft, blurred, slightly oversaturated backdrop fills the display, and the sharp key art fades in from the right edge. Ink shades pull the left side and the bottom back to near-black so white type stays legible. The interface itself is small by comparison: one row of portrait tiles, a big ExtraBold title, a meta line, and a white Play pill. Everything else (options, settings, the in-stream quick menu) comes up as dark surfaces and sheets layered over that art or over the live stream.
+The focused game stands in the middle of the screen. Its cover sits full size in the centre of a carousel while its neighbours shrink and fade towards the edges, and its art is the room: a soft, blurred, slightly oversaturated backdrop fills the display, pulled back to ink at the corners by a vignette. Under the cover, centred: a big ExtraBold title, a meta line, and a white Play pill. Home uses the same carousel for computers. Everything else (options, settings, the in-stream quick menu) comes up as dark surfaces and sheets layered over that art or over the live stream.
 
 The system is built for a controller at ten feet on a Shield TV (960x540dp). Focus is the only cursor, so focus has to be unmistakable: a green ring standing off the element with a dark gap, or a solid green fill on rows and keys. Green is kept for that job and almost nothing else, which is what makes it readable at a glance. The primary action is white, not green, and destructive actions are coral.
 
 Depth comes from real Android elevation (soft, ambient shadows), tonal steps from ink to surface-3, and translucent white "glass" for chrome over art. There are no glows, no borders on cards, and no decorative gradients beyond the legibility scrims.
 
 **Key Characteristics:**
-- Full-bleed, focus-driven art: backdrop and key art cross-fade to whatever is focused.
-- One tile row; the focused tile grows 72x108dp to 96x144dp.
+- Full-bleed, focus-driven art: the backdrop cross-fades to whatever is focused.
+- One centred carousel; the focused cover is 168x224dp, neighbours scale to 75%, 62.5% and then out.
 - Green (#76D600) is focus and selection, never decoration or the primary button.
 - White pill for the primary action; glass circles and pills for secondary chrome.
 - Albert Sans throughout: ExtraBold titles, SemiBold labels, tabular figures for numbers.
@@ -247,13 +244,12 @@ A near-black blue-ink stage with three stepped surfaces, white type at three opa
 **Character:** One geometric-grotesque family carries everything. Weight does the hierarchy work: ExtraBold with slightly tight tracking (-0.02) for titles, Bold for buttons and card titles, SemiBold for labels and nav, Medium for meta, Regular for summaries.
 
 ### Hierarchy
-- **Display** (800, 52sp): The Home hero title (host name).
-- **Headline** (800, 44sp, 0.95 line spacing, max two lines): The Library hero game title.
+- **Headline** (800, 32sp, one line, centred): The hero title under the carousel (game on Library, host name on Home).
 - **Title Large** (800, 26 to 36sp): Screen titles (Settings, pairing), launch overlay, empty/loading state.
 - **Title** (800, 22sp): Dialog titles.
 - **Button** (700, 15 to 16sp): Play pill and dialog buttons. Sentence case, never all caps.
 - **Body Strong** (600, 15sp): Preference row titles.
-- **Meta** (500, 14sp, tnum, 74% white): The line under a hero title ("VaporZPC · 4K · 60 FPS · 80 Mbps"), clocks.
+- **Meta** (500, 14sp, tnum, 74% white): The line under a hero title ("4K · 60 FPS · HDR · 80 Mbps"), clocks.
 - **Card Title** (700, 13sp) over **Caption** (500, 11sp): Quick-menu and option cards (name, then current state).
 - **Label** (600, 12sp): Controller hint labels, keyboard segments, settings chrome.
 - **Body** (400, 12sp, 74% white): Preference summaries, which show the current value for list and slider preferences.
@@ -267,9 +263,9 @@ A near-black blue-ink stage with three stepped surfaces, white type at three opa
 
 The design canvas is 960x540dp (Shield TV at xhdpi). Home and Library are full-bleed: art and scrims run to every edge with no root padding, while all content sits inside the title-safe frame of 48dp horizontal and 27dp vertical (5% of the screen).
 
-Library, top to bottom: a 32dp top bar at the safe edge (host pill with monitor icon, "Games", then settings button, avatar and clock at right); the tile row starting 74dp from the top; the hero block anchored bottom-left 66dp up, 540dp wide (title, meta, Play pill plus round more button); controller hints bottom-right on the safe line. Key art is a 440dp column on the right (about 46% of the width) at 92% opacity.
+Library, top to bottom: a 32dp top bar at the safe edge (app icon, host pill with monitor icon, then settings button, avatar and clock at right); the 240dp carousel band starting 78dp from the top; position dots at 326dp (hidden past 15 games); the centred hero block from 342dp, 760dp wide (title, meta, Play pill plus round more button); controller hints bottom-right on the safe line. Home follows the same frame with 168dp square computer tiles and an "Add computer" tile at the end, and opens straight into the library when exactly one paired computer is online.
 
-The tile row is a single horizontal line of 2:3 tiles. The focused tile grows to 96x144dp inside a focus frame padded by the 6dp focus gap, and the row reports focus so the hero and art can follow.
+The carousel lays every item out in the centre and spreads them with translation from the focused one, so the focused item is always centred. Each item sits in a focus frame padded by the 6dp focus gap; nearer items draw over farther ones. Left and right move focus one item at a time; only the current item is reachable from above and below.
 
 Menus anchor to what opened them: option cards appear beside their tile. The in-stream quick menu is a bottom sheet with a header (live dot, game, source, clock) and one row of equal cards; long submenus become a 4-column compact grid. Settings is a left nav of 38dp items beside a scrolling preference list.
 
@@ -277,7 +273,7 @@ Spacing runs on small steps (8, 10, 12, 16, 24dp) with card insets of 13dp; the 
 
 ## Elevation & Depth
 
-A hybrid: tonal layering does most of the work (ink, surface-1, surface-2, surface-3, surface-3-focused, plus translucent glass over art), and native Android elevation adds soft ambient shadows where something should read as lifted. Library tiles rest at 6dp elevation; a focused card scales to 1.04 and rises 8dp in translationZ; anchored option menus sit at 16dp. Legibility over art comes from three ink gradients, not from boxes: a left shade (88% ink to 55% at 45% width to clear), a 180dp bottom shade (70% to clear) and a 120dp top shade (50% to clear). The backdrop itself is a small blurred copy of the art scaled up, at 0.5 to 0.75 brightness with 1.3 saturation.
+A hybrid: tonal layering does most of the work (ink, surface-1, surface-2, surface-3, surface-3-focused, plus translucent glass over art), and native Android elevation adds soft ambient shadows where something should read as lifted. Library tiles rest at 6dp elevation; a focused card scales to 1.04 and rises 8dp in translationZ; anchored option menus sit at 16dp. Legibility over art comes from ink gradients, not from boxes: a radial vignette centred just above the middle (clear, 35% ink halfway out, 88% at the corners) and a 120dp top shade (50% to clear). The backdrop itself is a small blurred copy of the art scaled up, at 0.5 to 0.75 brightness with 1.3 saturation.
 
 ### Shadow Vocabulary
 - **Tile rest** (elevation 6dp): Library tiles on the art.
@@ -323,15 +319,15 @@ Tactile and decisive: one white pill, everything else glass.
 - **PIN digits:** Surface-3 boxes, 12dp corners, 55sp digits.
 
 ### Navigation
-- **Library tile row:** Portrait tiles, 8dp corners, 6dp elevation; covers crop to fill, with the title as a Bold 11sp fallback on a dark gradient tile when there is no art. Focus grows the tile (160ms) and draws the 16dp green ring 6dp outside it.
+- **Spotlight carousel:** Portrait 168x224dp tiles, 10dp corners, 6dp elevation; covers crop to fill, with the title as a Bold 11sp fallback on a dark gradient tile when there is no art. Neighbours scale to 75% / 62.5% at 70% / 35% opacity and are hidden from three away; a move slides the row in 220ms (decelerate). The focused tile carries the 16dp green ring 6dp outside it. Dots under the carousel mark the position: 5dp dots at 30% white, the current one a 16dp white bar.
 - **Settings nav:** 38dp items, 8dp corners, SemiBold 14sp with icon tinted to match. Rest is 74% white on transparent; selected is glass with white text; focused is strong glass with the green stroke.
-- **Top bar:** Host pill (glass, 28dp, monitor icon plus SemiBold 13sp name), a plain SemiBold 14sp section label, then right-aligned settings, avatar (30dp green disc) and a tabular clock.
+- **Top bar:** App icon, then the host pill (glass, 28dp, monitor icon plus SemiBold 13sp name) on Library or a plain SemiBold 14sp section label on Home, then right-aligned settings, avatar (30dp green disc) and a tabular clock.
 
 ### Controller Hints
 Bottom-right on the safe line: a 20dp hint-white disc with an ExtraBold 10sp ink letter (or a tinted icon, or a 6dp-radius pill for wider labels), then a SemiBold 12sp label at 74% white. Each hint names the action its button performs on this screen.
 
 ### Focus-following Art (signature)
-Moving focus along the tile row cross-fades the backdrop (260ms, 300ms on Home) and the key art (220ms back to 92%) to the new game while the hero title and meta swap. Key art fades into the backdrop from its left edge, so there is no hard seam.
+Moving focus along the carousel cross-fades the backdrop (260ms, 300ms on Home) to the new game while the hero title and meta swap.
 
 ## Do's and Don'ts
 
@@ -340,7 +336,7 @@ Moving focus along the tile row cross-fades the backdrop (260ms, 300ms on Home) 
 - **Do** show focus with the 3dp green ring standing 6dp off the element, or with a solid green fill on rows, keys and dialog buttons.
 - **Do** make the primary action a white pill with ink text and put secondary actions on glass.
 - **Do** use coral only for destructive actions, and land focus on the safe option in destructive confirmations.
-- **Do** put text over art on ink gradients (left, bottom, top shades) rather than on panels.
+- **Do** put text over art on ink gradients (the vignette and top shade) rather than on panels.
 - **Do** use Albert Sans weights for hierarchy (ExtraBold titles at -0.02 tracking, SemiBold labels) and tabular figures for numbers.
 - **Do** show the current value as the summary of list and slider preferences.
 - **Do** use the authored stroked icon set on a 24dp grid, tinted by the view.
@@ -349,6 +345,6 @@ Moving focus along the tile row cross-fades the backdrop (260ms, 300ms on Home) 
 - **Don't** use green as a resting background, a decorative accent or the primary button fill.
 - **Don't** put glows, outer blooms or coloured shadows on focused elements; elevation stays soft and neutral.
 - **Don't** add borders to cards at rest; a stroke only ever means focus.
-- **Don't** lay the library out as a grid of equal cards; it is one row of tiles under the focused game.
+- **Don't** lay the library out as a grid of equal cards; it is one carousel centred on the focused game.
 - **Don't** set labels in all caps or place small tracked-out lines above titles.
 - **Don't** use sharp corners; the smallest radius on a surface is 8dp.

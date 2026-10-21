@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Home: computers as tiles, the focused computer as the hero over its own games. -->
+<!-- Home: a spotlight carousel of computers over a blurred wash of their games. -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
@@ -14,13 +14,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/dash_scrim_left" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:layout_gravity="bottom"
-        android:background="@drawable/dash_scrim_bottom" />
+        android:background="@drawable/dash_scrim_spotlight" />
 
     <!-- Top bar -->
     <LinearLayout
@@ -97,22 +91,22 @@
             android:textSize="14sp" />
     </LinearLayout>
 
-    <!-- Computer tiles (HorizontalGameListView is inflated into this container) -->
+    <!-- Carousel (SpotlightCarouselView is inflated into this container) -->
     <FrameLayout
         android:id="@+id/pcFragmentContainer"
         android:layout_width="match_parent"
-        android:layout_height="126dp"
-        android:layout_marginStart="42dp"
-        android:layout_marginTop="74dp" />
+        android:layout_height="240dp"
+        android:layout_marginTop="78dp"
+        android:clipChildren="false" />
 
     <!-- Hero: the focused computer -->
     <LinearLayout
         android:id="@+id/homeHero"
-        android:layout_width="600dp"
+        android:layout_width="760dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:layout_marginStart="@dimen/console_screen_horizontal_padding"
-        android:layout_marginBottom="66dp"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="342dp"
+        android:gravity="center_horizontal"
         android:orientation="vertical"
         android:visibility="invisible">
 
@@ -122,8 +116,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
+            android:gravity="center_horizontal"
             android:maxLines="1"
-            android:textSize="52sp"
+            android:textSize="32sp"
             tools:text="VaporZPC" />
 
         <TextView
@@ -132,14 +127,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:gravity="center_horizontal"
             tools:text="Online · Paired · 5 games" />
-
-        <LinearLayout
-            android:id="@+id/homeCovers"
-            android:layout_width="wrap_content"
-            android:layout_height="84dp"
-            android:layout_marginTop="20dp"
-            android:orientation="horizontal" />
     </LinearLayout>
 
     <!-- Shown until the first computer turns up -->
@@ -147,9 +136,9 @@
         android:id="@+id/no_pc_found_layout"
         android:layout_width="560dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:layout_marginStart="@dimen/console_screen_horizontal_padding"
-        android:layout_marginBottom="66dp"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="342dp"
+        android:gravity="center_horizontal"
         android:orientation="vertical">
 
         <ProgressBar
@@ -171,6 +160,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:gravity="center_horizontal"
             android:lineSpacingMultiplier="1.2"
             android:text="@string/dash_searching_message"
             android:textColor="@color/dash_text_2"

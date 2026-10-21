@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- "Add a computer" tile placed after the computer tiles on Home. -->
+<!-- "Add a computer" tile placed after the computers in the Home carousel. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginTop="10dp"
     android:background="@drawable/console_grid_selector"
     android:clickable="true"
     android:contentDescription="@string/dash_add_computer"
@@ -12,13 +11,13 @@
     android:padding="@dimen/dash_focus_gap">
 
     <FrameLayout
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:background="@drawable/dash_host_pill">
+        android:layout_width="168dp"
+        android:layout_height="168dp"
+        android:background="@drawable/dash_add_tile_bg">
 
         <ImageView
-            android:layout_width="22dp"
-            android:layout_height="22dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_gravity="center"
             android:importantForAccessibility="no"
             android:src="@drawable/ic_dash_plus"

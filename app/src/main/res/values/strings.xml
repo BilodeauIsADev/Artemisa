@@ -850,7 +850,9 @@
     <string name="dash_open_library">Open library</string>
     <string name="dash_pair">Pair</string>
     <string name="dash_wake">Wake</string>
-    <string name="dash_library_meta">%1$s · %2$s · %3$d FPS · %4$d Mbps</string>
+    <string name="dash_meta_fps">%d FPS</string>
+    <string name="dash_meta_hdr">HDR</string>
+    <string name="dash_meta_mbps">%d Mbps</string>
     <string name="dash_status_online">Online</string>
     <string name="dash_status_offline">Offline</string>
     <string name="dash_status_refreshing">Refreshing</string>

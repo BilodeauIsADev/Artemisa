@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Library tile: portrait cover. Size is set by HorizontalGameListView (resting and focused). -->
+<!-- Library tile: portrait cover. Size is set by SpotlightCarouselView. -->
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="@dimen/dash_tile_width"
-    android:layout_height="@dimen/dash_tile_height"
+    android:layout_width="@dimen/dash_spotlight_width"
+    android:layout_height="@dimen/dash_spotlight_height"
     app:cardBackgroundColor="@color/dash_surface_3"
-    app:cardCornerRadius="@dimen/console_card_radius"
+    app:cardCornerRadius="10dp"
     app:cardElevation="6dp"
     app:cardPreventCornerOverlap="false"
     app:cardUseCompatPadding="false">
