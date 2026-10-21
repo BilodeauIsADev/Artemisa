@@ -105,6 +105,10 @@ public class StreamSettingsNavigationTest {
         settle();
         assertEquals(View.VISIBLE, activity.findViewById(R.id.settingsGuideOptionsScroll).getVisibility());
         assertTrue(((View) focused().getParent()).getId() == R.id.settingsGuideOptions);
+        // The focused mode explains itself in the guide card
+        String description = ((TextView) activity.findViewById(R.id.settingsGuideDescription)).getText().toString();
+        assertTrue(java.util.Arrays.asList(activity.getResources()
+                .getStringArray(R.array.video_frame_pacing_summaries)).contains(description));
 
         activity.onBackPressed();
         settle();

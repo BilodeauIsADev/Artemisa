@@ -304,10 +304,10 @@
     <string name="summary_disable_frame_drop">May reduce micro-stuttering on some devices, but can increase latency</string>
     <string name="title_video_format">Change codec settings</string>
     <string name="summary_video_format">Newer codecs can lower video bandwidth requirements if your device supports them. Codec selections may be ignored if not supported by the host software or GPU.</string>
-    <string name="title_enable_hdr">Enable HDR (Experimental)</string>
-    <string name="summary_enable_hdr">Stream HDR when the game and PC GPU support it. HDR requires a GPU with HEVC Main 10 encoding support.</string>
+    <string name="title_enable_hdr">Enable HDR</string>
+    <string name="summary_enable_hdr">Streams in HDR when the game has HDR on. The PC\'s GPU must be able to encode HEVC Main 10, and the TV switches to HDR while you play.</string>
     <string name="title_full_range">Force full range video (Experimental)</string>
-    <string name="summary_full_range">This will cause loss of detail in light and dark areas if your device doesn\'t properly display full range video content.</string>
+    <string name="summary_full_range">Sends the full 0–255 color range instead of the standard limited range. Turn it on only if blacks look grey; if blacks then look crushed or bright areas lose detail, turn it back off.</string>
     <string name="title_prevent_packet_loss">Prevent Packet Loss</string>
     <string name="summary_prevent_packet_loss">For devices that have packet loss for unknown reasons, you can try to enable this option.</string>
     <string name="title_enable_perf_overlay">Show performance stats while streaming</string>
@@ -353,7 +353,7 @@
     <string name="videoformat_h264always">Prefer H.264</string>
 
     <string name="title_frame_pacing">Frame pacing</string>
-    <string name="summary_frame_pacing">Specify how to balance video latency and smoothness</string>
+    <string name="summary_frame_pacing">When each decoded frame goes on screen: right away for the least delay, or in step with the TV\'s refresh for smoother motion. Open the list to compare the modes.</string>
     <string name="pacing_responsive_hq">Responsive HQ (Recommended)</string>
     <string name="pacing_warp">Warp Drive (Experimental)</string>
     <string name="pacing_warp2">Warp 2 (Experimental)</string>
@@ -725,7 +725,7 @@
     <string name="rename">Rename</string>
     <string name="save">Save</string>
     <string name="title_low_latency_frame_balance">LFR (Experimental)</string>
-    <string name="summary_low_latency_frame_balance">Minimizes delay by dropping queued frames.</string>
+    <string name="summary_low_latency_frame_balance">Latest-frame rendering. When frames queue up, only the newest is shown and the rest are dropped, so the picture never falls behind. Responsive HQ always turns this on. It can make motion slightly uneven.</string>
     <string name="category_perf_monitor_settings">Performance Monitor</string>
     <string name="category_perf_charts">Performance charts</string>
     <string name="desc_chart_latency">Network latency chart</string>

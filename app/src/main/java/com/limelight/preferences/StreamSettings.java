@@ -226,6 +226,8 @@ public class StreamSettings extends AppCompatActivity {
 
         CharSequence[] entries = preference.getEntries();
         CharSequence[] values = preference.getEntryValues();
+        Map<String, CharSequence> optionDescriptions = optionDescriptionsFor(preference);
+        CharSequence listDescription = guideDescription.getText();
         int selected = preference.findIndexOfValue(preference.getValue());
         LayoutInflater inflater = LayoutInflater.from(this);
         View focusTarget = null;
@@ -241,6 +243,13 @@ public class StreamSettings extends AppCompatActivity {
             option.setNextFocusRightId(option.getId());
 
             final String value = values[i].toString();
+            // Each option explains itself while focused, where a description exists
+            option.setOnFocusChangeListener((v, hasFocus) -> {
+                if (hasFocus) {
+                    CharSequence description = optionDescriptions.get(value);
+                    guideDescription.setText(description != null ? description : listDescription);
+                }
+            });
             option.setOnClickListener(v -> {
                 closeOptions();
                 if (preference.callChangeListener(value)) {
@@ -267,6 +276,20 @@ public class StreamSettings extends AppCompatActivity {
         if (focusTarget != null) {
             focusTarget.requestFocus();
         }
+    }
+
+    // Descriptions of a list setting's choices, keyed by value, for lists that have them.
+    private Map<String, CharSequence> optionDescriptionsFor(ListPreference preference) {
+        Map<String, CharSequence> descriptions = new HashMap<>();
+        if (!"frame_pacing".equals(preference.getKey())) {
+            return descriptions;
+        }
+        String[] values = getResources().getStringArray(R.array.video_frame_pacing_values);
+        CharSequence[] summaries = getResources().getTextArray(R.array.video_frame_pacing_summaries);
+        for (int i = 0; i < Math.min(values.length, summaries.length); i++) {
+            descriptions.put(values[i], summaries[i]);
+        }
+        return descriptions;
     }
 
     private void closeOptions() {

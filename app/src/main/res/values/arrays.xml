@@ -137,6 +137,16 @@
         <item>cap-fps</item>
         <item>smoothness</item>
     </string-array>
+    <!-- Shown in the settings guide card while each mode is focused; same order as the values -->
+    <string-array name="video_frame_pacing_summaries">
+        <item>Prefer lowest latency plus LFR: the decoder is checked more often and only the newest frame is ever shown. The most responsive mode; can skip a frame now and then.</item>
+        <item>Asks the PC for 4× your frame rate and shows only the newest frame. Only cuts delay if the game really renders that fast; raise the bitrate to keep quality.</item>
+        <item>Asks the PC for 2× your frame rate and shows only the newest frame. Only cuts delay if the game really renders that fast; raise the bitrate to keep quality.</item>
+        <item>Shows each frame as soon as it\'s decoded and drops ones that arrive late. The least delay; motion can look a little uneven when the network wobbles.</item>
+        <item>Shows frames in step with the TV\'s refresh, keeping one in reserve to smooth over hiccups. Smooth motion for a little more delay.</item>
+        <item>Asks the PC for one frame per second less than the TV\'s refresh (59 at 60 Hz) so frames never pile up. Smooth with little delay; one repeated frame each second.</item>
+        <item>Never drops a frame, even when they back up. The smoothest motion, but delay can build up noticeably; best for slow-paced games.</item>
+    </string-array>
 
     <string-array name="analog_scrolling_names">
         <item>@string/analogscroll_none</item>
