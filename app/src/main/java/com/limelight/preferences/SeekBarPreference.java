@@ -86,6 +86,25 @@ public class SeekBarPreference extends Preference
         return suffix == null ? text : text.concat(suffix.length() > 1 ? " " + suffix : suffix);
     }
 
+    /** The description from XML; the summary shows the current value instead. */
+    public CharSequence getDescription() {
+        return super.getSummary();
+    }
+
+    /** Moves the value by one D-pad step (times the multiplier) in either direction. */
+    public void step(int direction, int multiplier) {
+        int increment = (keyStepSize != 0 ? keyStepSize : stepSize) * multiplier;
+        int current = getPersistedInt(defaultValue);
+        int value = Math.max(minValue, Math.min(maxValue, current + direction * increment));
+        value = Math.round((float) value / stepSize) * stepSize;
+        if (value == current || !callChangeListener(value)) {
+            return;
+        }
+        currentValue = value;
+        persistInt(value);
+        notifyChanged();
+    }
+
     protected AlertDialog getDialog() {
         if (dialog != null) {
             return dialog;

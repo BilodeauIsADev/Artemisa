@@ -22,14 +22,17 @@ import androidx.preference.TwoStatePreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
+import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Range;
+import android.util.SparseArray;
 import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.LayoutInflater;
@@ -37,6 +40,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,6 +63,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -77,7 +82,18 @@ public class StreamSettings extends AppCompatActivity {
 
     private SettingsFragment prefsFragment;
     private TextView[] tabViews;
-    private TextView sectionDescription;
+    private View listContainer;
+    private TextView guideSection;
+    private TextView guideTitle;
+    private TextView guideDescription;
+    private View guideOptionsScroll;
+    private LinearLayout guideOptions;
+    private TextView hintSelect;
+    private TextView hintBack;
+    private View[] hintAdjust;
+    // The list setting whose options are open in the guide card, or null
+    private ListPreference openList;
+    private boolean settingsShown;
 
     // HACK for Android 9
     static DisplayCutout displayCutoutP;
@@ -87,10 +103,16 @@ public class StreamSettings extends AppCompatActivity {
             Display.Mode mode = getActiveDisplay(StreamSettings.this, previousPrefs).getMode();
             previousDisplayPixelCount = mode.getPhysicalWidth() * mode.getPhysicalHeight();
         }
+        // The new list starts on the row that had focus, or on the first row the first time
+        Preference focused = prefsFragment != null ? prefsFragment.getPreferenceFor(getWindow().getDecorView().findFocus()) : null;
         prefsFragment = new SettingsFragment(PreferenceConfiguration.readPreferences(
                 this,
                 PreferenceManager.getDefaultSharedPreferences(this)
         ), currentTab);
+        if (focused != null || !settingsShown) {
+            prefsFragment.focusOnLoad(focused != null ? focused.getKey() : null);
+        }
+        settingsShown = true;
         getSupportFragmentManager().beginTransaction().replace(
                 R.id.stream_settings, prefsFragment
         ).commitAllowingStateLoss();
@@ -120,31 +142,164 @@ public class StreamSettings extends AppCompatActivity {
                 findViewById(R.id.settingsTabAppearance),
                 findViewById(R.id.settingsTabSystem)
         };
-        sectionDescription = findViewById(R.id.settingsSectionDescription);
+        listContainer = findViewById(R.id.stream_settings);
+        guideSection = findViewById(R.id.settingsGuideSection);
+        guideTitle = findViewById(R.id.settingsGuideTitle);
+        guideDescription = findViewById(R.id.settingsGuideDescription);
+        guideOptionsScroll = findViewById(R.id.settingsGuideOptionsScroll);
+        guideOptions = findViewById(R.id.settingsGuideOptions);
+        hintSelect = findViewById(R.id.settingsHintSelect);
+        hintBack = findViewById(R.id.settingsHintBack);
+        hintAdjust = new View[]{
+                findViewById(R.id.settingsHintAdjustLeft),
+                findViewById(R.id.settingsHintAdjustRight),
+                findViewById(R.id.settingsHintAdjust)
+        };
 
         for (int i = 0; i < tabViews.length; i++) {
             final int tab = i;
-            tabViews[i].setOnClickListener(view -> selectCategoryTab(tab));
-            // Moving through the list of sections shows each one, like Android TV settings
-            tabViews[i].setOnFocusChangeListener((view, hasFocus) -> {
-                if (hasFocus && tab != currentTab) {
-                    selectCategoryTab(tab);
-                }
-            });
+            tabViews[i].setOnClickListener(view -> selectCategoryTab(tab, true));
         }
+        getWindow().getDecorView().getViewTreeObserver()
+                .addOnGlobalFocusChangeListener(this::onGlobalFocusChanged);
         updateCategoryTabs();
-        tabViews[currentTab].post(() -> tabViews[currentTab].requestFocus());
+        showGuide(null);
     }
 
-    private void selectCategoryTab(int tab) {
+    private int tabIndexOf(View view) {
+        for (int i = 0; tabViews != null && i < tabViews.length; i++) {
+            if (tabViews[i] == view) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void onGlobalFocusChanged(View oldFocus, View newFocus) {
+        if (openList != null || prefsFragment == null) {
+            return;
+        }
+
+        int tab = tabIndexOf(newFocus);
+        if (tab >= 0) {
+            if (tab != currentTab && prefsFragment.getPreferenceFor(oldFocus) != null) {
+                // Up from the list lands on the selected section, not whichever tab is nearest
+                tabViews[currentTab].requestFocus();
+            }
+            else if (tab != currentTab) {
+                // Moving along the tabs shows each section, like Android TV settings
+                selectCategoryTab(tab, false);
+            }
+            showGuide(null);
+            return;
+        }
+
+        Preference preference = prefsFragment.getPreferenceFor(newFocus);
+        if (preference != null) {
+            showGuide(preference);
+        }
+    }
+
+    // The guide card explains the focused row, or names the section when a tab has focus.
+    void showGuide(Preference preference) {
+        if (guideTitle == null) {
+            return;
+        }
+        guideSection.setText(tabViews[currentTab].getText());
+        if (preference == null) {
+            guideSection.setVisibility(View.GONE);
+            guideTitle.setText(tabViews[currentTab].getText());
+            guideDescription.setText(null);
+            return;
+        }
+        guideSection.setVisibility(View.VISIBLE);
+        guideTitle.setText(preference.getTitle());
+        guideDescription.setText(prefsFragment.getDescription(preference));
+    }
+
+    // Shows a list setting's choices in the guide card instead of a dialog.
+    void showOptions(ListPreference preference) {
+        openList = preference;
+        showGuide(preference);
+        guideDescription.setMaxLines(4);
+        guideOptions.removeAllViews();
+
+        CharSequence[] entries = preference.getEntries();
+        CharSequence[] values = preference.getEntryValues();
+        int selected = preference.findIndexOfValue(preference.getValue());
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View focusTarget = null;
+        for (int i = 0; i < entries.length; i++) {
+            TextView option = (TextView) inflater.inflate(R.layout.dash_settings_option, guideOptions, false);
+            option.setId(View.generateViewId());
+            option.setText(entries[i]);
+            boolean isSelected = i == selected;
+            option.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    isSelected ? R.drawable.dash_radio_on : R.drawable.dash_radio_off, 0, 0, 0);
+            // Focus stays inside the card until a choice is made or cancelled
+            option.setNextFocusLeftId(option.getId());
+            option.setNextFocusRightId(option.getId());
+
+            final String value = values[i].toString();
+            option.setOnClickListener(v -> {
+                closeOptions();
+                if (preference.callChangeListener(value)) {
+                    preference.setValue(value);
+                }
+            });
+            guideOptions.addView(option);
+            if (focusTarget == null || isSelected) {
+                focusTarget = option;
+            }
+        }
+        if (guideOptions.getChildCount() > 0) {
+            View first = guideOptions.getChildAt(0);
+            View last = guideOptions.getChildAt(guideOptions.getChildCount() - 1);
+            first.setNextFocusUpId(first.getId());
+            last.setNextFocusDownId(last.getId());
+        }
+
+        guideOptionsScroll.setVisibility(View.VISIBLE);
+        listContainer.setAlpha(0.5f);
+        hintSelect.setText(R.string.dash_choose);
+        hintBack.setText(R.string.dash_cancel);
+        setAdjustHintVisible(false);
+        if (focusTarget != null) {
+            focusTarget.requestFocus();
+        }
+    }
+
+    private void closeOptions() {
+        ListPreference preference = openList;
+        openList = null;
+        guideOptionsScroll.setVisibility(View.GONE);
+        guideOptions.removeAllViews();
+        guideDescription.setMaxLines(9);
+        listContainer.setAlpha(1f);
+        hintSelect.setText(R.string.dash_select);
+        hintBack.setText(R.string.dash_back);
+        setAdjustHintVisible(true);
+        if (preference != null && prefsFragment != null) {
+            prefsFragment.focusRow(preference.getKey());
+        }
+    }
+
+    private void setAdjustHintVisible(boolean visible) {
+        for (View view : hintAdjust) {
+            view.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void selectCategoryTab(int tab, boolean focusList) {
         currentTab = (tab + TAB_COUNT) % TAB_COUNT;
         updateCategoryTabs();
-        if (tabViews != null) {
-            tabViews[currentTab].requestFocus();
-        }
         if (prefsFragment != null) {
             prefsFragment.setCategoryTab(currentTab);
+            if (focusList) {
+                prefsFragment.focusRow(null);
+            }
         }
+        showGuide(null);
     }
 
     private void updateCategoryTabs() {
@@ -154,18 +309,36 @@ public class StreamSettings extends AppCompatActivity {
         for (int i = 0; i < tabViews.length; i++) {
             tabViews[i].setSelected(i == currentTab);
         }
+    }
 
-        sectionDescription.setText(tabViews[currentTab].getText());
+    // Left and right change the focused row's value in place; rows never move focus sideways.
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        int keyCode = event.getKeyCode();
+        if (event.getAction() == KeyEvent.ACTION_DOWN && openList == null && prefsFragment != null &&
+                (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
+            Preference preference = prefsFragment.getPreferenceFor(getWindow().getDecorView().findFocus());
+            if (preference != null) {
+                // Holding the button speeds up sliders such as bitrate
+                int multiplier = event.getRepeatCount() >= 8 ? 10 : 1;
+                prefsFragment.adjust(preference, keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ? 1 : -1, multiplier);
+                return true;
+            }
+        }
+        return super.dispatchKeyEvent(event);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BUTTON_L1) {
-            selectCategoryTab(currentTab - 1);
-            return true;
-        }
-        if (keyCode == KeyEvent.KEYCODE_BUTTON_R1) {
-            selectCategoryTab(currentTab + 1);
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_L1 || keyCode == KeyEvent.KEYCODE_BUTTON_R1) {
+            if (openList == null) {
+                // Stay in the list if that's where focus was, otherwise move along the tabs
+                boolean inList = prefsFragment != null && prefsFragment.getPreferenceFor(getWindow().getDecorView().findFocus()) != null;
+                selectCategoryTab(currentTab + (keyCode == KeyEvent.KEYCODE_BUTTON_L1 ? -1 : 1), inList);
+                if (!inList) {
+                    tabViews[currentTab].requestFocus();
+                }
+            }
             return true;
         }
         if (keyCode == KeyEvent.KEYCODE_BUTTON_B) {
@@ -214,6 +387,10 @@ public class StreamSettings extends AppCompatActivity {
     @Override
     // NOTE: This will NOT be called on Android 13+ with android:enableOnBackInvokedCallback="true"
     public void onBackPressed() {
+        if (openList != null) {
+            closeOptions();
+            return;
+        }
         finish();
 
         // Language changes are handled via configuration changes in Android 13+,
@@ -236,6 +413,7 @@ public class StreamSettings extends AppCompatActivity {
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private static final int TAB_ALL = -1;
+        private static final String LANGUAGE_PREF_KEY = "list_languages";
         private static final String[][] CATEGORY_KEYS = {
                 {
                         "category_video_settings"
@@ -259,6 +437,13 @@ public class StreamSettings extends AppCompatActivity {
                         "category_settings_misc"
                 }
         };
+
+        // Row descriptions, shown in the guide card; the rows themselves only show values
+        private final Map<String, CharSequence> descriptions = new HashMap<>();
+        // Rows by the view id each one is bound to, to find the row behind a focused view
+        private final SparseArray<Preference> rowsById = new SparseArray<>();
+        private boolean focusOnLoad;
+        private String focusOnLoadKey;
 
         private int nativeResolutionStartIndex = Integer.MAX_VALUE;
         private boolean nativeFramerateShown = false;
@@ -435,7 +620,13 @@ public class StreamSettings extends AppCompatActivity {
         public RecyclerView onCreateRecyclerView(@NonNull LayoutInflater inflater,
                                                  @NonNull ViewGroup parent,
                                                  Bundle savedInstanceState) {
-            return super.onCreateRecyclerView(inflater, parent, savedInstanceState);
+            RecyclerView list = super.onCreateRecyclerView(inflater, parent, savedInstanceState);
+            list.setVerticalScrollBarEnabled(false);
+            // Rebinding a row in place keeps focus on it when its value changes from the D-pad
+            if (list.getItemAnimator() instanceof SimpleItemAnimator) {
+                ((SimpleItemAnimator) list.getItemAnimator()).setSupportsChangeAnimations(false);
+            }
+            return list;
         }
 
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState, boolean unused) {
@@ -445,7 +636,137 @@ public class StreamSettings extends AppCompatActivity {
         @Override
         public void onCreatePreferences(Bundle bundle, String s) {
             initializePreferences();
+            moveDescriptionsToGuide(getPreferenceScreen());
             applyCategoryFilter();
+        }
+
+        @Override
+        public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+            super.onViewCreated(view, savedInstanceState);
+            if (focusOnLoad) {
+                focusRow(focusOnLoadKey);
+            }
+        }
+
+        /** Focus the row with this key (or the first row when null) once the list is shown. */
+        void focusOnLoad(String key) {
+            focusOnLoad = true;
+            focusOnLoadKey = key;
+        }
+
+        CharSequence getDescription(Preference preference) {
+            return descriptions.get(preference.getKey());
+        }
+
+        // Before list values replace their summaries, keep the XML descriptions for the guide.
+        private void collectDescriptions(PreferenceGroup group) {
+            for (int i = 0; i < group.getPreferenceCount(); i++) {
+                Preference preference = group.getPreference(i);
+                if (preference instanceof PreferenceGroup) {
+                    collectDescriptions((PreferenceGroup) preference);
+                    continue;
+                }
+                CharSequence description = preference instanceof SeekBarPreference ?
+                        ((SeekBarPreference) preference).getDescription() : preference.getSummary();
+                if (preference.getKey() != null && !TextUtils.isEmpty(description)) {
+                    descriptions.put(preference.getKey(), description);
+                }
+            }
+        }
+
+        // Rows other than lists and sliders have no value to show, so their summary (which may
+        // have been updated since, such as a firmware note on HDR) moves to the guide.
+        private void moveDescriptionsToGuide(PreferenceGroup group) {
+            for (int i = 0; i < group.getPreferenceCount(); i++) {
+                Preference preference = group.getPreference(i);
+                if (preference instanceof PreferenceGroup) {
+                    moveDescriptionsToGuide((PreferenceGroup) preference);
+                    continue;
+                }
+                int viewId = View.generateViewId();
+                preference.setViewId(viewId);
+                rowsById.put(viewId, preference);
+
+                if (preference instanceof ListPreference || preference instanceof SeekBarPreference) {
+                    continue;
+                }
+                CharSequence summary = preference.getSummary();
+                if (preference.getKey() != null && !TextUtils.isEmpty(summary)) {
+                    descriptions.put(preference.getKey(), summary);
+                }
+                preference.setSummary(null);
+                if (preference instanceof TwoStatePreference) {
+                    ((TwoStatePreference) preference).setSummaryOn(null);
+                    ((TwoStatePreference) preference).setSummaryOff(null);
+                }
+            }
+        }
+
+        /** The row containing this view, or null when it isn't in the list. */
+        Preference getPreferenceFor(View view) {
+            RecyclerView list = getListView();
+            if (list == null || view == null) {
+                return null;
+            }
+            View row = list.findContainingItemView(view);
+            return row != null ? rowsById.get(row.getId()) : null;
+        }
+
+        /** Focus the row with this key, or the first row when null, once it has been laid out. */
+        void focusRow(String key) {
+            focusRow(key, 10);
+        }
+
+        private void focusRow(String key, int attempts) {
+            RecyclerView list = getListView();
+            if (list == null) {
+                return;
+            }
+            for (int i = 0; i < list.getChildCount(); i++) {
+                View row = list.getChildAt(i);
+                Preference preference = rowsById.get(row.getId());
+                if (preference != null && row.isFocusable() &&
+                        (key == null ? preference.isSelectable() : key.equals(preference.getKey()))) {
+                    row.requestFocus();
+                    return;
+                }
+            }
+            if (key != null) {
+                scrollToPreference(key);
+            }
+            else {
+                list.scrollToPosition(0);
+            }
+            if (attempts > 0) {
+                list.postDelayed(() -> focusRow(key, attempts - 1), 32);
+            }
+        }
+
+        /** Steps a row's value left or right: lists move one entry, sliders one step, switches off/on. */
+        void adjust(Preference preference, int direction, int multiplier) {
+            if (preference instanceof ListPreference &&
+                    !LANGUAGE_PREF_KEY.equals(preference.getKey())) {
+                // Language changes restart the UI, so it is only changed from its option list
+                ListPreference list = (ListPreference) preference;
+                CharSequence[] values = list.getEntryValues();
+                int target = list.findIndexOfValue(list.getValue()) + direction;
+                if (target >= 0 && target < values.length) {
+                    String value = values[target].toString();
+                    if (list.callChangeListener(value)) {
+                        list.setValue(value);
+                    }
+                }
+            }
+            else if (preference instanceof SeekBarPreference) {
+                ((SeekBarPreference) preference).step(direction, multiplier);
+            }
+            else if (preference instanceof TwoStatePreference) {
+                TwoStatePreference toggle = (TwoStatePreference) preference;
+                boolean checked = direction > 0;
+                if (toggle.isChecked() != checked && toggle.callChangeListener(checked)) {
+                    toggle.setChecked(checked);
+                }
+            }
         }
 
         public void setCategoryTab(int categoryTab) {
@@ -475,6 +796,7 @@ public class StreamSettings extends AppCompatActivity {
 
         public void initializePreferences() {
             addPreferencesFromResource(R.xml.preferences);
+            collectDescriptions(getPreferenceScreen());
             showListValuesAsSummaries(getPreferenceScreen());
 
             AppCompatActivity activity = (AppCompatActivity) requireActivity();
@@ -1022,7 +1344,9 @@ public class StreamSettings extends AppCompatActivity {
 
         @Override
         public void onDisplayPreferenceDialog(@NonNull Preference preference) {
-            if (preference instanceof ConfirmDeleteOscPreference) {
+            if (preference instanceof ListPreference) {
+                ((StreamSettings) requireActivity()).showOptions((ListPreference) preference);
+            } else if (preference instanceof ConfirmDeleteOscPreference) {
                 DialogFragment dialogFragment = ConfirmDeleteOscPreference.DialogFragmentCompat.newInstance(preference.getKey());
                 dialogFragment.setTargetFragment(this, 0);
                 dialogFragment.show(getFragmentManager(), null);

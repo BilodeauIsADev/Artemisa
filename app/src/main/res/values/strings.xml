@@ -846,7 +846,8 @@
     <string name="dash_close">Close</string>
     <string name="dash_cancel">Cancel</string>
     <string name="dash_change">Change</string>
-    <string name="dash_change_section">Section</string>
+    <string name="dash_adjust">Adjust</string>
+    <string name="dash_choose">Choose</string>
     <string name="dash_open_library">Open library</string>
     <string name="dash_pair">Pair</string>
     <string name="dash_wake">Wake</string>

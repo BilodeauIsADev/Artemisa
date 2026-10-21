@@ -1,90 +1,171 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Settings: categories on the left, the selected category's options on the right. -->
+<!-- Settings: section tabs across the top, the section's rows on the left and a guide card
+     on the right that explains the focused row (and holds option lists when one is open). -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dash_surface_1">
+    android:background="@color/dash_ink">
 
-    <TextView
-        style="@style/DashTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <!-- Top bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
         android:layout_marginStart="@dimen/console_screen_horizontal_padding"
         android:layout_marginTop="@dimen/console_screen_vertical_padding"
-        android:text="@string/console_settings"
-        android:textSize="26sp" />
+        android:layout_marginEnd="@dimen/console_screen_horizontal_padding"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:contentDescription="@string/artemisa_brand"
+            android:src="@drawable/app_icon" />
+
+        <TextView
+            style="@style/DashTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:text="@string/console_settings"
+            android:textSize="22sp" />
+
+        <TextClock
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/albert_sans_semibold"
+            android:fontFeatureSettings="tnum"
+            android:textColor="@color/dash_text"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- Section tabs: LB/RB, or move along them with the D-pad -->
     <LinearLayout
-        android:layout_width="230dp"
-        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_height="34dp"
         android:layout_marginStart="@dimen/console_screen_horizontal_padding"
-        android:layout_marginTop="85dp"
-        android:orientation="vertical">
+        android:layout_marginTop="72dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/ArtemisaControllerHintPill"
+            android:layout_marginEnd="8dp"
+            android:text="@string/console_button_lb" />
 
         <TextView
             android:id="@+id/settingsTabStream"
             style="@style/ArtemisaSettingsTab"
-            android:drawableStart="@drawable/ic_dash_settings_film"
             android:text="@string/dash_settings_video" />
 
         <TextView
             android:id="@+id/settingsTabAudio"
             style="@style/ArtemisaSettingsTab"
-            android:drawableStart="@drawable/ic_dash_settings_speaker"
             android:text="@string/dash_settings_audio_host" />
 
         <TextView
             android:id="@+id/settingsTabControls"
             style="@style/ArtemisaSettingsTab"
-            android:drawableStart="@drawable/ic_dash_settings_gamepad"
             android:text="@string/dash_settings_controller" />
 
         <TextView
             android:id="@+id/settingsTabOverlay"
             style="@style/ArtemisaSettingsTab"
-            android:drawableStart="@drawable/ic_dash_settings_chart"
             android:text="@string/dash_settings_overlay" />
 
         <TextView
             android:id="@+id/settingsTabAppearance"
             style="@style/ArtemisaSettingsTab"
-            android:drawableStart="@drawable/ic_dash_settings_grid"
             android:text="@string/dash_settings_library" />
 
         <TextView
             android:id="@+id/settingsTabSystem"
             style="@style/ArtemisaSettingsTab"
-            android:drawableStart="@drawable/ic_dash_settings_globe"
             android:text="@string/dash_settings_system" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginStart="310dp"
-        android:layout_marginTop="80dp"
-        android:layout_marginEnd="@dimen/console_screen_horizontal_padding"
-        android:layout_marginBottom="58dp"
-        android:orientation="vertical">
 
         <TextView
-            android:id="@+id/settingsSectionDescription"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="2dp"
-            android:layout_marginBottom="10dp"
-            android:fontFamily="@font/albert_sans_bold"
-            android:textColor="@color/dash_text"
-            android:textSize="17sp" />
+            style="@style/ArtemisaControllerHintPill"
+            android:layout_marginStart="8dp"
+            android:text="@string/console_button_rb" />
+    </LinearLayout>
 
-        <FrameLayout
-            android:id="@+id/stream_settings"
+    <!-- The selected section's rows -->
+    <FrameLayout
+        android:id="@+id/stream_settings"
+        android:layout_width="530dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="42dp"
+        android:layout_marginTop="122dp"
+        android:layout_marginBottom="58dp" />
+
+    <!-- Guide card -->
+    <LinearLayout
+        android:id="@+id/settingsGuide"
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:layout_marginTop="128dp"
+        android:layout_marginEnd="@dimen/console_screen_horizontal_padding"
+        android:layout_marginBottom="70dp"
+        android:background="@drawable/dash_guide_background"
+        android:orientation="vertical"
+        android:paddingStart="21dp"
+        android:paddingTop="20dp"
+        android:paddingEnd="21dp"
+        android:paddingBottom="16dp">
+
+        <TextView
+            android:id="@+id/settingsGuideSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/albert_sans_semibold"
+            android:textColor="@color/dash_text_3"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/settingsGuideTitle"
+            style="@style/DashTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/settingsGuideDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/albert_sans"
+            android:lineSpacingMultiplier="1.35"
+            android:maxLines="9"
+            android:textColor="@color/dash_text_2"
+            android:textSize="12sp" />
+
+        <!-- Options of a list setting, shown here instead of a dialog -->
+        <ScrollView
+            android:id="@+id/settingsGuideOptionsScroll"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_marginTop="10dp"
             android:layout_weight="1"
-            android:background="@drawable/console_panel_background"
-            android:clipToOutline="true"
-            android:padding="6dp" />
+            android:clipToPadding="false"
+            android:fadingEdgeLength="16dp"
+            android:padding="4dp"
+            android:requiresFadingEdge="vertical"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/settingsGuideOptions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
     </LinearLayout>
 
     <!-- Controller hints -->
@@ -97,13 +178,28 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <TextView style="@style/ArtemisaControllerHintPill" android:text="@string/console_button_lb" />
-        <TextView style="@style/ArtemisaControllerHintPill" android:layout_marginStart="4dp" android:text="@string/console_button_rb" />
-        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_change_section" />
+        <ImageView
+            android:id="@+id/settingsHintAdjustLeft"
+            style="@style/ArtemisaControllerHintIcon"
+            android:rotation="180"
+            android:src="@drawable/ic_dash_chevron_right" />
+        <ImageView
+            android:id="@+id/settingsHintAdjustRight"
+            style="@style/ArtemisaControllerHintIcon"
+            android:layout_marginStart="4dp"
+            android:src="@drawable/ic_dash_chevron_right" />
+        <TextView
+            android:id="@+id/settingsHintAdjust"
+            style="@style/ArtemisaControllerHintLabel"
+            android:text="@string/dash_adjust" />
         <TextView style="@style/ArtemisaControllerHintBadge" android:text="@string/console_button_a" />
-        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_select" />
+        <TextView
+            android:id="@+id/settingsHintSelect"
+            style="@style/ArtemisaControllerHintLabel"
+            android:text="@string/dash_select" />
         <TextView style="@style/ArtemisaControllerHintBadge" android:text="@string/console_button_b" />
         <TextView
+            android:id="@+id/settingsHintBack"
             style="@style/ArtemisaControllerHintLabel"
             android:text="@string/dash_back" />
     </LinearLayout>

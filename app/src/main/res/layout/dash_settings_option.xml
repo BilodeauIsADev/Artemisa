@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One choice of a list setting inside the settings guide card. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/console_menu_row_background"
+    android:clickable="true"
+    android:drawablePadding="10dp"
+    android:ellipsize="end"
+    android:focusable="true"
+    android:focusableInTouchMode="false"
+    android:fontFamily="@font/albert_sans_semibold"
+    android:gravity="center_vertical"
+    android:maxLines="2"
+    android:minHeight="34dp"
+    android:paddingStart="10dp"
+    android:paddingTop="6dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="6dp"
+    android:textColor="@color/dash_on_focus_text"
+    android:textSize="13sp" />

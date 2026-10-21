@@ -160,15 +160,18 @@ components:
     rounded: "{rounded.row}"
   preference-row-focused:
     backgroundColor: "{colors.surface-3}"
-  settings-nav-item:
+  settings-tab:
     backgroundColor: "transparent"
-    textColor: "{colors.text-2}"
-    rounded: "{rounded.sm}"
-    height: "38dp"
-    padding: "0 11dp"
-  settings-nav-item-selected:
-    backgroundColor: "{colors.glass}"
+    textColor: "{colors.text-3}"
+    rounded: "17dp"
+    height: "34dp"
+    padding: "0 12dp"
+  settings-tab-selected:
     textColor: "{colors.text}"
+  settings-guide:
+    backgroundColor: "{colors.surface-2}"
+    rounded: "{rounded.ring}"
+    width: "300dp"
   sheet:
     backgroundColor: "{colors.surface-1}"
     rounded: "{rounded.sheet}"
@@ -224,7 +227,7 @@ A near-black blue-ink stage with three stepped surfaces, white type at three opa
 - **Surface 3** (surface-3): Resting cards, keys, PIN digits and tile placeholders; also the focused preference row.
 - **Surface 3 Focused** (surface-3-focused): A card or activated key under focus, lifted one step above surface-3.
 - **White, 74% White, 52% White** (text, text-2, text-3): Primary copy; meta, summaries and hint labels; category headers and tertiary notes.
-- **Glass and Strong Glass** (glass, glass-strong): Translucent white fills for chrome that sits over art: host pill, small icon buttons, the round "more" button, dialog buttons at rest, the selected settings nav item.
+- **Glass and Strong Glass** (glass, glass-strong): Translucent white fills for chrome that sits over art: host pill, small icon buttons, the round "more" button, dialog buttons at rest, a focused settings tab.
 - **Line** (line): Menu separators and dividers.
 - **Hint White** (hint-badge): The discs and pills that carry controller button letters.
 
@@ -267,7 +270,7 @@ Library, top to bottom: a 32dp top bar at the safe edge (app icon, host pill wit
 
 The carousel lays every item out in the centre and spreads them with translation from the focused one, so the focused item is always centred. Each item sits in a focus frame padded by the 6dp focus gap; nearer items draw over farther ones. Left and right move focus one item at a time; only the current item is reachable from above and below.
 
-Menus anchor to what opened them: option cards appear beside their tile. The in-stream quick menu is a bottom sheet with a header (live dot, game, source, clock) and one row of equal cards; long submenus become a 4-column compact grid. Settings is a left nav of 38dp items beside a scrolling preference list.
+Menus anchor to what opened them: option cards appear beside their tile. The in-stream quick menu is a bottom sheet with a header (live dot, game, source, clock) and one row of equal cards; long submenus become a 4-column compact grid. Settings has section tabs across the top (LB/RB, or the D-pad), the section's rows on the left (530dp) and a 300dp guide card on the right that explains the focused row; a list setting's choices open inside that card instead of a dialog.
 
 Spacing runs on small steps (8, 10, 12, 16, 24dp) with card insets of 13dp; the focus gap (6dp) is the one spacing value every focusable ring respects.
 
@@ -313,14 +316,15 @@ Tactile and decisive: one white pill, everything else glass.
 - Transparent 8dp-radius rows with white text. Focus fills the row green and flips text and icons to ink-green. Destructive rows are coral text at rest and fill coral with ink text on focus. Separators use the line colour.
 
 ### Inputs / Fields
-- **Preference rows:** Transparent at rest; focus gives a surface-3 fill with the 3dp green ring (9dp corners). SemiBold 15sp title over a 12sp summary at 74% white; list and slider preferences show their current value as the summary. Category headers are Bold 12sp at 52% white.
+- **Preference rows:** Transparent at rest; focus gives a surface-3 fill with the 3dp green ring (9dp corners). SemiBold 15sp title on the left; list and slider rows show their current value at the right in Medium 14sp at 74% white, switches show the switch. Descriptions live in the guide card, not in the row. Left and right change the focused row in place: lists step one entry (except language), sliders one step (ten when held), switches turn off or on. Category headers are Bold 12sp at 52% white.
+- **Guide card:** Surface-2, 16dp corners. Section name (SemiBold 12sp, 52% white), the row's title (ExtraBold 20sp), its description (12sp, 74% white, 1.35 line spacing). A list's choices are 34dp rows with a ring radio that fill green on focus.
 - **Switches:** On is a green track with an ink-green thumb; off is a neutral grey track (#3A404A) and thumb (#9AA0A8).
 - **Segmented control:** Glass track (14dp corners); the selected segment is a white 12dp chip; labels SemiBold 12sp.
 - **PIN digits:** Surface-3 boxes, 12dp corners, 55sp digits.
 
 ### Navigation
 - **Spotlight carousel:** Portrait 168x224dp tiles, 10dp corners, 6dp elevation; covers crop to fill, with the title as a Bold 11sp fallback on a dark gradient tile when there is no art. Neighbours scale to 75% / 62.5% at 70% / 35% opacity and are hidden from three away; a move slides the row in 220ms (decelerate). The focused tile carries the 16dp green ring 6dp outside it. Dots under the carousel mark the position: 5dp dots at 30% white, the current one a 16dp white bar.
-- **Settings nav:** 38dp items, 8dp corners, SemiBold 14sp with icon tinted to match. Rest is 74% white on transparent; selected is glass with white text; focused is strong glass with the green stroke.
+- **Settings tabs:** Bold 15sp text, 34dp tall, between LB and RB hint pills. Rest is 52% white; the selected tab is white with a 3dp white underline; focus gives a strong-glass pill with the green stroke. Up from the list always lands on the selected tab.
 - **Top bar:** App icon, then the host pill (glass, 28dp, monitor icon plus SemiBold 13sp name) on Library or a plain SemiBold 14sp section label on Home, then right-aligned settings, avatar (30dp green disc) and a tabular clock.
 
 ### Controller Hints

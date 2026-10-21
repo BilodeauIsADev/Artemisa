@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Artemisa mock · Settings alternatives</title>
+<link rel="stylesheet" href="assets/base.css">
+<style>
+  :root {
+    --ink: #0B0D10; --s1: #14171C; --s2: #1C2027; --s3: #272C34; --s3f: #323842; --line: rgba(255,255,255,.12);
+    --w: #FFFFFF; --t2: rgba(255,255,255,.74); --t3: rgba(255,255,255,.52);
+    --go: #76D600; --on-go: #0A1200; --stop: #FF6B6E;
+    --safe-x: 96px; --safe-y: 54px;
+    --f: 'Albert Sans', sans-serif;
+  }
+  .screen { background: var(--ink); color: var(--w); font-family: var(--f); font-variant-numeric: tabular-nums; }
+  .wash { position: absolute; inset: -80px; z-index: -3; background-size: cover; background-position: center; filter: blur(64px) brightness(.5) saturate(1.35); }
+  .vign { position: absolute; inset: 0; z-index: -2; background: radial-gradient(ellipse 70% 60% at 50% 42%, rgba(11,13,16,0) 0%, rgba(11,13,16,.85) 100%); }
+  .ring { outline: 5px solid var(--go); outline-offset: 5px; }
+  .ic { stroke-width: 2; }
+
+  /* Shared */
+  .hints { position: absolute; right: var(--safe-x); bottom: var(--safe-y); display: flex; gap: 34px; font-size: 24px; font-weight: 600; color: var(--t2); }
+  .hint { display: flex; align-items: center; gap: 12px; }
+  .btn { min-width: 40px; height: 40px; padding: 0 10px; border-radius: 20px; background: rgba(255,255,255,.9); color: var(--ink); display: grid; place-items: center; font-size: 20px; font-weight: 800; }
+  .btn .ic { font-size: 22px; }
+  .sw { width: 72px; height: 40px; border-radius: 20px; background: #3A404A; position: relative; flex: none; }
+  .sw::after { content: ''; position: absolute; left: 6px; top: 6px; width: 28px; height: 28px; border-radius: 50%; background: #9AA0A8; }
+  .sw.on { background: var(--go); }
+  .sw.on::after { left: 38px; background: var(--on-go); }
+  .top { position: absolute; left: var(--safe-x); right: var(--safe-x); top: var(--safe-y); display: flex; align-items: center; gap: 18px; }
+  .top img { width: 56px; height: 56px; border-radius: 12px; }
+  .top h1 { margin: 0; font-size: 44px; font-weight: 800; letter-spacing: -.02em; }
+  .top .push { margin-left: auto; }
+  .chip { height: 56px; padding: 0 22px 0 16px; border-radius: 28px; background: rgba(255,255,255,.1); display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 600; color: var(--t2); }
+  .chip b { color: var(--w); font-weight: 700; }
+  .chip .ic { font-size: 26px; }
+  .clock { font-size: 28px; font-weight: 600; }
+
+  /* ---------- A · Control center ---------- */
+  .a-label { position: absolute; left: var(--safe-x); font-size: 28px; font-weight: 700; color: var(--t2); }
+  .a-row { position: absolute; left: var(--safe-x); right: var(--safe-x); display: grid; gap: 24px; }
+  .tile { background: var(--s2); border-radius: 22px; padding: 26px 28px; position: relative; display: flex; flex-direction: column; }
+  .tile > .ic { font-size: 36px; color: var(--t2); }
+  .tile .lbl { margin-top: auto; font-size: 24px; color: var(--t2); font-weight: 600; }
+  .tile .val { font-size: 52px; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; margin-top: 6px; display: flex; align-items: center; gap: 14px; white-space: nowrap; }
+  .tile .val.sm { font-size: 36px; }
+  .tile .val .arr { font-size: 30px; color: var(--t2); }
+  .tile.f { background: var(--s3f); }
+  .tile .note { position: absolute; left: 28px; right: 28px; top: 74px; font-size: 20px; color: var(--t2); line-height: 1.35; }
+  .tile .tg { position: absolute; right: 26px; top: 26px; }
+  .sec { background: var(--s2); border-radius: 22px; padding: 24px 28px; display: flex; flex-direction: column; gap: 6px; }
+  .sec .ic { font-size: 34px; color: var(--t2); margin-bottom: 18px; }
+  .sec b { font-size: 28px; font-weight: 700; }
+  .sec span { font-size: 21px; color: var(--t2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .crumb { display: flex; align-items: center; gap: 14px; font-size: 44px; font-weight: 800; letter-spacing: -.02em; }
+  .crumb span { color: var(--t3); }
+  .crumb .ic { font-size: 30px; color: var(--t3); }
+  .card { background: var(--s2); border-radius: 22px; padding: 24px 26px; height: 196px; display: flex; flex-direction: column; position: relative; }
+  .card > .ic { font-size: 34px; color: var(--t2); }
+  .card .sw { position: absolute; right: 24px; top: 22px; }
+  .card b { margin-top: auto; font-size: 26px; font-weight: 700; line-height: 1.2; }
+  .card span { margin-top: 4px; font-size: 21px; color: var(--t2); }
+  .card.f { background: var(--s3f); }
+  .slider { height: 10px; border-radius: 5px; background: rgba(255,255,255,.16); margin-top: 16px; position: relative; }
+  .slider i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: var(--w); display: block; }
+
+  /* ---------- B · Side panel ---------- */
+  .panel { position: absolute; right: 0; top: 0; bottom: 0; width: 800px; background: rgba(20,23,28,.96); border-radius: 32px 0 0 32px; padding: 54px 64px 0 56px; box-shadow: -40px 0 90px -30px rgba(0,0,0,.9); }
+  .panel h2 { margin: 0; font-size: 44px; font-weight: 800; letter-spacing: -.02em; display: flex; align-items: center; gap: 16px; }
+  .panel h2 .ic { font-size: 34px; color: var(--t2); }
+  .panel .sub { margin-top: 8px; font-size: 22px; color: var(--t3); }
+  .plist { margin-top: 34px; display: flex; flex-direction: column; gap: 6px; }
+  .prow { min-height: 92px; border-radius: 18px; padding: 14px 22px; display: flex; align-items: center; gap: 22px; }
+  .prow .bub { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,.08); display: grid; place-items: center; flex: none; }
+  .prow .bub .ic { font-size: 26px; }
+  .prow .tx { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .prow .tx b { font-size: 28px; font-weight: 700; }
+  .prow .tx span { font-size: 21px; color: var(--t2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prow .end { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 24px; color: var(--t2); font-weight: 600; flex: none; }
+  .prow .end .ic { font-size: 24px; color: var(--t3); }
+  .prow.f { background: var(--s3); }
+  .b-left { position: absolute; left: var(--safe-x); bottom: 150px; width: 860px; }
+  .b-left .eyebrow { font-size: 26px; color: var(--t2); font-weight: 600; display: flex; align-items: center; gap: 12px; }
+  .b-left h3 { margin: 12px 0 0; font-size: 64px; font-weight: 800; letter-spacing: -.02em; line-height: 1.02; }
+  .b-left p { margin: 18px 0 0; font-size: 26px; line-height: 1.45; color: var(--t2); max-width: 760px; }
+  .b-left .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--go); }
+  .panel .hints { position: absolute; left: 56px; right: auto; bottom: var(--safe-y); }
+
+  /* ---------- C · Tabs + guide ---------- */
+  .tabs { position: absolute; left: var(--safe-x); right: var(--safe-x); top: 150px; display: flex; align-items: center; gap: 44px; font-size: 30px; font-weight: 700; color: var(--t3); }
+  .tabs .on { color: var(--w); position: relative; }
+  .tabs .on::after { content: ''; position: absolute; left: 0; right: 0; bottom: -14px; height: 5px; border-radius: 3px; background: var(--w); }
+  .tabs .btn { font-size: 18px; height: 36px; min-width: 52px; border-radius: 10px; background: rgba(255,255,255,.16); color: var(--w); }
+  .c-list { position: absolute; left: var(--safe-x); top: 250px; width: 1060px; display: flex; flex-direction: column; gap: 4px; }
+  .crow { height: 92px; border-radius: 18px; padding: 0 28px; display: flex; align-items: center; gap: 20px; font-size: 28px; font-weight: 600; }
+  .crow .end { margin-left: auto; display: flex; align-items: center; gap: 16px; color: var(--t2); font-weight: 600; }
+  .crow .end .ic { font-size: 28px; color: var(--t3); }
+  .crow.f { background: var(--s3); }
+  .crow.f .end { color: var(--w); }
+  .crow.f .end .ic { color: var(--w); }
+  .crow .bar { width: 220px; height: 10px; border-radius: 5px; background: rgba(255,255,255,.16); position: relative; }
+  .crow .bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: var(--w); display: block; }
+  .guide { position: absolute; right: var(--safe-x); top: 250px; width: 600px; bottom: 140px; background: var(--s2); border-radius: 28px; padding: 40px 42px; }
+  .guide .k { font-size: 22px; color: var(--t3); font-weight: 600; }
+  .guide h3 { margin: 8px 0 0; font-size: 40px; font-weight: 800; letter-spacing: -.02em; }
+  .guide p { margin: 16px 0 0; font-size: 23px; line-height: 1.5; color: var(--t2); }
+  .scale { margin-top: 34px; }
+  .scale .ends { display: flex; justify-content: space-between; font-size: 20px; color: var(--t3); font-weight: 600; }
+  .scale .track { margin-top: 12px; height: 12px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(255,255,255,.28)); position: relative; }
+  .scale .track i { position: absolute; top: -8px; width: 28px; height: 28px; border-radius: 50%; background: var(--w); border: 6px solid var(--s2); display: block; }
+  .opts { margin-top: 24px; display: flex; flex-direction: column; gap: 4px; }
+  .opt { height: 64px; border-radius: 14px; padding: 0 18px; display: flex; align-items: center; gap: 16px; font-size: 24px; font-weight: 600; color: var(--t2); }
+  .opt .rd { width: 26px; height: 26px; border-radius: 50%; border: 3px solid rgba(255,255,255,.4); flex: none; }
+  .opt.sel { color: var(--w); }
+  .opt.sel .rd { border: 8px solid var(--w); }
+  .opt.f { background: var(--go); color: var(--on-go); }
+  .opt.f .rd { border-color: var(--on-go); }
+  .opt .tag { margin-left: auto; font-size: 18px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: rgba(255,255,255,.1); color: var(--t2); }
+  .opt.f .tag { background: rgba(10,18,0,.15); color: var(--on-go); }
+</style>
+<script src="assets/mock.js"></script>
+</head>
+<body>
+<header class="gallery-head">
+  <h1>Settings alternatives</h1>
+  <p>Three directions for the settings page, each in two states. Real settings, current values.</p>
+</header>
+
+<!-- ===================== A · CONTROL CENTER ===================== -->
+<figure class="frame"><figcaption>A · Control center: main</figcaption>
+<div class="screen" id="a-main">
+  <div class="top"><img src="assets/icon.png" alt=""><h1>Settings</h1><div class="push"></div>
+    <div class="chip"><i data-i="user"></i>Profile <b>Default</b></div><span class="clock">21:47</span></div>
+  <div class="a-label" style="top:186px">Stream</div>
+  <div class="a-row" style="top:240px;grid-template-columns:repeat(5,1fr);height:300px">
+    <div class="tile"><i data-i="monitor"></i><div class="lbl">Resolution</div><div class="val">4K</div></div>
+    <div class="tile"><i data-i="film"></i><div class="lbl">Frame rate</div><div class="val">60 FPS</div></div>
+    <div class="tile f ring"><i data-i="wifi"></i><div class="note">Higher looks sharper; lower copes better with weak Wi‑Fi</div><div class="lbl">Bitrate</div><div class="val"><i class="arr" data-i="left"></i>80 Mbps<i class="arr" data-i="right"></i></div></div>
+    <div class="tile"><i data-i="layers"></i><div class="lbl">Frame pacing</div><div class="val sm">Lowest latency</div></div>
+    <div class="tile"><i data-i="moon"></i><div class="sw on tg"></div><div class="lbl">HDR</div><div class="val">On</div></div>
+  </div>
+  <div class="a-label" style="top:604px">More settings</div>
+  <div class="a-row" style="top:658px;grid-template-columns:repeat(5,1fr);height:240px">
+    <div class="sec"><i data-i="speaker"></i><b>Audio and host</b><span>Stereo · PC audio off</span></div>
+    <div class="sec"><i data-i="gamepad"></i><b>Controller</b><span>Rumble on · Deadzone 7%</span></div>
+    <div class="sec"><i data-i="chart"></i><b>Overlay</b><span>Simple stats</span></div>
+    <div class="sec"><i data-i="grid"></i><b>Library</b><span>Spotlight</span></div>
+    <div class="sec"><i data-i="globe"></i><b>System</b><span>English · 20.2.6</span></div>
+  </div>
+  <div class="hints"><span class="hint"><span class="btn"><i data-i="left"></i></span><span class="btn" style="margin-left:-4px"><i data-i="right"></i></span>Adjust</span><span class="hint"><span class="btn">A</span>More options</span><span class="hint"><span class="btn">B</span>Back</span></div>
+</div></figure>
+
+<figure class="frame"><figcaption>A · Control center: a section</figcaption>
+<div class="screen" id="a-section">
+  <div class="top"><div class="crumb"><span>Settings</span><i data-i="right"></i>Controller</div><div class="push"></div><span class="clock">21:47</span></div>
+  <div class="a-row" style="top:180px;grid-template-columns:repeat(4,1fr)">
+    <div class="card f ring"><i data-i="gamepad"></i><div class="sw on"></div><b>Rumble</b><span>On</span></div>
+    <div class="card"><i data-i="gamepad"></i><div class="sw"></div><b>Flip face buttons</b><span>Off</span></div>
+    <div class="card"><i data-i="mouse"></i><div class="sw on"></div><b>Mouse emulation</b><span>Hold Start</span></div>
+    <div class="card"><i data-i="gamepad"></i><div class="sw on"></div><b>Detect controllers</b><span>Automatic</span></div>
+    <div class="card"><i data-i="gamepad"></i><b>Stick deadzone</b><span>7%</span><div class="slider"><i style="width:28%"></i></div></div>
+    <div class="card"><i data-i="gamepad"></i><div class="sw on"></div><b>USB controller driver</b><span>Xbox, Switch Pro</span></div>
+    <div class="card"><i data-i="gamepad"></i><div class="sw"></div><b>Motion sensors</b><span>Off</span></div>
+    <div class="card"><i data-i="gamepad"></i><div class="sw on"></div><b>Battery report</b><span>On</span></div>
+  </div>
+  <div class="hints"><span class="hint"><span class="btn">A</span>Toggle</span><span class="hint"><span class="btn">B</span>Back</span></div>
+</div></figure>
+
+<!-- ===================== B · SIDE PANEL ===================== -->
+<figure class="frame"><figcaption>B · Side panel: sections</figcaption>
+<div class="screen" id="b-main">
+  <div class="wash" style="background-image:url(assets/fatal-frame.jpg)"></div><div class="vign"></div>
+  <div class="b-left">
+    <div class="eyebrow"><span class="dot"></span>VaporZPC</div>
+    <h3>Video</h3>
+    <p>Resolution, frame rate, bitrate and pacing for every stream. Changes apply the next time you start a game.</p>
+  </div>
+  <div class="panel">
+    <h2>Settings</h2>
+    <div class="sub">Profile: Default</div>
+    <div class="plist">
+      <div class="prow f ring"><div class="bub"><i data-i="film"></i></div><div class="tx"><b>Video</b><span>4K · 60 FPS · 80 Mbps · HDR</span></div><div class="end"><i data-i="right"></i></div></div>
+      <div class="prow"><div class="bub"><i data-i="speaker"></i></div><div class="tx"><b>Audio and host</b><span>Stereo · PC audio off</span></div><div class="end"><i data-i="right"></i></div></div>
+      <div class="prow"><div class="bub"><i data-i="gamepad"></i></div><div class="tx"><b>Controller</b><span>Rumble on · Deadzone 7%</span></div><div class="end"><i data-i="right"></i></div></div>
+      <div class="prow"><div class="bub"><i data-i="chart"></i></div><div class="tx"><b>Overlay</b><span>Simple stats</span></div><div class="end"><i data-i="right"></i></div></div>
+      <div class="prow"><div class="bub"><i data-i="grid"></i></div><div class="tx"><b>Library</b><span>Spotlight</span></div><div class="end"><i data-i="right"></i></div></div>
+      <div class="prow"><div class="bub"><i data-i="globe"></i></div><div class="tx"><b>System</b><span>English · 20.2.6</span></div><div class="end"><i data-i="right"></i></div></div>
+    </div>
+    <div class="hints"><span class="hint"><span class="btn">A</span>Open</span><span class="hint"><span class="btn">B</span>Close</span></div>
+  </div>
+</div></figure>
+
+<figure class="frame"><figcaption>B · Side panel: inside Video</figcaption>
+<div class="screen" id="b-video">
+  <div class="wash" style="background-image:url(assets/fatal-frame.jpg)"></div><div class="vign"></div>
+  <div class="b-left">
+    <div class="eyebrow">Video</div>
+    <h3>Frame pacing</h3>
+    <p>How the Shield balances delay against smoothness. "Prefer lowest latency" shows each frame as soon as it's decoded; smoother modes wait for the TV's refresh.</p>
+  </div>
+  <div class="panel">
+    <h2><i data-i="left"></i>Video</h2>
+    <div class="plist">
+      <div class="prow"><div class="tx"><b>Resolution</b></div><div class="end">4K (3840×2160)<i data-i="right"></i></div></div>
+      <div class="prow"><div class="tx"><b>Frame rate</b></div><div class="end">60 FPS<i data-i="right"></i></div></div>
+      <div class="prow"><div class="tx"><b>Bitrate</b></div><div class="end">80 Mbps<i data-i="right"></i></div></div>
+      <div class="prow f ring"><div class="tx"><b>Frame pacing</b></div><div class="end" style="color:var(--w)">Prefer lowest latency<i data-i="right"></i></div></div>
+      <div class="prow"><div class="tx"><b>HDR</b></div><div class="end"><div class="sw on"></div></div></div>
+      <div class="prow"><div class="tx"><b>Virtual display</b></div><div class="end"><div class="sw on"></div></div></div>
+      <div class="prow"><div class="tx"><b>Latest-frame rendering</b><span>Drops queued frames to cut delay</span></div><div class="end"><div class="sw"></div></div></div>
+    </div>
+    <div class="hints"><span class="hint"><span class="btn">A</span>Change</span><span class="hint"><span class="btn">B</span>Back</span></div>
+  </div>
+</div></figure>
+
+<!-- ===================== C · TABS + GUIDE ===================== -->
+<figure class="frame"><figcaption>C · Tabs and guide: Video</figcaption>
+<div class="screen" id="c-main">
+  <div class="top"><img src="assets/icon.png" alt=""><h1>Settings</h1><div class="push"></div>
+    <div class="chip"><i data-i="user"></i>Profile <b>Default</b></div><span class="clock">21:47</span></div>
+  <div class="tabs"><span class="btn">LB</span><span class="on">Video</span><span>Audio and host</span><span>Controller</span><span>Overlay</span><span>Library</span><span>System</span><span class="btn">RB</span></div>
+  <div class="c-list">
+    <div class="crow">Resolution<div class="end">4K (3840×2160)</div></div>
+    <div class="crow">Frame rate<div class="end">60 FPS</div></div>
+    <div class="crow f ring">Bitrate<div class="end"><i data-i="left"></i><div class="bar"><i style="width:53%"></i></div>80 Mbps<i data-i="right"></i></div></div>
+    <div class="crow">Frame pacing<div class="end">Prefer lowest latency</div></div>
+    <div class="crow">HDR<div class="end"><div class="sw on"></div></div></div>
+    <div class="crow">Virtual display<div class="end"><div class="sw on"></div></div></div>
+    <div class="crow">Latest-frame rendering<div class="end"><div class="sw"></div></div></div>
+  </div>
+  <div class="guide">
+    <div class="k">Video</div>
+    <h3>Bitrate</h3>
+    <p>How much data the PC sends each second. Higher looks sharper in fast, detailed scenes; lower copes better with a weak network.</p>
+    <div class="scale"><div class="ends"><span>Copes with weak Wi‑Fi</span><span>Sharpest</span></div><div class="track"><i style="left:50%"></i></div></div>
+    <p>On Ethernet at 4K60, 80 to 150 Mbps works well.</p>
+  </div>
+  <div class="hints"><span class="hint"><span class="btn"><i data-i="left"></i></span><span class="btn" style="margin-left:-4px"><i data-i="right"></i></span>Adjust</span><span class="hint"><span class="btn">LB</span><span class="btn" style="margin-left:-4px">RB</span>Section</span><span class="hint"><span class="btn">B</span>Back</span></div>
+</div></figure>
+
+<figure class="frame"><figcaption>C · Tabs and guide: choosing an option</figcaption>
+<div class="screen" id="c-picker">
+  <div class="top"><img src="assets/icon.png" alt=""><h1>Settings</h1><div class="push"></div>
+    <div class="chip"><i data-i="user"></i>Profile <b>Default</b></div><span class="clock">21:47</span></div>
+  <div class="tabs"><span class="btn">LB</span><span class="on">Video</span><span>Audio and host</span><span>Controller</span><span>Overlay</span><span>Library</span><span>System</span><span class="btn">RB</span></div>
+  <div class="c-list" style="opacity:.5">
+    <div class="crow">Resolution<div class="end">4K (3840×2160)</div></div>
+    <div class="crow">Frame rate<div class="end">60 FPS</div></div>
+    <div class="crow">Bitrate<div class="end">80 Mbps</div></div>
+    <div class="crow" style="background:var(--s3)">Frame pacing<div class="end">Prefer lowest latency</div></div>
+    <div class="crow">HDR<div class="end"><div class="sw on"></div></div></div>
+    <div class="crow">Virtual display<div class="end"><div class="sw on"></div></div></div>
+    <div class="crow">Latest-frame rendering<div class="end"><div class="sw"></div></div></div>
+  </div>
+  <div class="guide" style="bottom:110px">
+    <div class="k">Frame pacing</div>
+    <div class="opts">
+      <div class="opt"><span class="rd"></span>Responsive HQ</div>
+      <div class="opt sel f"><span class="rd"></span>Prefer lowest latency<span class="tag">Fastest</span></div>
+      <div class="opt"><span class="rd"></span>Balanced</div>
+      <div class="opt"><span class="rd"></span>Balanced with FPS limit</div>
+      <div class="opt"><span class="rd"></span>Prefer smoothest video<span class="tag">Adds delay</span></div>
+      <div class="opt"><span class="rd"></span>Warp Drive</div>
+      <div class="opt"><span class="rd"></span>Warp 2</div>
+    </div>
+    <p style="font-size:21px">Shows each frame as soon as it's decoded. Can tear or stutter slightly when the network wobbles.</p>
+  </div>
+  <div class="hints"><span class="hint"><span class="btn">A</span>Choose</span><span class="hint"><span class="btn">B</span>Cancel</span></div>
+</div></figure>
+</body>
+</html>
