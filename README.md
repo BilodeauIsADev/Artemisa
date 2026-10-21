@@ -29,18 +29,43 @@
 Artemisa reshapes the familiar Moonlight streaming experience into a console-style interface for Android TV and NVIDIA Shield. The home screen, game library, settings, and in-stream quick menu are designed around predictable D-pad focus and comfortable viewing from across the room.
 
 <a href="docs/screenshots/library.png">
-  <img src="docs/screenshots/library.png" alt="Artemisa horizontal game shelf" width="100%">
+  <img src="docs/screenshots/library.png" alt="Artemisa Spotlight library: the focused cover centred, its title and Play underneath" width="100%">
 </a>
+
+Pick the library layout that suits you in Settings → Library:
 
 <table>
   <tr>
     <td width="50%" align="center">
-      <a href="docs/screenshots/home.png"><img src="docs/screenshots/home.png" alt="Artemisa computer home screen"></a>
+      <a href="docs/screenshots/library-grid.png"><img src="docs/screenshots/library-grid.png" alt="Artemisa grid library of game covers"></a>
+      <br><sub><strong>Grid: every cover at once</strong></sub>
+    </td>
+    <td width="50%" align="center">
+      <a href="docs/screenshots/game-page.png"><img src="docs/screenshots/game-page.png" alt="Artemisa game page with cover, Play and options"></a>
+      <br><sub><strong>Game page, opened from the grid</strong></sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <a href="docs/screenshots/library-showcase.png"><img src="docs/screenshots/library-showcase.png" alt="Artemisa showcase library with a full-height cover"></a>
+      <br><sub><strong>Showcase</strong></sub>
+    </td>
+    <td width="50%" align="center">
+      <a href="docs/screenshots/library-list.png"><img src="docs/screenshots/library-list.png" alt="Artemisa title list library"></a>
+      <br><sub><strong>Title list</strong></sub>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <a href="docs/screenshots/home.png"><img src="docs/screenshots/home.png" alt="Artemisa computers home screen"></a>
       <br><sub><strong>Console-style home</strong></sub>
     </td>
     <td width="50%" align="center">
-      <a href="docs/screenshots/appearance.png"><img src="docs/screenshots/appearance.png" alt="Artemisa appearance settings"></a>
-      <br><sub><strong>TV-friendly settings</strong></sub>
+      <a href="docs/screenshots/settings.png"><img src="docs/screenshots/settings.png" alt="Artemisa settings with section tabs and a guide card explaining frame pacing"></a>
+      <br><sub><strong>Settings that explain themselves</strong></sub>
     </td>
   </tr>
 </table>
@@ -52,10 +77,10 @@ Artemisa reshapes the familiar Moonlight streaming experience into a console-sty
 ## Highlights
 
 - Console-style home and game library with clear, animated controller focus.
-- Optional horizontal shelf for browsing portrait game covers left to right.
+- Four library layouts: the Spotlight carousel, a covers-only Grid with a page for each game, Showcase, and Title list.
 - Persistent in-stream quick menu with smooth submenu transitions and reliable back navigation.
 - Quick access to performance overlays, mouse modes, advanced controls, an on-screen keyboard, disconnect, and End Stream.
-- Appearance controls for the library layout, box-art density, and quick-menu opacity.
+- Settings with section tabs (LB/RB), values you change with left and right, and a guide card that explains whatever is focused.
 - Configurable frame pacing and optional low-latency frame rendering - settings remain under your control.
 - Apollo virtual-display and server-command integration, custom resolutions and bitrates, HDR, surround audio, controller support, and the broader Artemis feature set.
 
