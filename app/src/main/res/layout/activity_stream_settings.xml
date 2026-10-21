@@ -153,10 +153,7 @@
             android:layout_height="0dp"
             android:layout_marginTop="10dp"
             android:layout_weight="1"
-            android:clipToPadding="false"
-            android:fadingEdgeLength="16dp"
-            android:padding="4dp"
-            android:requiresFadingEdge="vertical"
+            android:requiresFadingEdge="none"
             android:scrollbars="none"
             android:visibility="gone">
 
