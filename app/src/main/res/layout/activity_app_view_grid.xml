@@ -32,13 +32,14 @@
         android:layout_marginTop="@dimen/console_screen_vertical_padding"
         android:layout_marginEnd="@dimen/console_screen_horizontal_padding" />
 
-    <!-- Covers (a GridView is inflated into this container) -->
+    <!-- Covers (a GridView is inflated into this container); they stop above the hints -->
     <FrameLayout
         android:id="@+id/appFragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginStart="41dp"
         android:layout_marginTop="74dp"
+        android:layout_marginBottom="58dp"
         android:clipChildren="false" />
 
     <!-- Controller hints -->
