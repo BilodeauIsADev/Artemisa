@@ -59,10 +59,20 @@ public class SpotlightCarouselView extends FrameLayout {
     private int itemHeight;
     private final int spacing;
 
+    // Adapter items currently laid out, and whether this view is listening to the adapter
+    private int builtItemCount = -1;
+    private boolean observing;
+
     private final DataSetObserver dataSetObserver = new DataSetObserver() {
         @Override
         public void onChanged() {
-            rebuildItems();
+            // Polling reports unchanged lists often; refresh the existing items in place then
+            if (getAdapterCount() == builtItemCount) {
+                rebindItems();
+            }
+            else {
+                rebuildItems();
+            }
         }
 
         @Override
@@ -92,15 +102,44 @@ public class SpotlightCarouselView extends FrameLayout {
     }
 
     public void setAdapter(BaseAdapter adapter) {
-        if (this.adapter != null) {
-            this.adapter.unregisterDataSetObserver(dataSetObserver);
-        }
-
+        stopObserving();
         this.adapter = adapter;
-        if (adapter != null) {
-            adapter.registerDataSetObserver(dataSetObserver);
+        if (isAttachedToWindow()) {
+            startObserving();
         }
         rebuildItems();
+    }
+
+    // Only a carousel on screen follows the adapter. A replaced one (such as a fragment restored
+    // after the process was killed) would otherwise keep rebuilding and take the trailing view.
+    private void startObserving() {
+        if (adapter != null && !observing) {
+            adapter.registerDataSetObserver(dataSetObserver);
+            observing = true;
+        }
+    }
+
+    private void stopObserving() {
+        if (adapter != null && observing) {
+            adapter.unregisterDataSetObserver(dataSetObserver);
+            observing = false;
+        }
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (adapter != null && !observing) {
+            startObserving();
+            // Catch up on anything that changed while detached
+            rebuildItems();
+        }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        stopObserving();
+        super.onDetachedFromWindow();
     }
 
     /** Size of the focused item, in pixels. Neighbours are scaled down from it. */
@@ -174,6 +213,27 @@ public class SpotlightCarouselView extends FrameLayout {
         return adapter != null ? adapter.getCount() : 0;
     }
 
+    // Same number of items: let the adapter update each item's view in place, keeping focus.
+    private void rebindItems() {
+        for (int position = 0; position < builtItemCount; position++) {
+            FrameLayout focusFrame = (FrameLayout) getChildAt(position);
+            View oldView = focusFrame.getChildAt(0);
+            View itemView = adapter.getView(position, oldView, focusFrame);
+            if (itemView != oldView) {
+                focusFrame.removeView(oldView);
+                focusFrame.addView(itemView, new LayoutParams(itemWidth, itemHeight));
+            }
+            focusFrame.setContentDescription(String.valueOf(adapter.getItem(position)));
+        }
+
+        // Let the screen refresh what it shows for the focused item (running state, names)
+        View focused = getFocusedChild();
+        int index = focused != null ? indexOfChild(focused) : -1;
+        if (index >= 0 && index < builtItemCount && itemFocusListener != null) {
+            itemFocusListener.onItemFocused(focused, index);
+        }
+    }
+
     private void rebuildItems() {
         boolean hadFocus = hasFocus();
 
@@ -229,6 +289,7 @@ public class SpotlightCarouselView extends FrameLayout {
                     Gravity.CENTER));
         }
 
+        builtItemCount = count;
         focusedPosition = Math.max(0, Math.min(focusedPosition, getChildCount() - 1));
         placed = false;
 

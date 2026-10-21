@@ -139,6 +139,25 @@ public class LibraryLayoutsTest {
     }
 
     @Test
+    public void switchingLayoutsRestoresWithoutCrashing() throws Exception {
+        prepare("spotlight");
+        Intent intent = new Intent(ApplicationProvider.getApplicationContext(), AppView.class);
+        intent.putExtra("UUID", UUID);
+        intent.putExtra("Name", "VaporZPC");
+        org.robolectric.android.controller.ActivityController<AppView> controller =
+                Robolectric.buildActivity(AppView.class, intent).setup();
+        settle();
+
+        // Settings changes the layout, then the screen is rebuilt from its saved state
+        PreferenceManager.getDefaultSharedPreferences(ApplicationProvider.getApplicationContext())
+                .edit().putString("list_library_layout", "grid").commit();
+        controller.recreate();
+        settle();
+
+        assertTrue(controller.get().findViewById(R.id.fragmentView) instanceof android.widget.GridView);
+    }
+
+    @Test
     public void showcaseShowsTheFocusedGameBesideItsStrip() throws Exception {
         prepare("showcase");
         AppView a = launch();
