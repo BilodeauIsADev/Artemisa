@@ -1240,6 +1240,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                             if (__last >= 0) {
                                 long __nowNs = System.nanoTime();
                                 releaseWithPolicy(__last, __nowNs);
+                                activeWindowVideoStats.totalFramesRendered++;
 
                                 // Update decode->present EWMA and decode stats if we have a valid PTS
                                 if (__lastPtsUs >= 0) {
@@ -1321,7 +1322,10 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                                         if (frameAgeNs >= dropThresholdSmoothNs) {
                                             if (preferLowerDelays) {
                                                 // ULL: present at next VSYNC (no scheduling)
-                                                releaseWithPolicy(lastIndex, System.nanoTime());} else {
+                                                releaseWithPolicy(lastIndex, System.nanoTime());
+                                                // The "dropped" frame is still presented, so count it
+                                                activeWindowVideoStats.totalFramesRendered++;
+                                            } else {
                                                 // Smooth/Balanced: keep timestamp scheduling
                                                 videoDecoder.releaseOutputBuffer(lastIndex, /* render */ false);
                                             }
@@ -1394,7 +1398,10 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                                         if (shouldDrop) {
                                             if (preferLowerDelays) {
                                                 // ULL: present at next VSYNC (no scheduling)
-                                                releaseWithPolicy(lastIndex, System.nanoTime());} else {
+                                                releaseWithPolicy(lastIndex, System.nanoTime());
+                                                // The "dropped" frame is still presented, so count it
+                                                activeWindowVideoStats.totalFramesRendered++;
+                                            } else {
                                                 // Smooth/Balanced: keep timestamp scheduling
                                                 videoDecoder.releaseOutputBuffer(lastIndex, /* render */ false);
                                             }
