@@ -270,6 +270,11 @@ Library, top to bottom: a 32dp top bar at the safe edge (app icon, host pill wit
 
 The carousel lays every item out in the centre and spreads them with translation from the focused one, so the focused item is always centred. Each item sits in a focus frame padded by the 6dp focus gap; nearer items draw over farther ones. Left and right move focus one item at a time; only the current item is reachable from above and below.
 
+Settings → Library → Library layout swaps Spotlight for one of three alternatives, all sharing the top bar, Play button, focus ring and hints:
+- **Grid:** covers only, six to a row (128x171dp, the ring drawn by the grid around each 140dp cell). A opens the game page: blurred backdrop, a 240x320dp cover beside the title, meta line, Play and the options button; B returns to the same cover.
+- **Showcase:** the focused cover fills the left 410dp at full height, its alpha fading out to the right and bottom; the title, meta and Play sit beside it, with a strip of 84x112dp covers (neighbours at 86%) along the bottom.
+- **Title list:** 46dp rows of a small cover and the name in Bold 18sp; the highlighted row turns white with ink text, and its cover shows at 270x360dp on the right. A plays the highlighted game.
+
 Menus anchor to what opened them: option cards appear beside their tile. The in-stream quick menu is a bottom sheet with a header (live dot, game, source, clock) and one row of equal cards; long submenus become a 4-column compact grid. Settings has section tabs across the top (LB/RB, or the D-pad), the section's rows on the left (530dp) and a 300dp guide card on the right that explains the focused row; a list setting's choices open inside that card instead of a dialog.
 
 Spacing runs on small steps (8, 10, 12, 16, 24dp) with card insets of 13dp; the focus gap (6dp) is the one spacing value every focusable ring respects.

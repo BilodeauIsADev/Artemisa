@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Showcase library: the focused game's cover fills the left side, its title and Play sit
+     beside it, and the other covers run along the bottom. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dash_ink"
+    tools:context=".AppView">
+
+    <ImageView
+        android:id="@+id/libraryBackdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop" />
+
+    <com.limelight.ui.FadedImageView
+        android:id="@+id/libraryCover"
+        android:layout_width="@dimen/dash_showcase_cover_width"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/dash_scrim_bottom" />
+
+    <include
+        layout="@layout/library_top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:layout_marginStart="@dimen/dash_showcase_content_start"
+        android:layout_marginTop="@dimen/console_screen_vertical_padding"
+        android:layout_marginEnd="@dimen/console_screen_horizontal_padding" />
+
+    <!-- Hero: the focused game -->
+    <LinearLayout
+        android:id="@+id/libraryHero"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dash_showcase_content_start"
+        android:layout_marginTop="100dp"
+        android:layout_marginEnd="@dimen/console_screen_horizontal_padding"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/libraryTitle"
+            style="@style/DashTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:lineSpacingMultiplier="0.95"
+            android:maxLines="2"
+            android:textSize="38sp"
+            tools:text="Fatal Frame II: Crimson Butterfly Remake" />
+
+        <TextView
+            android:id="@+id/libraryMeta"
+            style="@style/DashMeta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="4K · 60 FPS · HDR · 80 Mbps" />
+
+        <include
+            layout="@layout/library_actions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-6dp"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
+
+    <!-- Cover strip (SpotlightCarouselView is inflated into this container) -->
+    <FrameLayout
+        android:id="@+id/appFragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="136dp"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="70dp"
+        android:clipChildren="false" />
+
+    <!-- Controller hints -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="31dp"
+        android:layout_marginBottom="@dimen/console_screen_vertical_padding"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView style="@style/ArtemisaControllerHintBadge" android:text="@string/console_button_a" />
+        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_play" />
+        <ImageView style="@style/ArtemisaControllerHintIcon" android:src="@drawable/ic_dash_menu" />
+        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_options" />
+        <TextView style="@style/ArtemisaControllerHintBadge" android:text="@string/console_button_b" />
+        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_back" />
+    </LinearLayout>
+
+</FrameLayout>

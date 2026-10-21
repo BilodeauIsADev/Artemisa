@@ -34,9 +34,10 @@ public class SpotlightCarouselView extends FrameLayout {
         void onItemFocused(View view, int position);
     }
 
-    // Scale and opacity by distance from the focused item; three or more away is hidden
-    private static final float[] SCALES = {1f, 0.75f, 0.625f, 0.55f};
-    private static final float[] ALPHAS = {1f, 0.7f, 0.35f, 0f};
+    // Scale and opacity by distance from the focused item; the last entry applies to every
+    // item further out. By default items three or more away are hidden.
+    private static final float[] DEFAULT_SCALES = {1f, 0.75f, 0.625f, 0.55f};
+    private static final float[] DEFAULT_ALPHAS = {1f, 0.7f, 0.35f, 0f};
     private static final int SLIDE_MS = 220;
     private static final Interpolator SLIDE_INTERPOLATOR = new DecelerateInterpolator(2f);
 
@@ -46,6 +47,9 @@ public class SpotlightCarouselView extends FrameLayout {
     private OnItemFocusListener itemFocusListener;
     private int focusedPosition;
     private int nextFocusDownTarget = View.NO_ID;
+    private int nextFocusUpTarget = View.NO_ID;
+    private float[] scales = DEFAULT_SCALES;
+    private float[] alphas = DEFAULT_ALPHAS;
     private View trailingView;
     private boolean initialFocusClaimed;
     // False until the items have been placed once after a rebuild; that placement is not animated
@@ -106,6 +110,14 @@ public class SpotlightCarouselView extends FrameLayout {
         rebuildItems();
     }
 
+    /** Scale and opacity by distance from the focused item; the last entry repeats outwards. */
+    public void setFalloff(float[] scales, float[] alphas) {
+        this.scales = scales;
+        this.alphas = alphas;
+        placed = false;
+        requestLayout();
+    }
+
     public void setOnItemClickListener(OnItemClickListener listener) {
         itemClickListener = listener;
     }
@@ -123,6 +135,14 @@ public class SpotlightCarouselView extends FrameLayout {
         nextFocusDownTarget = viewId;
         for (int i = 0; i < getAdapterCount(); i++) {
             getChildAt(i).setNextFocusDownId(viewId);
+        }
+    }
+
+    /** Where D-pad up goes from any item. */
+    public void setNextFocusUpTarget(int viewId) {
+        nextFocusUpTarget = viewId;
+        for (int i = 0; i < getAdapterCount(); i++) {
+            getChildAt(i).setNextFocusUpId(viewId);
         }
     }
 
@@ -172,6 +192,9 @@ public class SpotlightCarouselView extends FrameLayout {
             focusFrame.setContentDescription(String.valueOf(adapter.getItem(position)));
             if (nextFocusDownTarget != View.NO_ID) {
                 focusFrame.setNextFocusDownId(nextFocusDownTarget);
+            }
+            if (nextFocusUpTarget != View.NO_ID) {
+                focusFrame.setNextFocusUpId(nextFocusUpTarget);
             }
             if (position == Math.min(focusedPosition, count - 1) &&
                     android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -250,12 +273,12 @@ public class SpotlightCarouselView extends FrameLayout {
 
         for (int i = 0; i < count; i++) {
             View child = getChildAt(i);
-            int distance = Math.min(Math.abs(i - focusedPosition), SCALES.length - 1);
-            float scale = SCALES[distance];
-            float alpha = ALPHAS[distance];
+            int distance = Math.abs(i - focusedPosition);
+            float scale = scales[Math.min(distance, scales.length - 1)];
+            float alpha = alphas[Math.min(distance, alphas.length - 1)];
 
             // Nearer items draw over farther ones
-            child.setTranslationZ(-distance);
+            child.setTranslationZ(-Math.min(distance, 10));
             child.animate().cancel();
             if (animate) {
                 child.animate()
@@ -276,8 +299,8 @@ public class SpotlightCarouselView extends FrameLayout {
     }
 
     private float scaledWidth(int index) {
-        int distance = Math.min(Math.abs(index - focusedPosition), SCALES.length - 1);
-        return getChildAt(index).getWidth() * SCALES[distance];
+        int distance = Math.min(Math.abs(index - focusedPosition), scales.length - 1);
+        return getChildAt(index).getWidth() * scales[distance];
     }
 
     @Override

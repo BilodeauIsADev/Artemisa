@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Grid library: every cover at once and nothing else; selecting one opens its details page. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dash_ink"
+    tools:context=".AppView">
+
+    <ImageView
+        android:id="@+id/libraryBackdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/dash_scrim_spotlight" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:background="@drawable/dash_scrim_top" />
+
+    <include
+        layout="@layout/library_top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:layout_marginStart="@dimen/console_screen_horizontal_padding"
+        android:layout_marginTop="@dimen/console_screen_vertical_padding"
+        android:layout_marginEnd="@dimen/console_screen_horizontal_padding" />
+
+    <!-- Covers (a GridView is inflated into this container) -->
+    <FrameLayout
+        android:id="@+id/appFragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="41dp"
+        android:layout_marginTop="74dp"
+        android:clipChildren="false" />
+
+    <!-- Controller hints -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="31dp"
+        android:layout_marginBottom="@dimen/console_screen_vertical_padding"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView style="@style/ArtemisaControllerHintBadge" android:text="@string/console_button_a" />
+        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_open" />
+        <ImageView style="@style/ArtemisaControllerHintIcon" android:src="@drawable/ic_dash_menu" />
+        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_options" />
+        <TextView style="@style/ArtemisaControllerHintBadge" android:text="@string/console_button_b" />
+        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_back" />
+    </LinearLayout>
+
+    <include layout="@layout/dash_game_details" />
+
+</FrameLayout>

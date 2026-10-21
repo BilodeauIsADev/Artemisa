@@ -137,6 +137,25 @@
         <item>cap-fps</item>
         <item>smoothness</item>
     </string-array>
+    <string-array name="library_layout_names">
+        <item>@string/library_layout_spotlight</item>
+        <item>@string/library_layout_grid</item>
+        <item>@string/library_layout_showcase</item>
+        <item>@string/library_layout_list</item>
+    </string-array>
+    <string-array name="library_layout_values" translatable="false">
+        <item>spotlight</item>
+        <item>grid</item>
+        <item>showcase</item>
+        <item>list</item>
+    </string-array>
+    <!-- Shown in the settings guide card while each layout is focused; same order as the values -->
+    <string-array name="library_layout_summaries">
+        <item>One centred carousel: the focused cover sits big in the middle with its title and Play underneath, and the other games shrink towards the edges.</item>
+        <item>Every cover at once in a grid, with nothing else on screen. Selecting a game opens its page, with Play and its options.</item>
+        <item>The focused game\'s cover fills the left side of the screen, with its title and Play beside it and a strip of the other covers along the bottom.</item>
+        <item>Game names in large type with a big cover beside them. The easiest to read from the couch; A plays the highlighted game.</item>
+    </string-array>
     <!-- Shown in the settings guide card while each mode is focused; same order as the values -->
     <string-array name="video_frame_pacing_summaries">
         <item>Prefer lowest latency plus LFR: the decoder is checked more often and only the newest frame is ever shown. The most responsive mode; can skip a frame now and then.</item>

@@ -227,6 +227,14 @@
         android:key="category_appearance_settings"
         android:title="@string/category_appearance_settings"
         app:iconSpaceReserved="false">
+        <ListPreference
+            android:defaultValue="spotlight"
+            android:entries="@array/library_layout_names"
+            android:entryValues="@array/library_layout_values"
+            android:key="list_library_layout"
+            android:summary="@string/summary_library_layout"
+            android:title="@string/title_library_layout"
+            app:iconSpaceReserved="false" />
         <com.limelight.preferences.SeekBarPreference
             android:defaultValue="100"
             android:dialogMessage="@string/summary_quick_menu_opacity"

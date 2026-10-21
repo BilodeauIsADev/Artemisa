@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Game page opened from the grid: the cover beside the title, stream line, Play and options. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/gameDetails"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dash_ink"
+    android:clickable="true"
+    android:elevation="24dp"
+    android:focusable="false"
+    android:visibility="gone">
+
+    <ImageView
+        android:id="@+id/gameDetailsBackdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/dash_scrim_spotlight" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="96dp"
+        android:layout_marginEnd="@dimen/console_screen_horizontal_padding"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="240dp"
+            android:layout_height="320dp"
+            app:cardBackgroundColor="@color/dash_surface_3"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="12dp">
+
+            <ImageView
+                android:id="@+id/libraryCover"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop" />
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:id="@+id/libraryHero"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/libraryTitle"
+                style="@style/DashTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:lineSpacingMultiplier="0.95"
+                android:maxLines="3"
+                android:textSize="40sp"
+                tools:text="Fatal Frame II: Crimson Butterfly Remake" />
+
+            <TextView
+                android:id="@+id/libraryMeta"
+                style="@style/DashMeta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="4K · 60 FPS · HDR · 80 Mbps" />
+
+            <include
+                layout="@layout/library_actions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="-6dp"
+                android:layout_marginTop="18dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Controller hints -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="31dp"
+        android:layout_marginBottom="@dimen/console_screen_vertical_padding"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView style="@style/ArtemisaControllerHintBadge" android:text="@string/console_button_a" />
+        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_select" />
+        <ImageView style="@style/ArtemisaControllerHintIcon" android:src="@drawable/ic_dash_menu" />
+        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_options" />
+        <TextView style="@style/ArtemisaControllerHintBadge" android:text="@string/console_button_b" />
+        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_back" />
+    </LinearLayout>
+</FrameLayout>

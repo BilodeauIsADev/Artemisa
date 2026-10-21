@@ -19,6 +19,15 @@
     <dimen name="dash_spotlight_width">168dp</dimen>
     <dimen name="dash_spotlight_height">224dp</dimen>
     <dimen name="dash_spotlight_spacing">14dp</dimen>
+
+    <!-- Grid library: covers six to a row; a cell adds the focus gap on each side -->
+    <dimen name="dash_grid_cover_width">128dp</dimen>
+    <dimen name="dash_grid_cover_height">171dp</dimen>
+    <dimen name="dash_grid_cell_width">140dp</dimen>
+
+    <!-- Showcase library: the cover's column, and where the content beside it starts -->
+    <dimen name="dash_showcase_cover_width">410dp</dimen>
+    <dimen name="dash_showcase_content_start">430dp</dimen>
     <dimen name="dash_focus_gap">6dp</dimen>
 
 </resources>

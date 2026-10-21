@@ -28,8 +28,8 @@ import java.util.Set;
 @SuppressWarnings("unchecked")
 public class AppGridAdapter extends GenericGridAdapter<AppView.AppObject> {
     private static final int ART_WIDTH_PX = 300;
-    // Focused tile width in the library row
-    private static final int TILE_WIDTH_DP = 96;
+    // Widest a cover is shown in the library (the focused Spotlight cover)
+    private static final int TILE_WIDTH_DP = 168;
 
     private final ComputerDetails computer;
     private final String uniqueId;
@@ -75,6 +75,12 @@ public class AppGridAdapter extends GenericGridAdapter<AppView.AppObject> {
     }
 
     private static int getLayoutIdForPreferences(PreferenceConfiguration prefs) {
+        if (PreferenceConfiguration.LIBRARY_LAYOUT_GRID.equals(prefs.libraryLayout)) {
+            return R.layout.app_grid_item_cell;
+        }
+        if (PreferenceConfiguration.LIBRARY_LAYOUT_LIST.equals(prefs.libraryLayout)) {
+            return R.layout.app_list_item;
+        }
         return R.layout.app_grid_item;
     }
 
@@ -159,6 +165,12 @@ public class AppGridAdapter extends GenericGridAdapter<AppView.AppObject> {
     public void populateView(View parentView, ImageView imgView, RelativeLayout gridMask, ProgressBar prgView, TextView txtView, ImageView overlayView, AppView.AppObject obj) {
         // Let the cached asset loader handle it
         loader.populateImageView(obj.app, imgView, txtView);
+
+        // Title list rows show the name beside the cover
+        TextView title = parentView.findViewById(R.id.app_title);
+        if (title != null) {
+            title.setText(obj.app.getAppName());
+        }
 
         if (obj.isRunning) {
             // Mark the running game with a small play badge

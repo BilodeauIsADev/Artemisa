@@ -60,6 +60,7 @@ public class PreferenceConfiguration {
     private static final String SMALL_ICONS_PREF_STRING = "checkbox_small_icon_mode";
     private static final String HORIZONTAL_GAME_GRID_PREF_STRING = "checkbox_horizontal_game_grid";
     private static final String QUICK_MENU_OPACITY_PREF_STRING = "seekbar_quick_menu_opacity";
+    public static final String LIBRARY_LAYOUT_PREF_STRING = "list_library_layout";
     private static final String MULTI_CONTROLLER_PREF_STRING = "checkbox_multi_controller";
     static final String AUDIO_CONFIG_PREF_STRING = "list_audio_config";
     private static final String USB_DRIVER_PREF_SRING = "checkbox_usb_driver";
@@ -155,6 +156,10 @@ public class PreferenceConfiguration {
     private static final int DEFAULT_DEADZONE = 5;
     private static final int DEFAULT_OPACITY = 90;
     private static final int DEFAULT_QUICK_MENU_OPACITY = 100;
+    public static final String LIBRARY_LAYOUT_SPOTLIGHT = "spotlight";
+    public static final String LIBRARY_LAYOUT_GRID = "grid";
+    public static final String LIBRARY_LAYOUT_SHOWCASE = "showcase";
+    public static final String LIBRARY_LAYOUT_LIST = "list";
     private static final boolean DEFAULT_HORIZONTAL_GAME_GRID = false;
     public static final String DEFAULT_LANGUAGE = "default";
     private static final boolean DEFAULT_MULTI_CONTROLLER = true;
@@ -254,6 +259,8 @@ public class PreferenceConfiguration {
     public int renderMode;
     public boolean smallIconMode, horizontalGameGrid, multiController, usbDriver, flipFaceButtons;
     public int quickMenuOpacity;
+    // One of the LIBRARY_LAYOUT_* values
+    public String libraryLayout;
     public boolean onscreenController;
     public boolean hideOSCWhenHasGamepad;
     public boolean enableBatteryReport;
@@ -883,6 +890,7 @@ private static int getFramePacingValue(Context context) {
                 prefs.getInt(QUICK_MENU_OPACITY_PREF_STRING, DEFAULT_QUICK_MENU_OPACITY)));
 
         config.language = prefs.getString(LANGUAGE_PREF_STRING, DEFAULT_LANGUAGE);
+        config.libraryLayout = prefs.getString(LIBRARY_LAYOUT_PREF_STRING, LIBRARY_LAYOUT_SPOTLIGHT);
 
         // Checkbox preferences
         config.disableWarnings = prefs.getBoolean(DISABLE_TOASTS_PREF_STRING, DEFAULT_DISABLE_TOASTS);

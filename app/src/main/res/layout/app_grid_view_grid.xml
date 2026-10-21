@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fragmentView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:columnWidth="@dimen/dash_grid_cell_width"
+    android:drawSelectorOnTop="true"
+    android:horizontalSpacing="4dp"
+    android:listSelector="@drawable/console_grid_selector"
+    android:numColumns="6"
+    android:paddingTop="4dp"
+    android:paddingBottom="24dp"
+    android:scrollbars="none"
+    android:stretchMode="none"
+    android:verticalSpacing="8dp" />

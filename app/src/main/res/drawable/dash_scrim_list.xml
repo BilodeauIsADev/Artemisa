@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Title list: solid ink behind the names, clearing towards the cover on the right. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle"><gradient android:angle="0" android:centerX="0.42" android:startColor="#FF0B0D10" android:centerColor="#F00B0D10" android:endColor="#000B0D10" /></shape>

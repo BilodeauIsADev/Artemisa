@@ -281,11 +281,19 @@ public class StreamSettings extends AppCompatActivity {
     // Descriptions of a list setting's choices, keyed by value, for lists that have them.
     private Map<String, CharSequence> optionDescriptionsFor(ListPreference preference) {
         Map<String, CharSequence> descriptions = new HashMap<>();
-        if (!"frame_pacing".equals(preference.getKey())) {
+        String[] values;
+        CharSequence[] summaries;
+        if ("frame_pacing".equals(preference.getKey())) {
+            values = getResources().getStringArray(R.array.video_frame_pacing_values);
+            summaries = getResources().getTextArray(R.array.video_frame_pacing_summaries);
+        }
+        else if (PreferenceConfiguration.LIBRARY_LAYOUT_PREF_STRING.equals(preference.getKey())) {
+            values = getResources().getStringArray(R.array.library_layout_values);
+            summaries = getResources().getTextArray(R.array.library_layout_summaries);
+        }
+        else {
             return descriptions;
         }
-        String[] values = getResources().getStringArray(R.array.video_frame_pacing_values);
-        CharSequence[] summaries = getResources().getTextArray(R.array.video_frame_pacing_summaries);
         for (int i = 0; i < Math.min(values.length, summaries.length); i++) {
             descriptions.put(values[i], summaries[i]);
         }

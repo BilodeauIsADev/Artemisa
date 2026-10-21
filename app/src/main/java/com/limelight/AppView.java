@@ -44,6 +44,7 @@ import android.os.IBinder;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.AbsListView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -74,8 +75,16 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
     private boolean showHiddenApps;
     private HashSet<Integer> hiddenAppIds = new HashSet<>();
 
-    private SpotlightCarouselView tileRow;
+    // Holds the games: a SpotlightCarouselView (Spotlight, Showcase), a GridView or a ListView
+    private ViewGroup libraryView;
+    private String libraryLayout;
+    private int focusedAppPosition;
     private ImageView backdropView;
+    // Big cover of the focused game (Showcase, Title list and the grid's game page)
+    private ImageView coverView;
+    // The game page opened from the grid, and its own backdrop
+    private View gameDetails;
+    private ImageView gameDetailsBackdrop;
     private LinearLayout dotsView;
     private TextView heroTitle;
     private TextView heroMeta;
@@ -325,7 +334,8 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
 
         UiHelper.setLocale(this);
 
-        setContentView(R.layout.activity_app_view);
+        libraryLayout = PreferenceConfiguration.readPreferences(this).libraryLayout;
+        setContentView(layoutForLibrary(libraryLayout));
 
         // Allow floating expanded PiP overlays while browsing apps
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -341,6 +351,12 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
 
         backdropView = findViewById(R.id.libraryBackdrop);
         backdropView.setColorFilter(ArtHelper.backdropFilter(0.5f));
+        coverView = findViewById(R.id.libraryCover);
+        gameDetails = findViewById(R.id.gameDetails);
+        gameDetailsBackdrop = findViewById(R.id.gameDetailsBackdrop);
+        if (gameDetailsBackdrop != null) {
+            gameDetailsBackdrop.setColorFilter(ArtHelper.backdropFilter(0.5f));
+        }
         dotsView = findViewById(R.id.libraryDots);
         heroTitle = findViewById(R.id.libraryTitle);
         heroMeta = findViewById(R.id.libraryMeta);
@@ -348,27 +364,46 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         playButton = findViewById(R.id.libraryPlayButton);
         moreButton = findViewById(R.id.libraryMoreButton);
 
-        playButton.setOnClickListener(v -> {
-            int position = getFocusedAppPosition();
-            if (position >= 0) {
-                handleAppSelection(playButton, position);
+        // The title list has no buttons: A plays the highlighted row
+        if (playButton != null) {
+            playButton.setOnClickListener(v -> {
+                int position = getFocusedAppPosition();
+                if (position >= 0) {
+                    handleAppSelection(playButton, position);
+                }
+            });
+            moreButton.setOnClickListener(v -> {
+                int position = getFocusedAppPosition();
+                if (position >= 0) {
+                    showAppOptions(position, moreButton);
+                }
+            });
+
+            if (gameDetails != null) {
+                // The game page covers the grid; keep focus on its two buttons until B closes it
+                playButton.setNextFocusUpId(R.id.libraryPlayButton);
+                playButton.setNextFocusDownId(R.id.libraryPlayButton);
+                playButton.setNextFocusLeftId(R.id.libraryPlayButton);
+                playButton.setNextFocusRightId(R.id.libraryMoreButton);
+                moreButton.setNextFocusUpId(R.id.libraryMoreButton);
+                moreButton.setNextFocusDownId(R.id.libraryMoreButton);
+                moreButton.setNextFocusLeftId(R.id.libraryPlayButton);
+                moreButton.setNextFocusRightId(R.id.libraryMoreButton);
             }
-        });
-        moreButton.setOnClickListener(v -> {
-            int position = getFocusedAppPosition();
-            if (position >= 0) {
-                showAppOptions(position, moreButton);
+            else {
+                // Back to the covers: up on Spotlight, down on Showcase where the strip is below
+                final int towardsCovers = PreferenceConfiguration.LIBRARY_LAYOUT_SHOWCASE.equals(libraryLayout) ?
+                        KeyEvent.KEYCODE_DPAD_DOWN : KeyEvent.KEYCODE_DPAD_UP;
+                View.OnKeyListener backToCovers = (v, keyCode, event) -> {
+                    if (keyCode == towardsCovers && event.getAction() == KeyEvent.ACTION_DOWN) {
+                        return focusCurrentGame();
+                    }
+                    return false;
+                };
+                playButton.setOnKeyListener(backToCovers);
+                moreButton.setOnKeyListener(backToCovers);
             }
-        });
-        View.OnKeyListener backToRow = (v, keyCode, event) -> {
-            if (keyCode == KeyEvent.KEYCODE_DPAD_UP && event.getAction() == KeyEvent.ACTION_DOWN
-                    && tileRow != null) {
-                return tileRow.requestFocusOnCurrent();
-            }
-            return false;
-        };
-        playButton.setOnKeyListener(backToRow);
-        moreButton.setOnKeyListener(backToRow);
+        }
 
         showHiddenApps = getIntent().getBooleanExtra(SHOW_HIDDEN_APPS_EXTRA, false);
         uuidString = getIntent().getStringExtra(UUID_EXTRA);
@@ -385,7 +420,9 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         label.setText(computerName);
 
         this.prefConfig = PreferenceConfiguration.readPreferences(this);
-        heroTitle.setText(computerName);
+        if (heroTitle != null) {
+            heroTitle.setText(computerName);
+        }
         updateHero();
 
         // Bind to the computer manager service
@@ -397,13 +434,87 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         startActivity(new Intent(this, StreamSettings.class));
     }
 
+    private static int layoutForLibrary(String layout) {
+        if (PreferenceConfiguration.LIBRARY_LAYOUT_GRID.equals(layout)) {
+            return R.layout.activity_app_view_grid;
+        }
+        if (PreferenceConfiguration.LIBRARY_LAYOUT_SHOWCASE.equals(layout)) {
+            return R.layout.activity_app_view_showcase;
+        }
+        if (PreferenceConfiguration.LIBRARY_LAYOUT_LIST.equals(layout)) {
+            return R.layout.activity_app_view_list;
+        }
+        return R.layout.activity_app_view;
+    }
+
+    private boolean isGameDetailsOpen() {
+        return gameDetails != null && gameDetails.getVisibility() == View.VISIBLE;
+    }
+
+    // Grid only: the selected game's page, with Play and its options.
+    private void openGameDetails(int position) {
+        focusedAppPosition = position;
+        updateHero();
+        gameDetails.setAlpha(0f);
+        gameDetails.setVisibility(View.VISIBLE);
+        gameDetails.animate().alpha(1f).setDuration(160).start();
+        libraryView.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+        playButton.requestFocus();
+    }
+
+    private boolean closeGameDetails() {
+        if (!isGameDetailsOpen()) {
+            return false;
+        }
+        gameDetails.setVisibility(View.GONE);
+        libraryView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+        focusCurrentGame();
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (!closeGameDetails()) {
+            super.onBackPressed();
+        }
+    }
+
+    private boolean focusCurrentGame() {
+        if (libraryView instanceof SpotlightCarouselView) {
+            return ((SpotlightCarouselView) libraryView).requestFocusOnCurrent();
+        }
+        if (libraryView instanceof AbsListView) {
+            AbsListView list = (AbsListView) libraryView;
+            list.setSelection(Math.max(0, getFocusedAppPosition()));
+            return list.requestFocus();
+        }
+        return false;
+    }
+
+    // The view of the focused game, or null when there isn't one on screen.
+    private View focusedGameView() {
+        if (libraryView instanceof SpotlightCarouselView) {
+            return ((SpotlightCarouselView) libraryView).getFocusedItemView();
+        }
+        if (libraryView instanceof AbsListView) {
+            AbsListView list = (AbsListView) libraryView;
+            return list.getChildAt(getFocusedAppPosition() - list.getFirstVisiblePosition());
+        }
+        return null;
+    }
+
+    // Option cards open beside the round options button, or beside the game in the title list.
+    private View optionsAnchor() {
+        return moreButton != null ? moreButton : focusedGameView();
+    }
+
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_MENU ||
                 keyCode == KeyEvent.KEYCODE_BUTTON_START) {
             int position = getFocusedAppPosition();
             if (position >= 0) {
-                showAppOptions(position, moreButton);
+                showAppOptions(position, optionsAnchor());
             }
             return true;
         }
@@ -411,10 +522,10 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
     }
 
     private int getFocusedAppPosition() {
-        if (appGridAdapter == null || tileRow == null || appGridAdapter.getCount() == 0) {
+        if (appGridAdapter == null || libraryView == null || appGridAdapter.getCount() == 0) {
             return -1;
         }
-        return Math.min(tileRow.getFocusedPosition(), appGridAdapter.getCount() - 1);
+        return Math.min(focusedAppPosition, appGridAdapter.getCount() - 1);
     }
 
     private static String resolutionLabel(int width, int height) {
@@ -445,15 +556,22 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         boolean running = false;
         if (position >= 0) {
             AppObject app = (AppObject) appGridAdapter.getItem(position);
-            heroTitle.setText(app.app.getAppName());
+            if (heroTitle != null) {
+                heroTitle.setText(app.app.getAppName());
+            }
             running = app.isRunning;
         }
         heroMeta.setText(running ? getString(R.string.dash_running) + " · " + meta : meta);
-        playLabel.setText(running ? R.string.dash_resume : R.string.dash_play);
+        if (playLabel != null) {
+            playLabel.setText(running ? R.string.dash_resume : R.string.dash_play);
+        }
     }
 
     // One dot per game, the focused one drawn as a wider bar.
     private void updateDots(int position) {
+        if (dotsView == null) {
+            return;
+        }
         int count = appGridAdapter != null ? appGridAdapter.getCount() : 0;
         if (count < 2 || count > MAX_DOTS) {
             dotsView.removeAllViews();
@@ -479,8 +597,9 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         }
     }
 
-    // The backdrop follows the focused game.
+    // The backdrop, and the big cover where the layout has one, follow the focused game.
     private void onGameFocused(View tile, int position) {
+        focusedAppPosition = position;
         updateHero();
         updateDots(position);
         if (computer == null || position >= appGridAdapter.getCount()) {
@@ -489,13 +608,13 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
 
         final int generation = ++artGeneration;
         final AppObject app = (AppObject) appGridAdapter.getItem(position);
-        final Bitmap tileBitmap = ArtHelper.bitmapOf(tile.findViewById(R.id.grid_image));
+        final Bitmap tileBitmap = tile != null ? ArtHelper.bitmapOf(tile.findViewById(R.id.grid_image)) : null;
         final String uuid = computer.uuid;
+        // The backdrop is blurred anyway; only a big cover needs a full-size decode
+        final int coverWidth = coverView != null ? 900 : 300;
         artExecutor.execute(() -> {
-            Bitmap cover = ArtHelper.loadCachedCover(this, uuid, app.app.getAppId(), 300);
-            if (cover == null) {
-                cover = tileBitmap;
-            }
+            Bitmap loaded = ArtHelper.loadCachedCover(this, uuid, app.app.getAppId(), coverWidth);
+            final Bitmap cover = loaded != null ? loaded : tileBitmap;
             final Bitmap blurred = ArtHelper.blur(cover);
             runOnUiThread(() -> {
                 if (generation != artGeneration || isFinishing()) {
@@ -504,6 +623,14 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
                 ArtHelper.setBackdrop(backdropView, blurred);
                 backdropView.setAlpha(0.4f);
                 backdropView.animate().alpha(1f).setDuration(260).start();
+                if (gameDetailsBackdrop != null) {
+                    ArtHelper.setBackdrop(gameDetailsBackdrop, blurred);
+                }
+                if (coverView != null) {
+                    coverView.setImageBitmap(cover);
+                    coverView.setAlpha(0.3f);
+                    coverView.animate().alpha(1f).setDuration(220).start();
+                }
             });
         });
     }
@@ -563,7 +690,13 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
     protected void onResume() {
         super.onResume();
 
-        updateGridLayout(PreferenceConfiguration.readPreferences(this), false);
+        PreferenceConfiguration resumedPrefs = PreferenceConfiguration.readPreferences(this);
+        if (!resumedPrefs.libraryLayout.equals(libraryLayout)) {
+            // The library layout was changed in settings
+            recreate();
+            return;
+        }
+        updateGridLayout(resumedPrefs, false);
 
         // Display a decoder crash notification if we've returned after a crash
         UiHelper.showDecoderCrashDialog(this);
@@ -646,7 +779,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
             menu.addChecked(HIDE_APP_ID, getString(R.string.applist_menu_hide_app), R.drawable.ic_dash_eyeoff, selectedApp.isHidden);
         }
 
-        View tile = tileRow != null ? tileRow.getFocusedItemView() : null;
+        View tile = focusedGameView();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && tile != null) {
             // Only offer a shortcut once the box art has loaded
             Bitmap art = ArtHelper.bitmapOf(tile.findViewById(R.id.grid_image));
@@ -890,26 +1023,73 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
 
     @Override
     public int getAdapterFragmentLayoutId() {
+        if (PreferenceConfiguration.LIBRARY_LAYOUT_GRID.equals(libraryLayout)) {
+            return R.layout.app_grid_view_grid;
+        }
+        if (PreferenceConfiguration.LIBRARY_LAYOUT_LIST.equals(libraryLayout)) {
+            return R.layout.app_list_view;
+        }
         return R.layout.app_grid_view_horizontal;
     }
 
     @Override
     public void receiveAdapterView(View adapterView) {
-        tileRow = (SpotlightCarouselView) adapterView;
-        tileRow.setNextFocusDownTarget(R.id.libraryPlayButton);
-        tileRow.setOnItemFocusListener(this::onGameFocused);
-        tileRow.setAdapter(appGridAdapter);
-        tileRow.setOnItemClickListener(
-                (view, position, id) -> handleAppSelection(view, position));
-        tileRow.setOnItemLongClickListener((view, position, id) -> {
-            showAppOptions(position, moreButton);
+        libraryView = (ViewGroup) adapterView;
+        if (adapterView instanceof SpotlightCarouselView) {
+            SpotlightCarouselView carousel = (SpotlightCarouselView) adapterView;
+            if (PreferenceConfiguration.LIBRARY_LAYOUT_SHOWCASE.equals(libraryLayout)) {
+                // Showcase: a strip of small covers under the hero, all fully visible
+                float density = getResources().getDisplayMetrics().density;
+                carousel.setItemSize(Math.round(84 * density), Math.round(112 * density));
+                carousel.setFalloff(new float[]{1f, 0.86f}, new float[]{1f, 0.8f});
+                carousel.setNextFocusUpTarget(R.id.libraryPlayButton);
+            }
+            else {
+                carousel.setNextFocusDownTarget(R.id.libraryPlayButton);
+            }
+            carousel.setOnItemFocusListener(this::onGameFocused);
+            carousel.setAdapter(appGridAdapter);
+            carousel.setOnItemClickListener(
+                    (view, position, id) -> handleAppSelection(view, position));
+            carousel.setOnItemLongClickListener((view, position, id) -> {
+                showAppOptions(position, moreButton);
+                return true;
+            });
+            return;
+        }
+
+        // Grid and title list: the platform views move the selection with the D-pad
+        AbsListView list = (AbsListView) adapterView;
+        list.setAdapter(appGridAdapter);
+        list.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                onGameFocused(view, position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        list.setOnItemClickListener((parent, view, position, id) -> {
+            if (gameDetails != null) {
+                openGameDetails(position);
+            }
+            else {
+                handleAppSelection(view, position);
+            }
+        });
+        list.setOnItemLongClickListener((parent, view, position, id) -> {
+            focusedAppPosition = position;
+            showAppOptions(position, optionsAnchor());
             return true;
         });
+        list.post(list::requestFocus);
     }
 
     @Override
     public void receiveAbsListView(AbsListView listView) {
-        // The library is always a single row of tiles
+        // Every layout hands over its view through receiveAdapterView
     }
 
     private void handleAppSelection(View targetView, int position) {
@@ -921,7 +1101,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
                 ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, prefConfig.useVirtualDisplay);
             }
             else {
-                showAppOptions(position, moreButton);
+                showAppOptions(position, optionsAnchor());
             }
         }
         else if (prefConfig.useVirtualDisplay &&

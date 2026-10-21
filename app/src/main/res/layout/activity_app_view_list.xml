@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Title list library: game names in large type, the highlighted game's cover beside them. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dash_ink"
+    tools:context=".AppView">
+
+    <ImageView
+        android:id="@+id/libraryBackdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/dash_scrim_list" />
+
+    <include
+        layout="@layout/library_top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:layout_marginStart="@dimen/console_screen_horizontal_padding"
+        android:layout_marginTop="@dimen/console_screen_vertical_padding"
+        android:layout_marginEnd="@dimen/console_screen_horizontal_padding" />
+
+    <!-- Names (a ListView is inflated into this container) -->
+    <FrameLayout
+        android:id="@+id/appFragmentContainer"
+        android:layout_width="440dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="41dp"
+        android:layout_marginTop="84dp"
+        android:layout_marginBottom="50dp" />
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="270dp"
+        android:layout_height="360dp"
+        android:layout_marginStart="585dp"
+        android:layout_marginTop="76dp"
+        app:cardBackgroundColor="@color/dash_surface_3"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="12dp">
+
+        <ImageView
+            android:id="@+id/libraryCover"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop" />
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/libraryMeta"
+        style="@style/DashMeta"
+        android:layout_width="270dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="585dp"
+        android:layout_marginTop="448dp"
+        android:ellipsize="end"
+        android:gravity="center_horizontal"
+        android:maxLines="1"
+        tools:text="4K · 60 FPS · HDR · 80 Mbps" />
+
+    <!-- Controller hints -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="31dp"
+        android:layout_marginBottom="@dimen/console_screen_vertical_padding"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView style="@style/ArtemisaControllerHintBadge" android:text="@string/console_button_a" />
+        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_play" />
+        <ImageView style="@style/ArtemisaControllerHintIcon" android:src="@drawable/ic_dash_menu" />
+        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_options" />
+        <TextView style="@style/ArtemisaControllerHintBadge" android:text="@string/console_button_b" />
+        <TextView style="@style/ArtemisaControllerHintLabel" android:text="@string/dash_back" />
+    </LinearLayout>
+
+</FrameLayout>

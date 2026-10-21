@@ -827,6 +827,12 @@
     <string name="title_checkbox_horizontal_game_grid">Use horizontal game shelf</string>
     <string name="summary_checkbox_horizontal_game_grid">Browse portrait game covers in a single row that scrolls left and right</string>
     <string name="title_quick_menu_opacity">Quick menu opacity</string>
+    <string name="title_library_layout">Library layout</string>
+    <string name="summary_library_layout">How the games on your PC are laid out. Open the list to compare the layouts.</string>
+    <string name="library_layout_spotlight">Spotlight</string>
+    <string name="library_layout_grid">Grid</string>
+    <string name="library_layout_showcase">Showcase</string>
+    <string name="library_layout_list">Title list</string>
     <string name="summary_quick_menu_opacity">Set how solid the in-stream quick menu panel appears</string>
     <string name="console_button_lb" translatable="false">LB</string>
     <string name="console_button_rb" translatable="false">RB</string>
@@ -849,6 +855,7 @@
     <string name="dash_adjust">Adjust</string>
     <string name="dash_choose">Choose</string>
     <string name="dash_open_library">Open library</string>
+    <string name="dash_open">Open</string>
     <string name="dash_pair">Pair</string>
     <string name="dash_wake">Wake</string>
     <string name="dash_meta_fps">%d FPS</string>

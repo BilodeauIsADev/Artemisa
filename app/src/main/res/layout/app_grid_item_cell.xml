@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Grid library cell: a cover with room around it for the focus ring the grid draws. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/dash_focus_gap">
+
+    <include
+        layout="@layout/app_grid_item"
+        android:layout_width="@dimen/dash_grid_cover_width"
+        android:layout_height="@dimen/dash_grid_cover_height" />
+</FrameLayout>
